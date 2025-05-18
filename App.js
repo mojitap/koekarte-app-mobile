@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, Text, View, Button, Alert, ScrollView } from 'react-native';
 import { Audio } from 'expo-av';
-import ScoreChart from './ScoreChart'; // ✅ グラフコンポーネントをインポート
-import EditProfile from './EditProfile';
+import ScoreChart from './ScoreChart'; // 折れ線グラフ
+import ScoreHistory from './ScoreHistory'; // スコア履歴一覧
+import EditProfile from './EditProfile'; // 今後使うならOK
 
 export default function App() {
   const [recording, setRecording] = useState(null);
@@ -88,8 +89,14 @@ export default function App() {
         </View>
       )}
 
+      {/* 📈 折れ線グラフ */}
       <View style={{ marginTop: 40, width: '100%' }}>
-        <ScoreChart /> {/* ✅ グラフを表示 */}
+        <ScoreChart />
+      </View>
+
+      {/* 🧾 スコア履歴一覧 */}
+      <View style={{ marginTop: 30, width: '100%' }}>
+        <ScoreHistory />
       </View>
     </ScrollView>
   );
