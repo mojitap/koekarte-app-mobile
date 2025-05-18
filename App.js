@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, View, Button, Alert } from 'react-native';
+import { StyleSheet, Text, View, Button, Alert, ScrollView } from 'react-native';
 import { Audio } from 'expo-av';
+import ScoreChart from './ScoreChart'; // ✅ グラフコンポーネントをインポート
 
 export default function App() {
   const [recording, setRecording] = useState(null);
-  const [score, setScore] = useState(null); // ✅ 追加
+  const [score, setScore] = useState(null);
   const [status, setStatus] = useState('');
   const recordingRef = useRef(null);
 
@@ -35,7 +36,7 @@ export default function App() {
     const uri = recordingRef.current.getURI();
     console.log('✅ 録音ファイル:', uri);
     uploadRecording(uri);
-    setRecording(null); // ✅ ボタンを戻すために必要
+    setRecording(null);
   };
 
   const uploadRecording = async (uri) => {
@@ -43,7 +44,7 @@ export default function App() {
     const formData = new FormData();
     formData.append('audio_data', {
       uri,
-      name: 'recording.m4a', // ← 明示的に拡張子を変更
+      name: 'recording.m4a',
       type: 'audio/m4a',
     });
 
@@ -54,7 +55,7 @@ export default function App() {
       });
       const data = await response.json();
       console.log("✅ スコア:", data.score);
-      setScore(data.score); // ✅ スコア保存
+      setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
     } catch (error) {
       console.error("❌ アップロード失敗:", error);
@@ -65,9 +66,10 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>コエカルテ - 音声ストレスチェック</Text>
       <Text>{status}</Text>
+
       {!recording ? (
         <Button title="🎙️ 録音開始" onPress={startRecording} />
       ) : (
@@ -84,18 +86,22 @@ export default function App() {
           </Text>
         </View>
       )}
-      
-    </View>
+
+      <View style={{ marginTop: 40, width: '100%' }}>
+        <ScoreChart /> {/* ✅ グラフを表示 */}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     padding: 20,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 22,
