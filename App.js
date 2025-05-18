@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { StyleSheet, Text, View, Button, Alert, ScrollView } from 'react-native';
 import { Audio } from 'expo-av';
 import ScoreChart from './ScoreChart'; // ✅ グラフコンポーネントをインポート
+import EditProfile from './EditProfile';
 
 export default function App() {
   const [recording, setRecording] = useState(null);
