@@ -8,7 +8,7 @@ export default function ScoreHistory() {
   const [scores, setScores] = useState([]);
 
   const fetchScores = useCallback(() => {
-    fetch('http://192.168.0.27:5000/api/scores', {
+    fetch('http://192.168.0.42:5000/api/scores', {
       credentials: 'include',
     })
       .then(res => res.json())
