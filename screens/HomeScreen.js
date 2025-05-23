@@ -121,8 +121,8 @@ export default function HomeScreen() {
       />
       
       <ScrollView contentContainerStyle={styles.container}>
+        <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
         <Text style={styles.title}>コエカルテ - 音声ストレスチェック</Text>
-        <Text>{status}</Text>
 
         {/* 🔁 録音方法・説明 */}
         <View style={{ marginTop: 20 }}>
