@@ -3,11 +3,12 @@ import {
   View, Text, Button, ScrollView, StyleSheet, SafeAreaView,
   Alert, Platform, StatusBar, Image
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // ✅ ← 追加
+import { useNavigation } from '@react-navigation/native';
 import { Audio } from 'expo-av';
-import ScoreChart from '../ScoreChart';
-import ScoreHistory from '../ScoreHistory';
-import { checkCanUsePremium } from '../utils/premiumUtils';
+import ScoreChart from './ScoreChart';  // ←修正
+import ScoreHistory from './ScoreHistory';  // ←修正
+import { checkCanUsePremium } from '../utils/premiumUtils';  // ←修正
+import { Image } from 'react-native';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
