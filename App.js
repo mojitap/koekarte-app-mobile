@@ -24,7 +24,9 @@ export default function App() {
         <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
         <Stack.Screen name="EditProfile" component={EditProfile} options={{ title: 'プロフィール編集' }} />
         <Stack.Screen name="Terms" component={TermsScreen} options={{ title: '利用規約' }} />
-        <Stack.Screen name="Privacy" component={Privacy} options={{ title: 'プライバシーポリシー' }} />
+        <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: 'プライバシーポリシー' }} />
+        <Stack.Screen name="Legal" component={LegalScreen} options={{ title: '特定商取引法' }} />
+        <Stack.Screen name="Music" component={MusicScreen} options={{ title: '音源' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
