@@ -7,6 +7,7 @@ import { Audio } from 'expo-av';
 import ScoreChart from '../ScoreChart';
 import ScoreHistory from '../ScoreHistory';
 import { checkCanUsePremium } from '../utils/premiumUtils';
+import { Image } from 'react-native';
 
 export default function HomeScreen() {
   const [recording, setRecording] = useState(null);
@@ -112,6 +113,12 @@ export default function HomeScreen() {
       flex: 1,
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     }}>
+      {/* ✅ この位置にロゴ画像 */}
+      <Image
+        source={require('../assets/koekoekarte.png')}
+        style={{ width: 120, height: 120, resizeMode: 'contain', marginBottom: 10 }}
+      />
+      
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>コエカルテ - 音声ストレスチェック</Text>
         <Text>{status}</Text>
@@ -160,6 +167,14 @@ export default function HomeScreen() {
         {/* 🧾 履歴一覧 */}
         <View style={{ marginTop: 30, width: '100%' }}>
           <ScoreHistory />
+        </View>
+        <View style={{ marginTop: 30 }}>
+          <Button title="マイページへ" onPress={() => navigation.navigate('Profile')} />
+          <Button title="グラフを見る" onPress={() => navigation.navigate('Chart')} />
+          <Button title="スコア履歴" onPress={() => navigation.navigate('History')} />
+          <Button title="プロフィール編集" onPress={() => navigation.navigate('EditProfile')} />
+          <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
+          <Button title="プライバシー" onPress={() => navigation.navigate('Privacy')} />
         </View>
       </ScrollView>
     </SafeAreaView>
