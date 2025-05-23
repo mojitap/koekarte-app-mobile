@@ -1,43 +1,28 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Image } from 'react-native'; // 👈 追加
 
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import MusicScreen from './screens/MusicScreen';
-import TermsScreen from './screens/TermsScreen';
-import PrivacyScreen from './screens/PrivacyScreen';
-import LegalScreen from './screens/LegalScreen';
+import ScoreChart from './screens/ScoreChart';
+import ScoreHistory from './screens/ScoreHistory';
 import EditProfile from './screens/EditProfile';
+import Terms from './screens/Terms';
+import Privacy from './screens/Privacy';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            headerTitle: () => (
-              <Image
-                source={require('./assets/koekoekarte.png')}
-                style={{ width: 120, height: 40, resizeMode: 'contain' }}
-              />
-            ),
-            headerStyle: {
-              backgroundColor: '#ffffff',
-            },
-          }}
-        />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="Music" component={MusicScreen} />
-        <Stack.Screen name="Terms" component={TermsScreen} />
-        <Stack.Screen name="Privacy" component={PrivacyScreen} />
-        <Stack.Screen name="Legal" component={LegalScreen} />
-        <Stack.Screen name="EditProfile" component={EditProfile} />
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'ホーム' }} />
+        <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'マイページ' }} />
+        <Stack.Screen name="Chart" component={ScoreChart} options={{ title: 'グラフ' }} />
+        <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
+        <Stack.Screen name="EditProfile" component={EditProfile} options={{ title: 'プロフィール編集' }} />
+        <Stack.Screen name="Terms" component={Terms} options={{ title: '利用規約' }} />
+        <Stack.Screen name="Privacy" component={Privacy} options={{ title: 'プライバシーポリシー' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
