@@ -10,7 +10,7 @@ export default function ScoreChart() {
   const [canUse, setCanUse] = useState(false);
 
   useEffect(() => {
-    fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+    fetch('http://192.168.0.42:5000/api/profile', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setCanUse(checkCanUsePremium(data.created_at, data.is_paid));
@@ -20,7 +20,7 @@ export default function ScoreChart() {
   useEffect(() => {
     if (!canUse) return;
 
-    fetch('http://192.168.0.27:5000/api/scores')
+    fetch('http://192.168.0.42:5000/api/profile')
       .then(response => response.json())
       .then(data => {
         let rawScores = (data.scores || []).filter(s => isFinite(s.score));
