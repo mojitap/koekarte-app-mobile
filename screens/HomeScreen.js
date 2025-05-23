@@ -10,6 +10,7 @@ import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Image } from 'react-native';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [recording, setRecording] = useState(null);
   const [score, setScore] = useState(null);
   const [status, setStatus] = useState('');
