@@ -1,54 +1,61 @@
-// EditProfile.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet, ScrollView } from 'react-native';
 
-export default function EditProfile() {
+export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
     username: '',
     birthdate: '',
     gender: '',
     occupation: '',
-    prefecture: '',
+    prefecture: ''
   });
 
-  const handleChange = (key, value) => {
-    setForm({ ...form, [key]: value });
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch('https://koekarte.com/api/update_profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ✅ Cookieログイン維持
-        body: JSON.stringify(form),
+  useEffect(() => {
+    fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        setForm(prev => ({
+          ...prev,
+          username: data.username || '',
+          birthdate: data.birthdate || '',
+          gender: data.gender || '',
+          occupation: data.occupation || '',
+          prefecture: data.prefecture || '',
+        }));
       });
+  }, []);
 
-      const data = await response.json();
-      if (response.ok) {
-        Alert.alert("完了", data.message || "プロフィールを更新しました");
-      } else {
-        Alert.alert("エラー", data.error || "更新に失敗しました");
-      }
-    } catch (err) {
-      console.error("❌ 通信エラー:", err);
-      Alert.alert("エラー", "通信エラーが発生しました");
-    }
+  const handleSubmit = () => {
+    fetch('http://192.168.0.27:5000/api/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(form)
+    })
+      .then(res => res.json())
+      .then(data => {
+        Alert.alert('成功', 'プロフィールを更新しました');
+        navigation.goBack();
+      })
+      .catch(err => {
+        Alert.alert('エラー', 'プロフィール更新に失敗しました');
+      });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>プロフィール編集</Text>
-      {["username", "birthdate", "gender", "occupation", "prefecture"].map((field) => (
-        <TextInput
-          key={field}
-          style={styles.input}
-          placeholder={field}
-          value={form[field]}
-          onChangeText={(text) => handleChange(field, text)}
-        />
+      {Object.entries(form).map(([key, value]) => (
+        <View key={key} style={{ marginBottom: 10 }}>
+          <Text>{key}</Text>
+          <TextInput
+            value={value}
+            onChangeText={text => setForm({ ...form, [key]: text })}
+            style={styles.input}
+          />
+        </View>
       ))}
-      <Button title="更新する" onPress={handleSubmit} />
+      <Button title="保存する" onPress={handleSubmit} />
     </ScrollView>
   );
 }
@@ -56,19 +63,17 @@ export default function EditProfile() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 12,
-    borderRadius: 6,
+    padding: 8,
+    borderRadius: 5,
   },
 });
