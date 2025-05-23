@@ -23,7 +23,7 @@ export default function App() {
         <Stack.Screen name="Chart" component={ScoreChart} options={{ title: 'グラフ' }} />
         <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
         <Stack.Screen name="EditProfile" component={EditProfile} options={{ title: 'プロフィール編集' }} />
-        <Stack.Screen name="Terms" component={Terms} options={{ title: '利用規約' }} />
+        <Stack.Screen name="Terms" component={TermsScreen} options={{ title: '利用規約' }} />
         <Stack.Screen name="Privacy" component={Privacy} options={{ title: 'プライバシーポリシー' }} />
       </Stack.Navigator>
     </NavigationContainer>
