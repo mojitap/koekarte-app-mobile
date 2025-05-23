@@ -8,7 +8,6 @@ import { Audio } from 'expo-av';
 import ScoreChart from './ScoreChart';  // ←修正
 import ScoreHistory from './ScoreHistory';  // ←修正
 import { checkCanUsePremium } from '../utils/premiumUtils';  // ←修正
-import { Image } from 'react-native';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -197,5 +196,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     paddingTop: 40,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+    marginBottom: 10,
   },
 });
