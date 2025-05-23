@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Dimensions, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { checkCanUsePremium } from './utils/premiumUtils'; // ✅ 追加
+import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function ScoreChart() {
   const [scores, setScores] = useState([]);
