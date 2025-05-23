@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, Button, ScrollView, StyleSheet, SafeAreaView,
-  Alert, Platform, StatusBar
+  Alert, Platform, StatusBar, Image
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // ✅ ← 追加
 import { Audio } from 'expo-av';
-import ScoreChart from './ScoreChart'; // ✅
-import ScoreHistory from './ScoreHistory'; // ✅ 修正
+import ScoreChart from '../ScoreChart';
+import ScoreHistory from '../ScoreHistory';
 import { checkCanUsePremium } from '../utils/premiumUtils';
-import { Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
