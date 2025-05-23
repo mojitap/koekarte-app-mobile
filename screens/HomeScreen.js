@@ -4,7 +4,7 @@ import {
   Alert, Platform, StatusBar
 } from 'react-native';
 import { Audio } from 'expo-av';
-import ScoreChart from '../ScoreChart';
+import ScoreChart from './ScoreChart'; // ✅
 import ScoreHistory from '../ScoreHistory';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Image } from 'react-native';
