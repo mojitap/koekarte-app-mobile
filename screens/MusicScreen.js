@@ -1,29 +1,29 @@
 // MusicScreen.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Audio } from 'expo-av';
 
 const audioFiles = {
-  'free1.mp3': require('../assets/audio/free/free-positive.mp3'),
-  'free2.mp3': require('../assets/audio/free/free-mindfulness.mp3'),
-  'free3.mp3': require('../assets/audio/free/free-relaxation.mp3'),
-  'positive1.mp3': require('../assets/audio/paid/positive1.mp3'),
-  'positive2.mp3': require('../assets/audio/paid/positive2.mp3'),
-  'positive3.mp3': require('../assets/audio/paid/positive3.mp3'),
-  'positive4.mp3': require('../assets/audio/paid/positive4.mp3'),
-  'positive5.mp3': require('../assets/audio/paid/positive5.mp3'),
-  'relax1.mp3': require('../assets/audio/paid/relax1.mp3'),
-  'relax2.mp3': require('../assets/audio/paid/relax2.mp3'),
-  'relax3.mp3': require('../assets/audio/paid/relax3.mp3'),
-  'relax4.mp3': require('../assets/audio/paid/relax4.mp3'),
-  'relax5.mp3': require('../assets/audio/paid/relax5.mp3'),
-  'mindfulness1.mp3': require('../assets/audio/paid/mindfulness1.mp3'),
-  'mindfulness2.mp3': require('../assets/audio/paid/mindfulness2.mp3'),
-  'mindfulness3.mp3': require('../assets/audio/paid/mindfulness3.mp3'),
-  'mindfulness4.mp3': require('../assets/audio/paid/mindfulness4.mp3'),
-  'mindfulness5.mp3': require('../assets/audio/paid/mindfulness5.mp3'),
+  'ポジティブ': require('../assets/audio/free/free-positive.mp3'),
+  'マインドフルネス': require('../assets/audio/free/free-mindfulness.mp3'),
+  'リラクゼーション': require('../assets/audio/free/free-relaxation.mp3'),
+  'ポジティブ1': require('../assets/audio/paid/positive1.mp3'),
+  'ポジティブ2': require('../assets/audio/paid/positive2.mp3'),
+  'ポジティブ3': require('../assets/audio/paid/positive3.mp3'),
+  'ポジティブ4': require('../assets/audio/paid/positive4.mp3'),
+  'ポジティブ5': require('../assets/audio/paid/positive5.mp3'),
+  'リラックス1': require('../assets/audio/paid/relax1.mp3'),
+  'リラックス2': require('../assets/audio/paid/relax2.mp3'),
+  'リラックス3': require('../assets/audio/paid/relax3.mp3'),
+  'リラックス4': require('../assets/audio/paid/relax4.mp3'),
+  'リラックス5': require('../assets/audio/paid/relax5.mp3'),
+  '瞑想1': require('../assets/audio/paid/mindfulness1.mp3'),
+  '瞑想2': require('../assets/audio/paid/mindfulness2.mp3'),
+  '瞑想3': require('../assets/audio/paid/mindfulness3.mp3'),
+  '瞑想4': require('../assets/audio/paid/mindfulness4.mp3'),
+  '瞑想5': require('../assets/audio/paid/mindfulness5.mp3'),
 };
 
 export default function MusicScreen() {
@@ -39,30 +39,26 @@ export default function MusicScreen() {
           const ok = checkCanUsePremium(data.created_at, data.is_paid);
           setCanUsePremium(ok);
           if (ok) {
-            setAudioList([
-              'positive1.mp3', 'positive2.mp3', 'positive3.mp3',
-              'relax1.mp3', 'relax2.mp3', 'relax3.mp3',
-              'mindfulness1.mp3', 'mindfulness2.mp3', 'mindfulness3.mp3'
-            ]);
+            setAudioList(Object.keys(audioFiles));
           } else {
-            setAudioList(['free1.mp3', 'free2.mp3']);
+            setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
           }
         })
         .catch(err => {
           console.error("❌ プロフィール取得失敗:", err);
           setCanUsePremium(false);
-          setAudioList(['free1.mp3', 'free2.mp3']);
+          setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
         });
     }, [])
   );
 
-  const playSound = async (file) => {
+  const playSound = async (label) => {
     if (soundRef.current) {
       await soundRef.current.unloadAsync();
       soundRef.current = null;
     }
     try {
-      const { sound } = await Audio.Sound.createAsync(audioFiles[file]);
+      const { sound } = await Audio.Sound.createAsync(audioFiles[label]);
       soundRef.current = sound;
       await sound.playAsync();
     } catch (e) {
@@ -74,14 +70,14 @@ export default function MusicScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>🎵 音源一覧</Text>
-      {audioList.map((file, index) => (
+      {audioList.map((label, index) => (
         <View key={index} style={styles.trackBox}>
-          <Text>{file}</Text>
-          <Button title="再生" onPress={() => playSound(file)} />
+          <Text>{label}</Text>
+          <Button title="再生" onPress={() => playSound(label)} />
         </View>
       ))}
       {!canUsePremium && (
-        <Text style={{ color: 'red', marginTop: 20 }}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
+        <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
       )}
     </ScrollView>
   );
@@ -102,5 +98,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingBottom: 10,
+  },
+  notice: {
+    color: 'red',
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
