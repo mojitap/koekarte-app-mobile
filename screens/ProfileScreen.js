@@ -50,8 +50,13 @@ export default function ProfileScreen({ navigation }) {
 
       {/* 🔁 他の画面への遷移 */}
       <View style={{ marginTop: 20 }}>
-        <Button title="音楽ページへ" onPress={() => navigation.navigate('Music')} />
-        <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
+        <Button title="録音ページへ" onPress={() => navigation.navigate('Record')} />
+          <Button title="グラフ" onPress={() => navigation.navigate('Chart')} />
+          <Button title="スコア履歴" onPress={() => navigation.navigate('History')} />
+          <Button title="プロフィール編集" onPress={() => navigation.navigate('EditProfile')} />
+          <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
+          <Button title="プライバシー" onPress={() => navigation.navigate('Privacy')} />
+          <Button title="特商法表記" onPress={() => navigation.navigate('Legal')} />
       </View>
     </ScrollView>
   );
