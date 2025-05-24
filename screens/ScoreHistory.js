@@ -1,64 +1,87 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Button, ScrollView, Alert } from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+} from 'react-native';
 
 export default function ScoreHistory() {
   const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchScores = useCallback(() => {
-    fetch('http://192.168.0.42:5000/api/scores', {
+  useEffect(() => {
+    fetch('http://192.168.0.27:5000/api/score-history', {
       credentials: 'include',
     })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data.scores)) {
-          setScores(data.scores);
-        } else {
-          console.error("❌ 予期しないレスポンス:", data);
-          Alert.alert("エラー", "サーバーからのレスポンスが不正です。");
-        }
+        setScores(data.scores || []);
+        setLoading(false);
       })
       .catch(err => {
-        console.error('❌ 履歴取得失敗:', err);
-        Alert.alert("エラー", "スコア履歴の取得に失敗しました");
+        console.error("❌ スコア履歴取得失敗:", err);
+        setLoading(false);
       });
   }, []);
 
-  useFocusEffect(fetchScores);
-
-  const exportToCSV = async () => {
-    if (scores.length === 0) {
-      Alert.alert("注意", "保存できるデータがありません");
-      return;
-    }
-
-    const header = '日付,スコア\n';
-    const rows = scores.map(s => `${s.date},${s.score}`).join('\n');
-    const csv = header + rows;
-
-    const fileUri = FileSystem.documentDirectory + 'scores.csv';
-    await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 });
-
-    await Sharing.shareAsync(fileUri);
-  };
-
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 10 }}>📅 スコア履歴一覧</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>📅 ストレススコア履歴</Text>
 
-      <ScrollView style={{ maxHeight: 300 }}>
-        {scores.length === 0 ? (
-          <Text style={{ color: 'gray' }}>まだ記録がありません。</Text>
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : scores.length === 0 ? (
+          <Text style={styles.notice}>まだ記録がありません。</Text>
         ) : (
-          scores.map((s, index) => (
-            <Text key={index}>{s.date} - {s.score} 点</Text>
+          scores.map((item, index) => (
+            <View key={index} style={styles.item}>
+              <Text style={styles.date}>{item.date}</Text>
+              <Text style={styles.score}>スコア：{item.score} 点</Text>
+            </View>
           ))
         )}
       </ScrollView>
-
-      <Button title="📤 CSVで保存・共有" onPress={exportToCSV} />
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  container: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  item: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingVertical: 10,
+  },
+  date: {
+    fontSize: 14,
+    color: '#666',
+  },
+  score: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  notice: {
+    fontSize: 14,
+    color: 'gray',
+  },
+});
