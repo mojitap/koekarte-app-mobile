@@ -7,6 +7,9 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
@@ -54,113 +57,84 @@ export default function EditProfile({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title}>プロフィール編集</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>✏️ プロフィール編集</Text>
 
-      <View style={styles.formItem}>
-        <Text style={styles.label}>生年月日</Text>
-        <TextInput
-          value={form.birthdate}
-          onChangeText={(text) => setForm({ ...form, birthdate: text })}
-          style={styles.input}
-          placeholder="例: 1990-01-01"
-        />
-      </View>
+        <View style={styles.formItem}>
+          <Text style={styles.label}>生年月日</Text>
+          <TextInput
+            value={form.birthdate}
+            onChangeText={(text) => setForm({ ...form, birthdate: text })}
+            style={styles.input}
+            placeholder="例: 1990-01-01"
+          />
+        </View>
 
-      <View style={styles.formItem}>
-        <Text style={styles.label}>性別</Text>
-        <Picker
-          selectedValue={form.gender}
-          onValueChange={(itemValue) => setForm({ ...form, gender: itemValue })}
-          style={styles.picker}
-        >
-          <Picker.Item label="未選択" value="" />
-          <Picker.Item label="男性" value="男性" />
-          <Picker.Item label="女性" value="女性" />
-          <Picker.Item label="その他" value="その他" />
-        </Picker>
-      </View>
+        <View style={styles.formItem}>
+          <Text style={styles.label}>性別</Text>
+          <Picker
+            selectedValue={form.gender}
+            onValueChange={(itemValue) => setForm({ ...form, gender: itemValue })}
+            style={styles.picker}
+          >
+            <Picker.Item label="未選択" value="" />
+            <Picker.Item label="男性" value="男性" />
+            <Picker.Item label="女性" value="女性" />
+            <Picker.Item label="その他" value="その他" />
+          </Picker>
+        </View>
 
-      <View style={styles.formItem}>
-        <Text style={styles.label}>職業</Text>
-        <TextInput
-          value={form.occupation}
-          onChangeText={(text) => setForm({ ...form, occupation: text })}
-          style={styles.input}
+        <View style={styles.formItem}>
+          <Text style={styles.label}>職業</Text>
+          <TextInput
+            value={form.occupation}
+            onChangeText={(text) => setForm({ ...form, occupation: text })}
+            style={styles.input}
           placeholder={'例：会社員 / "学生"'}
         />
       </View>
 
-      <View style={styles.formItem}>
-        <Text style={styles.label}>都道府県</Text>
-        <Picker
-          selectedValue={form.prefecture}
-          onValueChange={(itemValue) => setForm({ ...form, prefecture: itemValue })}
-          style={styles.picker}
-        >
-          <Picker.Item label="未選択" value="" />
-          <Picker.Item label="北海道" value="北海道" />
-          <Picker.Item label="青森県" value="青森県" />
-          <Picker.Item label="岩手県" value="岩手県" />
-          <Picker.Item label="宮城県" value="宮城県" />
-          <Picker.Item label="秋田県" value="秋田県" />
-          <Picker.Item label="山形県" value="山形県" />
-          <Picker.Item label="福島県" value="福島県" />
-          <Picker.Item label="茨城県" value="茨城県" />
-          <Picker.Item label="栃木県" value="栃木県" />
-          <Picker.Item label="群馬県" value="群馬県" />
-          <Picker.Item label="埼玉県" value="埼玉県" />
-          <Picker.Item label="千葉県" value="千葉県" />
-          <Picker.Item label="東京都" value="東京都" />
-          <Picker.Item label="神奈川県" value="神奈川県" />
-          <Picker.Item label="新潟県" value="新潟県" />
-          <Picker.Item label="富山県" value="富山県" />
-          <Picker.Item label="石川県" value="石川県" />
-          <Picker.Item label="福井県" value="福井県" />
-          <Picker.Item label="山梨県" value="山梨県" />
-          <Picker.Item label="長野県" value="長野県" />
-          <Picker.Item label="岐阜県" value="岐阜県" />
-          <Picker.Item label="静岡県" value="静岡県" />
-          <Picker.Item label="愛知県" value="愛知県" />
-          <Picker.Item label="三重県" value="三重県" />
-          <Picker.Item label="滋賀県" value="滋賀県" />
-          <Picker.Item label="京都府" value="京都府" />
-          <Picker.Item label="大阪府" value="大阪府" />
-          <Picker.Item label="兵庫県" value="兵庫県" />
-          <Picker.Item label="奈良県" value="奈良県" />
-          <Picker.Item label="和歌山県" value="和歌山県" />
-          <Picker.Item label="鳥取県" value="鳥取県" />
-          <Picker.Item label="島根県" value="島根県" />
-          <Picker.Item label="岡山県" value="岡山県" />
-          <Picker.Item label="広島県" value="広島県" />
-          <Picker.Item label="山口県" value="山口県" />
-          <Picker.Item label="徳島県" value="徳島県" />
-          <Picker.Item label="香川県" value="香川県" />
-          <Picker.Item label="愛媛県" value="愛媛県" />
-          <Picker.Item label="高知県" value="高知県" />
-          <Picker.Item label="福岡県" value="福岡県" />
-          <Picker.Item label="佐賀県" value="佐賀県" />
-          <Picker.Item label="長崎県" value="長崎県" />
-          <Picker.Item label="熊本県" value="熊本県" />
-          <Picker.Item label="大分県" value="大分県" />
-          <Picker.Item label="宮崎県" value="宮崎県" />
-          <Picker.Item label="鹿児島県" value="鹿児島県" />
-          <Picker.Item label="沖縄県" value="沖縄県" />
-        </Picker>
-      </View>
+        <View style={styles.formItem}>
+          <Text style={styles.label}>都道府県</Text>
+          <Picker
+            selectedValue={form.prefecture}
+            onValueChange={(itemValue) => setForm({ ...form, prefecture: itemValue })}
+            style={styles.picker}
+          >
+            <Picker.Item label="未選択" value="" />
+            {[
+              '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+              '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+              '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
+              '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
+              '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
+              '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
+              '熊本県','大分県','宮崎県','鹿児島県','沖縄県',
+            ].map(pref => (
+              <Picker.Item key={pref} label={pref} value={pref} />
+            ))}
+          </Picker>
+        </View>
 
-      <Button title="保存する" onPress={handleSubmit} />
-    </ScrollView>
+        <Button title="保存する" onPress={handleSubmit} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
   },
+  container: {
+    padding: 20,
+    paddingBottom: 40,
+  },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
   },
@@ -168,18 +142,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    marginBottom: 5,
+    marginBottom: 6,
     fontSize: 16,
+    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 5,
+    padding: 10,
+    borderRadius: 6,
+    backgroundColor: '#fff',
   },
   picker: {
-    height: 50,
     borderWidth: 1,
     borderColor: '#ccc',
+    backgroundColor: '#fff',
   },
 });
