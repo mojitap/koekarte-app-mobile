@@ -105,7 +105,7 @@ export default function HomeScreen() {
 
       setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
-      navigation.navigate('Profile');
+      navigation.navigate('Profile'); // ← この行を追加
     } catch (error) {
       console.error("❌ アップロード失敗:", error);
       Alert.alert("エラー", "アップロードに失敗しました");
