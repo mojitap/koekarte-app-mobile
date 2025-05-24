@@ -2,8 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import HomeScreen from './screens/ProfileScreen';      // ✅ マイページ画面
-import RecordScreen from './screens/HomeScreen';       // ✅ 録音ページ（旧Home）
+import ProfileScreen from './screens/ProfileScreen'; // マイページ（＝ホーム）
+import RecordScreen from './screens/HomeScreen';     // 録音画面
 import ScoreChart from './screens/ScoreChart';
 import ScoreHistory from './screens/ScoreHistory';
 import EditProfile from './screens/EditProfile';
@@ -18,7 +18,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'マイページ' }} />
+        <Stack.Screen name="Home" component={ProfileScreen} options={{ title: 'マイページ' }} />
         <Stack.Screen name="Record" component={RecordScreen} options={{ title: '録音' }} />
         <Stack.Screen name="Chart" component={ScoreChart} options={{ title: 'グラフ' }} />
         <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
