@@ -5,9 +5,9 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Audio } from 'expo-av';
-import ScoreChart from './ScoreChart';  // ←修正
-import ScoreHistory from './ScoreHistory';  // ←修正
-import { checkCanUsePremium } from '../utils/premiumUtils';  // ←修正
+import ScoreChart from './ScoreChart';
+import ScoreHistory from './ScoreHistory';
+import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -101,6 +101,7 @@ export default function HomeScreen() {
 
       setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
+      navigation.navigate('Profile');
     } catch (error) {
       console.error("❌ アップロード失敗:", error);
       Alert.alert("エラー", "アップロードに失敗しました");
@@ -114,12 +115,10 @@ export default function HomeScreen() {
       flex: 1,
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     }}>
-      {/* ✅ この位置にロゴ画像 */}      
       <ScrollView contentContainerStyle={styles.container}>
         <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
         <Text style={styles.title}>コエカルテ - 音声ストレスチェック</Text>
 
-        {/* 🔁 録音方法・説明 */}
         <View style={{ marginTop: 20 }}>
           <Text style={{ fontWeight: 'bold' }}>📘 使い方（録音の流れ）</Text>
           <Text>🔁 録音開始 → 録音停止 → 再生 → アップロード</Text>
@@ -136,14 +135,12 @@ export default function HomeScreen() {
           ・今日は特に強い不安は感じていません
         </Text>
 
-        {/* 🔴 録音ボタン制御 */}
         {!recording ? (
           <Button title="🎙️ 録音開始" onPress={startRecording} />
         ) : (
           <Button title="🛑 録音停止 & アップロード" onPress={stopRecording} />
         )}
 
-        {/* 🔶 スコア表示 */}
         {score !== null && (
           <View style={{ marginTop: 20, alignItems: 'center' }}>
             <Text style={{ fontSize: 22, fontWeight: 'bold' }}>
@@ -155,22 +152,12 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* 📈 折れ線グラフ */}
         <View style={{ marginTop: 40, width: '100%' }}>
           <ScoreChart />
         </View>
 
-        {/* 🧾 履歴一覧 */}
         <View style={{ marginTop: 30, width: '100%' }}>
           <ScoreHistory />
-        </View>
-        <View style={{ marginTop: 30 }}>
-          <Button title="マイページへ" onPress={() => navigation.navigate('Profile')} />
-          <Button title="グラフを見る" onPress={() => navigation.navigate('Chart')} />
-          <Button title="スコア履歴" onPress={() => navigation.navigate('History')} />
-          <Button title="プロフィール編集" onPress={() => navigation.navigate('EditProfile')} />
-          <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
-          <Button title="プライバシー" onPress={() => navigation.navigate('Privacy')} />
         </View>
       </ScrollView>
     </SafeAreaView>
