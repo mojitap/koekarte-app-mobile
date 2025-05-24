@@ -1,4 +1,5 @@
-// MusicScreen.js（再生中の視認性改善 + 再生制御）
+// ✅ MusicScreen.js：再生中の視認性改善（背景色変更・再生中マーク）
+
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -7,7 +8,7 @@ import {
   ScrollView,
   Button,
   Alert,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
@@ -37,7 +38,7 @@ const audioFiles = {
 export default function MusicScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [audioList, setAudioList] = useState([]);
-  const [playingTrack, setPlayingTrack] = useState(null);
+  const [playingLabel, setPlayingLabel] = useState(null);
   const soundRef = useRef(null);
 
   useFocusEffect(
@@ -64,14 +65,21 @@ export default function MusicScreen() {
   const playSound = async (label) => {
     try {
       if (soundRef.current) {
-        await soundRef.current.stopAsync();
         await soundRef.current.unloadAsync();
         soundRef.current = null;
+        setPlayingLabel(null);
       }
+
       const { sound } = await Audio.Sound.createAsync(audioFiles[label]);
       soundRef.current = sound;
+      setPlayingLabel(label);
       await sound.playAsync();
-      setPlayingTrack(label);
+
+      sound.setOnPlaybackStatusUpdate(status => {
+        if (status.didJustFinish) {
+          setPlayingLabel(null);
+        }
+      });
     } catch (e) {
       console.error("❌ 音源再生エラー:", e);
       Alert.alert("再生エラー", "音源を再生できませんでした");
@@ -82,13 +90,16 @@ export default function MusicScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>🎵 音源一覧</Text>
       {audioList.map((label, index) => (
-        <TouchableOpacity key={index} style={styles.trackBox} onPress={() => playSound(label)}>
-          <Text style={[styles.trackLabel, playingTrack === label && styles.playingLabel]}>
-            {playingTrack === label ? `▶️ ${label}` : label}
-          </Text>
-          <Button title="再生" onPress={() => playSound(label)} />
+        <TouchableOpacity
+          key={index}
+          style={[styles.trackBox, playingLabel === label && styles.playingBox]}
+          onPress={() => playSound(label)}
+        >
+          <Text style={styles.labelText}>{label}</Text>
+          <Text style={styles.playText}>{playingLabel === label ? '▶️ 再生中' : '▶️ 再生'}</Text>
         </TouchableOpacity>
       ))}
+
       {!canUsePremium && (
         <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
       )}
@@ -107,18 +118,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   trackBox: {
-    marginBottom: 15,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    paddingBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
   },
-  trackLabel: {
+  playingBox: {
+    backgroundColor: '#e6f7ff',
+  },
+  labelText: {
     fontSize: 16,
-    marginBottom: 4,
   },
-  playingLabel: {
-    color: 'green',
-    fontWeight: 'bold',
+  playText: {
+    fontSize: 14,
+    color: '#007AFF',
   },
   notice: {
     color: 'red',
