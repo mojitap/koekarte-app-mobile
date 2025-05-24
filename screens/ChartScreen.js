@@ -1,6 +1,9 @@
 // ChartScreen.js
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Platform, StatusBar } from 'react-native';
+import {
+  View, Text, StyleSheet, SafeAreaView,
+  ScrollView, Platform, StatusBar, Image
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
@@ -28,11 +31,13 @@ export default function ChartScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
         <Text style={styles.heading}>📈 ストレススコアの推移</Text>
+
         {canUsePremium ? (
           <ScoreChart />
         ) : (
-          <Text style={{ color: 'red', marginTop: 20 }}>
+          <Text style={styles.notice}>
             ※ グラフ機能は無料期間終了後、<Text style={{ fontWeight: 'bold' }}>有料プラン専用</Text>です。
           </Text>
         )}
@@ -50,10 +55,22 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     alignItems: 'center',
+    flexGrow: 1,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginBottom: 10,
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  notice: {
+    color: 'red',
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
