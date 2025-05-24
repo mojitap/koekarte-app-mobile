@@ -31,7 +31,7 @@ export default function EditProfile({ navigation }) {
           prefecture: data.prefecture || '',
         });
       })
-      .catch((err) => {
+      .catch(() => {
         Alert.alert('エラー', 'プロフィール取得に失敗しました');
       });
   }, []);
@@ -54,11 +54,11 @@ export default function EditProfile({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>プロフィール編集</Text>
 
-      <View style={{ marginBottom: 15 }}>
-        <Text>生年月日</Text>
+      <View style={styles.formItem}>
+        <Text style={styles.label}>生年月日</Text>
         <TextInput
           value={form.birthdate}
           onChangeText={(text) => setForm({ ...form, birthdate: text })}
@@ -67,8 +67,8 @@ export default function EditProfile({ navigation }) {
         />
       </View>
 
-      <View style={{ marginBottom: 15 }}>
-        <Text>性別</Text>
+      <View style={styles.formItem}>
+        <Text style={styles.label}>性別</Text>
         <Picker
           selectedValue={form.gender}
           onValueChange={(itemValue) => setForm({ ...form, gender: itemValue })}
@@ -81,8 +81,8 @@ export default function EditProfile({ navigation }) {
         </Picker>
       </View>
 
-      <View style={{ marginBottom: 15 }}>
-        <Text>職業</Text>
+      <View style={styles.formItem}>
+        <Text style={styles.label}>職業</Text>
         <TextInput
           value={form.occupation}
           onChangeText={(text) => setForm({ ...form, occupation: text })}
@@ -91,13 +91,14 @@ export default function EditProfile({ navigation }) {
         />
       </View>
 
-      <View style={{ marginBottom: 15 }}>
-        <Text>都道府県</Text>
+      <View style={styles.formItem}>
+        <Text style={styles.label}>都道府県</Text>
         <Picker
           selectedValue={form.prefecture}
           onValueChange={(itemValue) => setForm({ ...form, prefecture: itemValue })}
           style={styles.picker}
         >
+          <Picker.Item label="未選択" value="" />
           <Picker.Item label="北海道" value="北海道" />
           <Picker.Item label="青森県" value="青森県" />
           <Picker.Item label="岩手県" value="岩手県" />
@@ -163,6 +164,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  formItem: {
+    marginBottom: 20,
+  },
+  label: {
+    marginBottom: 5,
+    fontSize: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -170,8 +178,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   picker: {
+    height: 50,
     borderWidth: 1,
     borderColor: '#ccc',
-    height: 44,
   },
 });
