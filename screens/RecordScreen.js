@@ -1,15 +1,9 @@
-// ✅ RecordScreen.js UI改善（日本語表記・ノッチ対応）
+// ✅ RecordScreen.js：録音 → 再生 → アップロード の流れに対応
 
 import React, { useState, useRef } from 'react';
 import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-  Alert
+  View, Text, Button, StyleSheet, SafeAreaView,
+  Platform, StatusBar, Alert
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
@@ -18,9 +12,11 @@ import { checkCanUsePremium } from '../utils/premiumUtils';
 export default function RecordScreen() {
   const navigation = useNavigation();
   const [recording, setRecording] = useState(null);
+  const [sound, setSound] = useState(null);
+  const [recordingUri, setRecordingUri] = useState(null);
   const [score, setScore] = useState(null);
   const [status, setStatus] = useState('');
-  const [canUsePremium, setCanUsePremium] = useState(true); // 最初は true でテスト
+  const [canUsePremium, setCanUsePremium] = useState(true); // 仮
   const recordingRef = useRef(null);
 
   const startRecording = async () => {
@@ -28,14 +24,9 @@ export default function RecordScreen() {
       Alert.alert("録音制限", "無料期間が終了しています。有料プランをご検討ください。");
       return;
     }
-
     try {
-      console.log('🎙️ 録音開始');
       await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
 
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
@@ -49,41 +40,47 @@ export default function RecordScreen() {
   };
 
   const stopRecording = async () => {
-    console.log('🛑 録音停止');
     setStatus('録音停止');
     await recordingRef.current.stopAndUnloadAsync();
     const uri = recordingRef.current.getURI();
-    console.log('✅ 録音ファイル:', uri);
-    uploadRecording(uri);
     setRecording(null);
+    setRecordingUri(uri);
+    setStatus('再生またはアップロードが可能です');
   };
 
-  const uploadRecording = async (uri) => {
-    if (!canUsePremium) {
-      Alert.alert("アップロード制限", "無料期間が終了しています。有料プランをご検討ください。");
+  const playRecording = async () => {
+    if (!recordingUri) return;
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri: recordingUri });
+      setSound(sound);
+      await sound.playAsync();
+    } catch (err) {
+      console.error("❌ 再生エラー:", err);
+    }
+  };
+
+  const uploadRecording = async () => {
+    if (!recordingUri || !canUsePremium) {
+      Alert.alert("アップロード制限", "録音が存在しないか、利用制限中です。");
       return;
     }
-
     setStatus('アップロード中...');
     const formData = new FormData();
     formData.append('audio_data', {
-      uri,
+      uri: recordingUri,
       name: 'recording.m4a',
       type: 'audio/m4a',
     });
-
     try {
       const response = await fetch('http://192.168.0.27:5000/api/upload', {
         method: 'POST',
         body: formData,
       });
-
       const text = await response.text();
       const data = JSON.parse(text);
       if (!response.ok || typeof data.score !== 'number') {
         throw new Error(`HTTP error: ${response.status}`);
       }
-
       setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
       navigation.navigate('Home');
@@ -91,7 +88,6 @@ export default function RecordScreen() {
       console.error("❌ アップロード失敗:", error);
       Alert.alert("エラー", "アップロードに失敗しました");
     }
-
     setStatus('');
   };
 
@@ -128,16 +124,21 @@ export default function RecordScreen() {
           </Text>
         </View>
 
-        {!recording ? (
-          <Button title="🎙️ 録音開始" onPress={startRecording} />
-        ) : (
-          <Button title="🛑 録音停止 & アップロード" onPress={stopRecording} />
+        <Text style={styles.label}>🔁 録音 → 再生 → アップロード</Text>
+        {!recording && (
+          <>
+            <Button title="🎙️ 録音開始" onPress={startRecording} />
+            {recordingUri && <Button title="▶️ 再生" onPress={playRecording} />}
+            {recordingUri && <Button title="⬆️ アップロード" onPress={uploadRecording} />}
+          </>
+        )}
+        {recording && (
+          <Button title="🛑 録音停止" onPress={stopRecording} />
         )}
 
         {score !== null && (
           <Text style={styles.score}>ストレススコア：{score} 点</Text>
         )}
-
         <Text style={styles.status}>{status}</Text>
       </View>
     </SafeAreaView>
