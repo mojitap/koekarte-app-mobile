@@ -100,18 +100,33 @@ export default function RecordScreen() {
       <View style={styles.container}>
         <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
 
-        <Text style={styles.label}>📘 録音手順</Text>
-        <Text>1. 録音開始 → 2. 録音停止 → 3. 自動アップロード</Text>
+        <View style={{ marginTop: 10 }}>
+          <Text style={styles.subtitle}>📘 録音の流れ（使い方）</Text>
+          <Text style={styles.paragraph}>🔁 「録音開始」→「録音停止」→「再生で確認」→「アップロード」</Text>
+          <Text style={styles.paragraph}>▶️ 再生ボタンで録音内容を確認できます</Text>
+          <Text style={styles.paragraph}>✅ 確認せずにアップロードしても構いません</Text>
+          <Text style={styles.paragraph}>🔁 アップロードしなければ録音は何回でもやり直し可能です</Text>
+          <Text style={styles.paragraph}>🎯 より正確なストレス分析のためには、<Text style={{ fontWeight: 'bold' }}>1回の録音</Text>が理想です</Text>
+        </View>
 
-        <Text style={styles.label}>🔊 話す内容の例</Text>
-        <Text style={styles.example}>
-          ・今日は落ち着いた気持ちで過ごしました{"\n"}
-          ・最近は夜によく眠れています{"
-"}
-          ・一人の時間も心地よく過ごせています{"
-"}
-          ・今日は特に強い不安は感じていません
-        </Text>
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.subtitle}>🗣️ 以下の6つの文章を順番に読み上げてください</Text>
+          <Text style={styles.example}>
+            ・今日は落ち着いた気持ちで過ごしました{"\n"}
+            ・人との関わりに安心感を感じています{"\n"}
+            ・最近は夜によく眠れています{"\n"}
+            ・体の調子も比較的安定しています{"\n"}
+            ・一人の時間も心地よく過ごせています{"\n"}
+            ・今日は特に強い不安は感じていません
+          </Text>
+        </View>
+
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.notice}>
+            ※現在のスコアは「声の大きさ・元気さ・活力」などに反応しやすい傾向があります。{"\n"}
+            小声やささやき声で録音した場合、実際の気分に関係なくスコアが低く表示されることがあります。
+          </Text>
+        </View>
 
         {!recording ? (
           <Button title="🎙️ 録音開始" onPress={startRecording} />
@@ -129,7 +144,35 @@ export default function RecordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
+    subtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  paragraph: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#333',
+  },
+  example: {
+    fontSize: 14,
+    color: '#444',
+    backgroundColor: '#f7f7f7',
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 5,
+    lineHeight: 22,
+  },
+  notice: {
+    fontSize: 12,
+    color: '#aa0000',
+    backgroundColor: '#fff3f3',
+    padding: 10,
+    borderRadius: 6,
+    lineHeight: 18,
+  },
+
   safeArea: {
     flex: 1,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
@@ -147,10 +190,6 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: 'bold',
     marginTop: 20,
-  },
-  example: {
-    marginVertical: 10,
-    color: 'gray',
   },
   score: {
     marginTop: 20,
