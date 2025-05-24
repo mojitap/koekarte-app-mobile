@@ -114,12 +114,7 @@ export default function HomeScreen() {
       flex: 1,
       paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     }}>
-      {/* ✅ この位置にロゴ画像 */}
-      <Image
-        source={require('../assets/koekoekarte.png')}
-        style={{ width: 120, height: 120, resizeMode: 'contain', marginBottom: 10 }}
-      />
-      
+      {/* ✅ この位置にロゴ画像 */}      
       <ScrollView contentContainerStyle={styles.container}>
         <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
         <Text style={styles.title}>コエカルテ - 音声ストレスチェック</Text>
