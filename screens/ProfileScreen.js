@@ -1,9 +1,11 @@
+// ProfileScreen.js（マイページ）- タブメニュー優先に変更
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen() {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
@@ -35,38 +37,34 @@ export default function ProfileScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>🤵 マイページ</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>🤵 マイページ</Text>
 
-        <View style={styles.infoBox}>
-          <Text style={styles.label}>📧 メールアドレス:</Text>
-          <Text>{profile.email}</Text>
+      <View style={styles.infoBox}>
+        <Text style={styles.label}>📧 メールアドレス:</Text>
+        <Text>{profile.email}</Text>
 
-          <Text style={styles.label}>登録日:</Text>
-          <Text>{profile.created_at?.slice(0, 10)}</Text>
-        </View>
+        <Text style={styles.label}>登録日:</Text>
+        <Text>{profile.created_at?.slice(0, 10)}</Text>
+      </View>
 
-        <View style={styles.statusBox}>
-          {canUsePremium ? (
-            <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
-          ) : (
-            <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
-          )}
-        </View>
+      <View style={styles.statusBox}>
+        {canUsePremium ? (
+          <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
+        ) : (
+          <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
+        )}
+      </View>
 
-        <View style={{ marginTop: 20 }}>
-          <Button title="録音" onPress={() => navigation.navigate('Record')} />
-          <Button title="グラフ" onPress={() => navigation.navigate('Chart')} />
-          <Button title="スコア履歴" onPress={() => navigation.navigate('History')} />
-          <Button title="プロフィール編集" onPress={() => navigation.navigate('EditProfile')} />
-          <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
-          <Button title="プライバシーポリシー" onPress={() => navigation.navigate('Privacy')} />
-          <Button title="特定商取引法" onPress={() => navigation.navigate('Legal')} />
-          <Button title="音源" onPress={() => navigation.navigate('Music')} />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      {/* 規約・編集系のみ表示（録音・グラフ・音源はタブに任せる） */}
+      <View style={{ marginTop: 20 }}>
+        <Text style={styles.label}>🔧 各種設定</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('EditProfile')}>✏️ プロフィール編集</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
+        <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -95,5 +93,10 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#f8f8f8',
     borderRadius: 8,
+  },
+  link: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#007AFF',
   },
 });
