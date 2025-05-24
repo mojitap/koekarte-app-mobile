@@ -1,4 +1,5 @@
 // utils/premiumUtils.js
+
 export const checkCanUsePremium = (createdAtStr, isPaid) => {
   if (isPaid) return true;
   if (!createdAtStr) return false;
