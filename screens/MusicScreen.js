@@ -1,6 +1,14 @@
-// MusicScreen.js
+// MusicScreen.js（再生中の視認性改善 + 再生制御）
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Button,
+  Alert,
+  TouchableOpacity
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Audio } from 'expo-av';
@@ -29,6 +37,7 @@ const audioFiles = {
 export default function MusicScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [audioList, setAudioList] = useState([]);
+  const [playingTrack, setPlayingTrack] = useState(null);
   const soundRef = useRef(null);
 
   useFocusEffect(
@@ -53,14 +62,16 @@ export default function MusicScreen() {
   );
 
   const playSound = async (label) => {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-      soundRef.current = null;
-    }
     try {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
       const { sound } = await Audio.Sound.createAsync(audioFiles[label]);
       soundRef.current = sound;
       await sound.playAsync();
+      setPlayingTrack(label);
     } catch (e) {
       console.error("❌ 音源再生エラー:", e);
       Alert.alert("再生エラー", "音源を再生できませんでした");
@@ -71,10 +82,12 @@ export default function MusicScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>🎵 音源一覧</Text>
       {audioList.map((label, index) => (
-        <View key={index} style={styles.trackBox}>
-          <Text>{label}</Text>
+        <TouchableOpacity key={index} style={styles.trackBox} onPress={() => playSound(label)}>
+          <Text style={[styles.trackLabel, playingTrack === label && styles.playingLabel]}>
+            {playingTrack === label ? `▶️ ${label}` : label}
+          </Text>
           <Button title="再生" onPress={() => playSound(label)} />
-        </View>
+        </TouchableOpacity>
       ))}
       {!canUsePremium && (
         <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
@@ -98,6 +111,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     paddingBottom: 10,
+  },
+  trackLabel: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  playingLabel: {
+    color: 'green',
+    fontWeight: 'bold',
   },
   notice: {
     color: 'red',
