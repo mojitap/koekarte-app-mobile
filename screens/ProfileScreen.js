@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
+  const [canUsePremium, setCanUsePremium] = useState(false);
 
   useEffect(() => {
     fetch('http://192.168.0.27:5000/api/profile', {
@@ -12,6 +14,9 @@ export default function ProfileScreen({ navigation }) {
       .then(res => res.json())
       .then(data => {
         setProfile(data);
+        const ok = checkCanUsePremium(data.created_at, data.is_paid);
+        setCanUsePremium(ok);
+
         const created = new Date(data.created_at);
         const today = new Date();
         const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
@@ -39,12 +44,10 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <View style={styles.statusBox}>
-        {profile.is_paid ? (
-          <Text style={{ color: 'green' }}>✅ 有料プラン（¥300/月）をご利用中</Text>
-        ) : remainingDays > 0 ? (
-          <Text style={{ color: 'orange' }}>🕒 無料期間 残り {remainingDays} 日</Text>
+        {canUsePremium ? (
+          <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
         ) : (
-          <Text style={{ color: 'red' }}>‼️ 無料期間は終了しました</Text>
+          <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
         )}
       </View>
 
