@@ -10,6 +10,14 @@ export default function EditProfile({ navigation }) {
     prefecture: ''
   });
 
+  const labels = {
+    username: '名前（ニックネーム）',
+    birthdate: '生年月日',
+    gender: '性別',
+    occupation: '職業',
+    prefecture: '都道府県'
+  };
+
   useEffect(() => {
     fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
       .then(res => res.json())
@@ -47,7 +55,7 @@ export default function EditProfile({ navigation }) {
       <Text style={styles.title}>プロフィール編集</Text>
       {Object.entries(form).map(([key, value]) => (
         <View key={key} style={{ marginBottom: 10 }}>
-          <Text>{key}</Text>
+          <Text style={styles.label}>{labels[key]}</Text>
           <TextInput
             value={value}
             onChangeText={text => setForm({ ...form, [key]: text })}
@@ -69,6 +77,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
