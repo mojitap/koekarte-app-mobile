@@ -3,7 +3,7 @@ import {
   View, Text, Button, ScrollView, StyleSheet, SafeAreaView,
   Alert, Platform, StatusBar, Image
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import ScoreChart from './ScoreChart';
 import ScoreHistory from './ScoreHistory';
@@ -17,18 +17,22 @@ export default function HomeScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const recordingRef = useRef(null);
 
-  useEffect(() => {
-    fetch('http://192.168.0.42:5000/api/profile', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        const ok = checkCanUsePremium(data.created_at, data.is_paid);
-        setCanUsePremium(ok);
+  useFocusEffect(
+    useCallback(() => {
+      fetch('http://192.168.0.27:5000/api/profile', {
+        credentials: 'include'
       })
-      .catch(err => {
-        console.error("❌ プロフィール取得失敗:", err);
-        setCanUsePremium(false);
-      });
-  }, []);
+        .then(res => res.json())
+        .then(data => {
+          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          setCanUsePremium(ok);
+        })
+        .catch(err => {
+          console.error("❌ プロフィール取得失敗:", err);
+          setCanUsePremium(false);
+        });
+    }, [])
+  );
 
   const startRecording = async () => {
     if (!canUsePremium) {
