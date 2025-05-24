@@ -13,29 +13,28 @@ export default function ScoreChart() {
     fetch('http://192.168.0.42:5000/api/profile', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
-        setCanUse(checkCanUsePremium(data.created_at, data.is_paid));
+        const ok = checkCanUsePremium(data.created_at, data.is_paid);
+        setCanUse(ok);
       });
   }, []);
 
   useEffect(() => {
     if (!canUse) return;
 
-    fetch('http://192.168.0.42:5000/api/profile')
-      .then(response => response.json())
+    fetch('http://192.168.0.42:5000/api/scores', { credentials: 'include' })
+      .then(res => res.json())
       .then(data => {
-        let rawScores = (data.scores || []).filter(s => isFinite(s.score));
-        const base = rawScores.slice(0, 5).reduce((sum, s) => sum + s.score, 0) / (rawScores.length || 1);
-        setBaseline(base);
-        setScores(rawScores);
+        setScores(data.scores || []);
+        setBaseline(data.baseline);
         setLoading(false);
       })
-      .catch(error => {
-        console.error('❌ スコア取得エラー:', error);
+      .catch(err => {
+        console.error("❌ スコア取得失敗:", err);
         setLoading(false);
       });
   }, [canUse]);
 
-  if (!canUse) return <Text style={{ color: 'gray' }}>※スコアグラフは無料期間終了後は非表示です</Text>;
+  if (!canUse) return <Text style={{ color: 'gray' }}>※ グラフ機能は無料期間終了後は非表示です</Text>;
   if (loading) return <ActivityIndicator />;
   if (scores.length === 0) return <Text>スコアデータがありません</Text>;
 
@@ -50,12 +49,12 @@ export default function ScoreChart() {
           datasets: [
             {
               data: scores.map(s => s.score),
-              color: () => `rgba(134, 65, 244, 1)`,
+              color: () => `rgba(33, 150, 243, 1)`, // 青
               strokeWidth: 2,
             },
             {
               data: scores.map(() => baseline),
-              color: () => `rgba(255, 99, 132, 1)`,
+              color: () => `rgba(255, 99, 132, 1)`, // 赤
               strokeWidth: 2,
             },
           ],
@@ -66,8 +65,8 @@ export default function ScoreChart() {
         yAxisSuffix="点"
         chartConfig={{
           backgroundColor: '#fff',
-          backgroundGradientFrom: '#f7f7f7',
-          backgroundGradientTo: '#f7f7f7',
+          backgroundGradientFrom: '#fff',
+          backgroundGradientTo: '#fff',
           decimalPlaces: 0,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         }}
