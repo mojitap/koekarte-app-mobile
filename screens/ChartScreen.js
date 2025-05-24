@@ -1,23 +1,57 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+// ChartScreen.js
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Platform, StatusBar } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { checkCanUsePremium } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 
 export default function ChartScreen() {
+  const [canUsePremium, setCanUsePremium] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetch('http://192.168.0.27:5000/api/profile', {
+        credentials: 'include'
+      })
+        .then(res => res.json())
+        .then(data => {
+          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          setCanUsePremium(ok);
+        })
+        .catch(err => {
+          console.error("❌ プロフィール取得失敗:", err);
+          setCanUsePremium(false);
+        });
+    }, [])
+  );
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>📊 ストレススコアのグラフ</Text>
-      <ScoreChart />
-    </ScrollView>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.heading}>📈 ストレススコアの推移</Text>
+        {canUsePremium ? (
+          <ScoreChart />
+        ) : (
+          <Text style={{ color: 'red', marginTop: 20 }}>
+            ※ グラフ機能は無料期間終了後、<Text style={{ fontWeight: 'bold' }}>有料プラン専用</Text>です。
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
-    backgroundColor: '#fff',
-    flexGrow: 1,
+    alignItems: 'center',
   },
-  title: {
+  heading: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
