@@ -87,7 +87,7 @@ export default function EditProfile({ navigation }) {
           value={form.occupation}
           onChangeText={(text) => setForm({ ...form, occupation: text })}
           style={styles.input}
-          placeholder="例：会社員 / \"学生\""
+          placeholder={'例：会社員 / "学生"'}
         />
       </View>
 
