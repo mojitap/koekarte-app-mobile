@@ -1,12 +1,12 @@
-// ✅ RecordScreen.js：録音 → 再生 → アップロード の流れに対応
+// ✅ RecordScreen.js：録音 → 再生 → アップロード（API連携・再生重複制御）対応
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, Button, StyleSheet, SafeAreaView,
   Platform, StatusBar, Alert
 } from 'react-native';
 import { Audio } from 'expo-av';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function RecordScreen() {
@@ -16,8 +16,23 @@ export default function RecordScreen() {
   const [recordingUri, setRecordingUri] = useState(null);
   const [score, setScore] = useState(null);
   const [status, setStatus] = useState('');
-  const [canUsePremium, setCanUsePremium] = useState(true); // 仮
+  const [canUsePremium, setCanUsePremium] = useState(false);
   const recordingRef = useRef(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          setCanUsePremium(ok);
+        })
+        .catch(err => {
+          console.error("❌ プロフィール取得失敗:", err);
+          setCanUsePremium(false);
+        });
+    }, [])
+  );
 
   const startRecording = async () => {
     if (!canUsePremium) {
@@ -51,9 +66,13 @@ export default function RecordScreen() {
   const playRecording = async () => {
     if (!recordingUri) return;
     try {
-      const { sound } = await Audio.Sound.createAsync({ uri: recordingUri });
-      setSound(sound);
-      await sound.playAsync();
+      if (sound) {
+        await sound.unloadAsync();
+        setSound(null);
+      }
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri: recordingUri });
+      setSound(newSound);
+      await newSound.playAsync();
     } catch (err) {
       console.error("❌ 再生エラー:", err);
     }
@@ -145,8 +164,8 @@ export default function RecordScreen() {
   );
 }
 
-  const styles = StyleSheet.create({
-    subtitle: {
+const styles = StyleSheet.create({
+  subtitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
@@ -173,7 +192,6 @@ export default function RecordScreen() {
     borderRadius: 6,
     lineHeight: 18,
   },
-
   safeArea: {
     flex: 1,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
