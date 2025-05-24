@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function ProfileScreen({ navigation }) {
@@ -7,25 +8,27 @@ export default function ProfileScreen({ navigation }) {
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
 
-  useEffect(() => {
-    fetch('http://192.168.0.27:5000/api/profile', {
-      credentials: 'include'
-    })
-      .then(res => res.json())
-      .then(data => {
-        setProfile(data);
-        const ok = checkCanUsePremium(data.created_at, data.is_paid);
-        setCanUsePremium(ok);
-
-        const created = new Date(data.created_at);
-        const today = new Date();
-        const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
-        setRemainingDays(5 - diff);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetch('http://192.168.0.27:5000/api/profile', {
+        credentials: 'include'
       })
-      .catch(err => {
-        console.error("❌ プロフィール取得失敗:", err);
-      });
-  }, []);
+        .then(res => res.json())
+        .then(data => {
+          setProfile(data);
+          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          setCanUsePremium(ok);
+
+          const created = new Date(data.created_at);
+          const today = new Date();
+          const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
+          setRemainingDays(5 - diff);
+        })
+        .catch(err => {
+          console.error("❌ プロフィール取得失敗:", err);
+        });
+    }, [])
+  );
 
   if (!profile) {
     return <ActivityIndicator size="large" />;
@@ -51,7 +54,6 @@ export default function ProfileScreen({ navigation }) {
         )}
       </View>
 
-      {/* 🔁 他の画面への遷移 */}
       <View style={{ marginTop: 20 }}>
         <Button title="録音" onPress={() => navigation.navigate('Record')} />
         <Button title="グラフ" onPress={() => navigation.navigate('Chart')} />
