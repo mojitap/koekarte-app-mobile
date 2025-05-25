@@ -59,7 +59,17 @@ export default function EditProfile({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>✏️ プロフィール編集</Text>
+        <Text style={styles.heading}>✏️ プロフィール編集</Text>
+
+        <View style={styles.formItem}>
+          <Text style={styles.label}>ニックネーム</Text>
+          <TextInput
+            value={form.username}
+            onChangeText={(text) => setForm({ ...form, username: text })}
+            style={styles.input}
+            placeholder="ニックネームを入力"
+          />
+        </View>
 
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
@@ -91,9 +101,9 @@ export default function EditProfile({ navigation }) {
             value={form.occupation}
             onChangeText={(text) => setForm({ ...form, occupation: text })}
             style={styles.input}
-          placeholder={'例：会社員 / "学生"'}
-        />
-      </View>
+            placeholder="例: 学生 / 会社員 / フリーランス"
+          />
+        </View>
 
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
@@ -111,13 +121,13 @@ export default function EditProfile({ navigation }) {
               '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
               '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
               '熊本県','大分県','宮崎県','鹿児島県','沖縄県',
-            ].map(pref => (
+            ].map((pref) => (
               <Picker.Item key={pref} label={pref} value={pref} />
             ))}
           </Picker>
         </View>
 
-        <Button title="保存する" onPress={handleSubmit} />
+        <Button title="💾 保存する" onPress={handleSubmit} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -132,30 +142,31 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
+    backgroundColor: '#fff',
   },
-  title: {
+  heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
+    textAlign: 'center',
+    marginBottom: 30,
   },
   formItem: {
     marginBottom: 20,
   },
   label: {
-    marginBottom: 6,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 6,
     backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 5,
   },
   picker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    height: 48,
+    backgroundColor: '#f9f9f9',
   },
 });
