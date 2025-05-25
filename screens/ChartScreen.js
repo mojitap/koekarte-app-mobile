@@ -1,8 +1,15 @@
-// ChartScreen.js
+// ChartScreen.js（グラフ画面） - ロゴ中央表示＋スタイル統一
+
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView,
-  ScrollView, Platform, StatusBar, Image
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  Platform,
+  StatusBar,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
@@ -14,25 +21,31 @@ export default function ChartScreen() {
   useFocusEffect(
     React.useCallback(() => {
       fetch('http://192.168.0.27:5000/api/profile', {
-        credentials: 'include'
+        credentials: 'include',
       })
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           const ok = checkCanUsePremium(data.created_at, data.is_paid);
           setCanUsePremium(ok);
         })
-        .catch(err => {
-          console.error("❌ プロフィール取得失敗:", err);
+        .catch((err) => {
+          console.error('❌ プロフィール取得失敗:', err);
           setCanUsePremium(false);
         });
     }, [])
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
-        <Text style={styles.heading}>📈 ストレススコアの推移</Text>
+        <View style={styles.header}>
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.heading}>📈 ストレススコアの推移</Text>
+        </View>
 
         {canUsePremium ? (
           <ScoreChart />
@@ -47,30 +60,33 @@ export default function ChartScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,
+    backgroundColor: '#fff',
+    paddingBottom: 40,
+  },
+  header: {
     alignItems: 'center',
-    flexGrow: 1,
+    marginBottom: 20,
   },
   logo: {
-    width: 100,
-    height: 100,
-    resizeMode: 'contain',
+    width: 120,
+    height: 50,
     marginBottom: 10,
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
   },
   notice: {
     color: 'red',
     marginTop: 20,
     textAlign: 'center',
+    fontSize: 14,
   },
 });
