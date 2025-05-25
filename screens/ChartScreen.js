@@ -40,7 +40,7 @@ export default function ChartScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('../assets/logo.png')}
+            source={require('../assets/koekoekarte.png')}
             style={styles.logo}
             resizeMode="contain"
           />
