@@ -32,7 +32,7 @@ export default function ScoreHistory() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>📅 ストレススコア履歴</Text>
+        <Text style={styles.heading}>📅 ストレススコア履歴</Text>
 
         {loading ? (
           <ActivityIndicator size="large" />
@@ -61,10 +61,11 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  title: {
+  heading: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   item: {
     borderBottomWidth: 1,
@@ -83,5 +84,7 @@ const styles = StyleSheet.create({
   notice: {
     fontSize: 14,
     color: 'gray',
+    textAlign: 'center',
+    marginTop: 40,
   },
 });
