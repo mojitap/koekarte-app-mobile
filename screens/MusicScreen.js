@@ -1,5 +1,3 @@
-// ✅ MusicScreen.js：再生中の視認性改善（背景色変更・再生中マーク）
-
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -8,7 +6,9 @@ import {
   ScrollView,
   Button,
   Alert,
-  TouchableOpacity,
+  SafeAreaView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
@@ -38,7 +38,7 @@ const audioFiles = {
 export default function MusicScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [audioList, setAudioList] = useState([]);
-  const [playingLabel, setPlayingLabel] = useState(null);
+  const [nowPlaying, setNowPlaying] = useState(null);
   const soundRef = useRef(null);
 
   useFocusEffect(
@@ -63,23 +63,16 @@ export default function MusicScreen() {
   );
 
   const playSound = async (label) => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
-        setPlayingLabel(null);
-      }
+    if (soundRef.current) {
+      await soundRef.current.unloadAsync();
+      soundRef.current = null;
+    }
 
+    try {
       const { sound } = await Audio.Sound.createAsync(audioFiles[label]);
       soundRef.current = sound;
-      setPlayingLabel(label);
+      setNowPlaying(label);
       await sound.playAsync();
-
-      sound.setOnPlaybackStatusUpdate(status => {
-        if (status.didJustFinish) {
-          setPlayingLabel(null);
-        }
-      });
     } catch (e) {
       console.error("❌ 音源再生エラー:", e);
       Alert.alert("再生エラー", "音源を再生できませんでした");
@@ -87,54 +80,58 @@ export default function MusicScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>🎵 音源一覧</Text>
-      {audioList.map((label, index) => (
-        <TouchableOpacity
-          key={index}
-          style={[styles.trackBox, playingLabel === label && styles.playingBox]}
-          onPress={() => playSound(label)}
-        >
-          <Text style={styles.labelText}>{label}</Text>
-          <Text style={styles.playText}>{playingLabel === label ? '▶️ 再生中' : '▶️ 再生'}</Text>
-        </TouchableOpacity>
-      ))}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.heading}>🎵 音源一覧</Text>
 
-      {!canUsePremium && (
-        <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
-      )}
-    </ScrollView>
+        {audioList.map((label, index) => (
+          <View key={index} style={styles.trackBox}>
+            <Text style={[styles.trackLabel, nowPlaying === label && styles.playing]}>
+              {label}{nowPlaying === label ? '（再生中）' : ''}
+            </Text>
+            <Button title="▶️ 再生" onPress={() => playSound(label)} />
+          </View>
+        ))}
+
+        {!canUsePremium && (
+          <Text style={styles.notice}>
+            ※ 無料期間が終了しているため、一部音源はご利用いただけません。
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    paddingBottom: 40,
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
   trackBox: {
-    padding: 12,
+    marginBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    paddingBottom: 10,
   },
-  playingBox: {
-    backgroundColor: '#e6f7ff',
-  },
-  labelText: {
+  trackLabel: {
     fontSize: 16,
+    marginBottom: 5,
   },
-  playText: {
-    fontSize: 14,
-    color: '#007AFF',
+  playing: {
+    color: 'green',
+    fontWeight: 'bold',
   },
   notice: {
     color: 'red',
