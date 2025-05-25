@@ -1,9 +1,7 @@
-// ✅ RecordScreen.js：録音 → 再生 → アップロード（API連携・再生重複制御）対応
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, Button, StyleSheet, SafeAreaView,
-  Platform, StatusBar, Alert
+  Platform, StatusBar, Alert, ScrollView, Image
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -112,8 +110,15 @@ export default function RecordScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
+        </View>
 
         <View style={{ marginTop: 10 }}>
           <Text style={styles.subtitle}>📘 録音の流れ（使い方）</Text>
@@ -159,12 +164,35 @@ export default function RecordScreen() {
           <Text style={styles.score}>ストレススコア：{score} 点</Text>
         )}
         <Text style={styles.status}>{status}</Text>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  container: {
+    padding: 20,
+    paddingBottom: 40,
+    backgroundColor: '#fff',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 120,
+    height: 50,
+    marginBottom: 10,
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
   subtitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -191,20 +219,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 6,
     lineHeight: 18,
-  },
-  safeArea: {
-    flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  heading: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   label: {
     fontWeight: 'bold',
