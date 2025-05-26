@@ -1,11 +1,11 @@
 // App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { getUser } from './utils/auth'; // ✅ 追加
 
-// 画面のインポート
 import ProfileScreen from './screens/ProfileScreen';
 import RecordScreen from './screens/RecordScreen';
 import ChartScreen from './screens/ChartScreen';
@@ -15,7 +15,7 @@ import TermsScreen from './screens/TermsScreen';
 import PrivacyScreen from './screens/PrivacyScreen';
 import LegalScreen from './screens/LegalScreen';
 import ScoreHistory from './screens/ScoreHistory';
-import RegisterScreen from './screens/RegisterScreen'; // ← これを他の import の下に追加
+import RegisterScreen from './screens/RegisterScreen'; // ✅ 追加
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -44,6 +44,18 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // ✅ 起動時にログイン状態確認
+    getUser().then(user => {
+      console.log('📦 ローカル保存されたユーザー:', user);
+      setIsReady(true);
+    });
+  }, []);
+
+  if (!isReady) return null; // or SplashScreen
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
