@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Localization from 'expo-localization';
+import { I18nManager } from 'react-native';
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
@@ -25,6 +27,8 @@ export default function EditProfile({ navigation }) {
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [showPrefPicker, setShowPrefPicker] = useState(false);
 
   useEffect(() => {
     fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
@@ -45,18 +49,35 @@ export default function EditProfile({ navigation }) {
   }, []);
 
   const handleSubmit = () => {
+    // birthdateの形式を明示的に変換
+    const birthdateFormatted =
+      form.birthdate && typeof form.birthdate === 'string'
+        ? form.birthdate
+        : '';
+
+    const payload = {
+      ...form,
+      birthdate: birthdateFormatted,
+    };
+
     fetch('http://192.168.0.27:5000/api/update-profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`サーバーエラー: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(() => {
         Alert.alert('成功', 'プロフィールを更新しました');
         navigation.goBack();
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("❌ プロフィール更新エラー:", error);
         Alert.alert('エラー', 'プロフィール更新に失敗しました');
       });
   };
@@ -74,6 +95,7 @@ export default function EditProfile({ navigation }) {
             style={styles.input}
             placeholder="例: example@mail.com"
             keyboardType="email-address"
+            autoCapitalize="none"
           />
         </View>
 
@@ -89,20 +111,23 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
-          <Button
-            title={form.birthdate ? form.birthdate : '生年月日を選択'}
+          <Text
+            style={styles.input}
             onPress={() => setShowDatePicker(true)}
-          />
+          >
+            {form.birthdate || 'タップして選択'}
+          </Text>
           {showDatePicker && (
             <DateTimePicker
-              value={form.birthdate ? new Date(form.birthdate) : new Date()}
+              value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
               mode="date"
               display="spinner"
+              locale="ja-JP"
               onChange={(event, selectedDate) => {
                 setShowDatePicker(false);
                 if (selectedDate) {
-                  const dateStr = selectedDate.toISOString().split('T')[0];
-                  setForm({ ...form, birthdate: dateStr });
+                  const isoDate = selectedDate.toISOString().split('T')[0];
+                  setForm({ ...form, birthdate: isoDate });
                 }
               }}
             />
@@ -111,17 +136,26 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
-          <View style={styles.pickerWrapper}>
+          <Text
+            style={styles.input}
+            onPress={() => setShowGenderPicker(true)}
+          >
+            {form.gender || '未選択'}
+          </Text>
+          {showGenderPicker && (
             <Picker
               selectedValue={form.gender}
-              onValueChange={(itemValue) => setForm({ ...form, gender: itemValue })}
+              onValueChange={(value) => {
+                setForm({ ...form, gender: value });
+                setShowGenderPicker(false);
+              }}
             >
               <Picker.Item label="未選択" value="" />
               <Picker.Item label="男性" value="男性" />
               <Picker.Item label="女性" value="女性" />
               <Picker.Item label="その他" value="その他" />
             </Picker>
-          </View>
+          )}
         </View>
 
         <View style={styles.formItem}>
@@ -136,10 +170,19 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
-          <View style={styles.pickerWrapper}>
+          <Text
+            style={styles.input}
+            onPress={() => setShowPrefPicker(true)}
+          >
+            {form.prefecture || '未選択'}
+          </Text>
+          {showPrefPicker && (
             <Picker
               selectedValue={form.prefecture}
-              onValueChange={(itemValue) => setForm({ ...form, prefecture: itemValue })}
+              onValueChange={(value) => {
+                setForm({ ...form, prefecture: value });
+                setShowPrefPicker(false);
+              }}
             >
               <Picker.Item label="未選択" value="" />
               {[
@@ -154,7 +197,7 @@ export default function EditProfile({ navigation }) {
                 <Picker.Item key={pref} label={pref} value={pref} />
               ))}
             </Picker>
-          </View>
+          )}
         </View>
 
         <View style={{ marginTop: 30 }}>
