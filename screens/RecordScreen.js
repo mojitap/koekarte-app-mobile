@@ -113,7 +113,7 @@ export default function RecordScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('../assets/logo.png')}
+            source={require('../assets/koekoekarte.png')}
             style={styles.logo}
             resizeMode="contain"
           />
