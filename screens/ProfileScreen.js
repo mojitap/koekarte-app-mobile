@@ -32,7 +32,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
 
       <Text style={styles.title}>🤵 マイページ</Text>
 
