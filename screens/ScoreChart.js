@@ -1,77 +1,85 @@
+// ScoreChart.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { checkCanUsePremium } from '../utils/premiumUtils';
 
-export default function ScoreChart() {
-  const [scores, setScores] = useState([]);
-  const [baseline, setBaseline] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [canUse, setCanUse] = useState(false);
+export default function ScoreChart({ range }) {
+  const [chartData, setChartData] = useState({ labels: [], datasets: [{ data: [] }] });
 
   useEffect(() => {
-    fetch('http://192.168.0.42:5000/api/profile', { credentials: 'include' })
+    fetch('http://192.168.0.27:5000/api/score-history', {
+      credentials: 'include'
+    })
       .then(res => res.json())
       .then(data => {
-        const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-        setCanUse(ok);
+        const scores = data.scores || [];
+        if (!scores.length) return;
+
+        // Sort by date
+        const sorted = scores.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        let filtered = sorted;
+        const now = new Date();
+
+        if (range === 'week') {
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
+          filtered = sorted.filter(item => new Date(item.date) >= weekAgo);
+        } else if (range === 'month') {
+          const monthAgo = new Date();
+          monthAgo.setMonth(now.getMonth() - 1);
+          filtered = sorted.filter(item => new Date(item.date) >= monthAgo);
+        }
+
+        const labels = filtered.map(item => item.date.slice(5));
+        const dataPoints = filtered.map(item => item.score);
+
+        // ベースライン（最初の5回の平均）
+        const firstFive = sorted.slice(0, 5);
+        const baseline = Math.round(firstFive.reduce((sum, item) => sum + item.score, 0) / Math.max(firstFive.length, 1));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              data: dataPoints,
+              strokeWidth: 2,
+              color: () => 'rgba(75,192,192,1)',
+            },
+            {
+              data: Array(dataPoints.length).fill(baseline),
+              strokeWidth: 1,
+              color: () => 'rgba(255,99,132,0.7)',
+              withDots: false,
+            }
+          ],
+        });
       });
-  }, []);
-
-  useEffect(() => {
-    if (!canUse) return;
-
-    fetch('http://192.168.0.42:5000/api/scores', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        setScores(data.scores || []);
-        setBaseline(data.baseline);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("❌ スコア取得失敗:", err);
-        setLoading(false);
-      });
-  }, [canUse]);
-
-  if (!canUse) return <Text style={{ color: 'gray' }}>※ グラフ機能は無料期間終了後は非表示です</Text>;
-  if (loading) return <ActivityIndicator />;
-  if (scores.length === 0) return <Text>スコアデータがありません</Text>;
+  }, [range]);
 
   return (
     <View>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-        ストレススコアの推移
-      </Text>
       <LineChart
-        data={{
-          labels: scores.map(s => s.date?.slice(5) || ''),
-          datasets: [
-            {
-              data: scores.map(s => s.score),
-              color: () => `rgba(33, 150, 243, 1)`, // 青
-              strokeWidth: 2,
-            },
-            {
-              data: scores.map(() => baseline),
-              color: () => `rgba(255, 99, 132, 1)`, // 赤
-              strokeWidth: 2,
-            },
-          ],
-          legend: ["スコア", "ベースライン"],
-        }}
+        data={chartData}
         width={Dimensions.get('window').width - 40}
         height={220}
-        yAxisSuffix="点"
         chartConfig={{
-          backgroundColor: '#fff',
           backgroundGradientFrom: '#fff',
           backgroundGradientTo: '#fff',
           decimalPlaces: 0,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          style: {
+            borderRadius: 8,
+          },
+          propsForDots: {
+            r: '3',
+            strokeWidth: '1',
+            stroke: '#555',
+          }
         }}
         bezier
-        style={{ borderRadius: 16 }}
+        style={{ marginVertical: 8, borderRadius: 8 }}
       />
     </View>
   );
