@@ -20,7 +20,6 @@ export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
-  const navigation = useNavigation(); // ← これを追加
 
   useFocusEffect(
     React.useCallback(() => {
