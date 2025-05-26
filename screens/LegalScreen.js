@@ -1,22 +1,13 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-  Button
-} from 'react-native';
+import { View, ScrollView, SafeAreaView, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-export default function LegalScreen() {
+export default function TermsScreen() {
   const navigation = useNavigation();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView>
+      <ScrollView>
         <Text style={styles.heading}>📜 特定商取引法に基づく表記</Text>
 
       <Text style={styles.paragraph}>本表記は、音声ストレスチェックツール「コエカルテ」（以下「本サービス」）における、特定商取引法第11条に基づく情報提供のためのものです。</Text>
@@ -86,8 +77,8 @@ export default function LegalScreen() {
 
         <Text style={styles.paragraph}>最終更新日：2025年5月15日</Text>
 
-        <View style={{ marginTop: 30 }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Home')} />
+        <View style={{ marginTop: 30, alignItems: 'center' }}>
+          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Profile')} />
         </View>
       </ScrollView>
     </SafeAreaView>
