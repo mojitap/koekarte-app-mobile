@@ -1,7 +1,15 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, Button, StyleSheet, SafeAreaView,
-  Platform, StatusBar, Alert, ScrollView, Image
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  StatusBar,   // ✅ ← これを追加！
+  Alert,
+  ScrollView,
+  Image
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
