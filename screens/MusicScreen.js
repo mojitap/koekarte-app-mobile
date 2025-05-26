@@ -46,20 +46,19 @@ export default function MusicScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
-        .then(res => res.json())
-        .then(data => {
-          console.log("✅ プロフィール情報:", data); // ← これを追加！
-          const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-          setCanUsePremium(ok);
-          const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
-          setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
-        })
-        .catch(err => {
-          console.error("❌ プロフィール取得失敗:", err);
+      getUser().then(data => {
+        if (!data) {
           setCanUsePremium(false);
           setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
-        });
+          return;
+        }
+
+        const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+        setCanUsePremium(ok);
+
+        const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
+        setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
+      });
 
       return () => {
         if (soundRef.current) {
