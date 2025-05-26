@@ -6,7 +6,9 @@ import {
   StyleSheet,
   Button,
   Platform,
-  ScrollView
+  ScrollView,
+  SafeAreaView,
+  StatusBar  // ← ここを必ず追加してください
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
