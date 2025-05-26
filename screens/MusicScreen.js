@@ -98,7 +98,10 @@ export default function MusicScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>🎵 音源一覧</Text>
+      <View style={styles.header}>
+      　<Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
+      　<Text style={styles.heading}>🎵 音源一覧</Text>
+      </View>
 
       {audioList.map((label, index) => (
         <View key={index} style={styles.trackBox}>
@@ -120,14 +123,23 @@ export default function MusicScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 10,
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
   },
   trackBox: {
     marginBottom: 15,
