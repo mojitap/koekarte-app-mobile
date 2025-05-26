@@ -116,7 +116,7 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
-          <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
+          <Button title="決定" onPress={() => setShowPrefPicker(false)} />
             <Text>{form.gender || 'タップして選択'}</Text>
           </Pressable>
           <Modal visible={showGenderPicker} transparent={true} animationType="slide">
@@ -125,7 +125,7 @@ export default function EditProfile({ navigation }) {
                 <Picker
                   selectedValue={form.gender}
                   onValueChange={(value) => {
-                    setForm({ ...form, gender: value });
+                    setForm({ ...form, gender: value }); // 値のみに反映
                     setShowGenderPicker(false);
                   }}
                 >
@@ -134,6 +134,7 @@ export default function EditProfile({ navigation }) {
                   <Picker.Item label="女性" value="女性" />
                   <Picker.Item label="その他" value="その他" />
                 </Picker>
+                <Button title="決定" onPress={() => setShowGenderPicker(false)} />
               </View>
             </View>
           </Modal>
@@ -169,6 +170,7 @@ export default function EditProfile({ navigation }) {
                     <Picker.Item key={pref} label={pref} value={pref} />
                   ))}
                 </Picker>
+                <Button title="決定" onPress={() => setShowGenderPicker(false)} />
               </View>
             </View>
           </Modal>
