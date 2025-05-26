@@ -10,11 +10,11 @@ import {
   SafeAreaView,
   StatusBar,
   Alert,
+  Modal,
+  TouchableOpacity
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as Localization from 'expo-localization';
-import { I18nManager } from 'react-native';
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
@@ -49,35 +49,23 @@ export default function EditProfile({ navigation }) {
   }, []);
 
   const handleSubmit = () => {
-    // birthdateの形式を明示的に変換
-    const birthdateFormatted =
-      form.birthdate && typeof form.birthdate === 'string'
-        ? form.birthdate
-        : '';
-
-    const payload = {
-      ...form,
-      birthdate: birthdateFormatted,
-    };
-
     fetch('http://192.168.0.27:5000/api/update-profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(form),
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`サーバーエラー: ${res.status}`);
-        }
-        return res.json();
+      .then(async (res) => {
+        const text = await res.text();
+        if (!res.ok) throw new Error(text);
+        return JSON.parse(text);
       })
       .then(() => {
         Alert.alert('成功', 'プロフィールを更新しました');
         navigation.goBack();
       })
-      .catch((error) => {
-        console.error("❌ プロフィール更新エラー:", error);
+      .catch((err) => {
+        console.error("❌ プロフィール更新エラー:", err);
         Alert.alert('エラー', 'プロフィール更新に失敗しました');
       });
   };
@@ -111,12 +99,9 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
-          <Text
-            style={styles.input}
-            onPress={() => setShowDatePicker(true)}
-          >
-            {form.birthdate || 'タップして選択'}
-          </Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+            <Text style={styles.input}>{form.birthdate || 'タップして選択'}</Text>
+          </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
               value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
@@ -136,26 +121,25 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
-          <Text
-            style={styles.input}
-            onPress={() => setShowGenderPicker(true)}
-          >
-            {form.gender || '未選択'}
-          </Text>
-          {showGenderPicker && (
-            <Picker
-              selectedValue={form.gender}
-              onValueChange={(value) => {
-                setForm({ ...form, gender: value });
-                setShowGenderPicker(false);
-              }}
-            >
-              <Picker.Item label="未選択" value="" />
-              <Picker.Item label="男性" value="男性" />
-              <Picker.Item label="女性" value="女性" />
-              <Picker.Item label="その他" value="その他" />
-            </Picker>
-          )}
+          <TouchableOpacity onPress={() => setShowGenderPicker(true)}>
+            <Text style={styles.input}>{form.gender || '未選択'}</Text>
+          </TouchableOpacity>
+          <Modal visible={showGenderPicker} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+              <Picker
+                selectedValue={form.gender}
+                onValueChange={(value) => {
+                  setForm({ ...form, gender: value });
+                  setShowGenderPicker(false);
+                }}
+              >
+                <Picker.Item label="未選択" value="" />
+                <Picker.Item label="男性" value="男性" />
+                <Picker.Item label="女性" value="女性" />
+                <Picker.Item label="その他" value="その他" />
+              </Picker>
+            </View>
+          </Modal>
         </View>
 
         <View style={styles.formItem}>
@@ -170,34 +154,25 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
-          <Text
-            style={styles.input}
-            onPress={() => setShowPrefPicker(true)}
-          >
-            {form.prefecture || '未選択'}
-          </Text>
-          {showPrefPicker && (
-            <Picker
-              selectedValue={form.prefecture}
-              onValueChange={(value) => {
-                setForm({ ...form, prefecture: value });
-                setShowPrefPicker(false);
-              }}
-            >
-              <Picker.Item label="未選択" value="" />
-              {[
-                '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
-                '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
-                '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
-                '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
-                '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
-                '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
-                '熊本県','大分県','宮崎県','鹿児島県','沖縄県',
-              ].map((pref) => (
-                <Picker.Item key={pref} label={pref} value={pref} />
-              ))}
-            </Picker>
-          )}
+          <TouchableOpacity onPress={() => setShowPrefPicker(true)}>
+            <Text style={styles.input}>{form.prefecture || '未選択'}</Text>
+          </TouchableOpacity>
+          <Modal visible={showPrefPicker} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+              <Picker
+                selectedValue={form.prefecture}
+                onValueChange={(value) => {
+                  setForm({ ...form, prefecture: value });
+                  setShowPrefPicker(false);
+                }}
+              >
+                <Picker.Item label="未選択" value="" />
+                {[ '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県' ].map((pref) => (
+                  <Picker.Item key={pref} label={pref} value={pref} />
+                ))}
+              </Picker>
+            </View>
+          </Modal>
         </View>
 
         <View style={{ marginTop: 30 }}>
@@ -215,7 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
     paddingBottom: 40,
     backgroundColor: '#fff',
   },
@@ -240,12 +215,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
-  pickerWrapper: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#f9f9f9',
-    minHeight: 48,
-    justifyContent: 'center',
+  modalContainer: {
+    backgroundColor: '#fff',
+    marginTop: 'auto',
   },
 });
