@@ -67,7 +67,11 @@ export default function App() {
         <Stack.Screen name="Legal" component={LegalScreen} options={{ title: '特定商取引法に基づく表記' }} />
         <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: '新規登録' }} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'パスワード再設定' }} />
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPasswordScreen}
+          options={{ title: 'パスワード再設定' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
