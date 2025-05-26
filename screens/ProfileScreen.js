@@ -19,6 +19,7 @@ export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
+  const navigation = useNavigation(); // ← これを追加
 
   useFocusEffect(
     React.useCallback(() => {
@@ -88,6 +89,16 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
           <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
           <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
+        </View>
+        
+        {/* ✅ 新規登録リンク（ログインしていない場合のみ表示したいなら条件付きでもOK） */}
+        <View style={{ marginTop: 40 }}>
+          <Text
+            style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
+            onPress={() => navigation.navigate('Register')}
+          >
+            ▶ 新規登録はこちら
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
