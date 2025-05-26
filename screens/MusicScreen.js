@@ -38,7 +38,7 @@ const audioFiles = {
 export default function MusicScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [audioList, setAudioList] = useState([]);
-  const [nowPlaying, setNowPlaying] = useState(null);
+  const [currentTrack, setCurrentTrack] = useState(null);
   const soundRef = useRef(null);
 
   useFocusEffect(
@@ -48,76 +48,86 @@ export default function MusicScreen() {
         .then(data => {
           const ok = checkCanUsePremium(data.created_at, data.is_paid);
           setCanUsePremium(ok);
-          if (ok) {
-            setAudioList(Object.keys(audioFiles));
-          } else {
-            setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
-          }
+          const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
+          setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
         })
         .catch(err => {
           console.error("❌ プロフィール取得失敗:", err);
           setCanUsePremium(false);
           setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
         });
+
+      return () => {
+        // ⏹️ 画面離脱時に音を止める
+        if (soundRef.current) {
+          soundRef.current.stopAsync();
+          soundRef.current.unloadAsync();
+          soundRef.current = null;
+          setCurrentTrack(null);
+        }
+      };
     }, [])
   );
 
   const playSound = async (label) => {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-      soundRef.current = null;
-    }
-
     try {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
+
       const { sound } = await Audio.Sound.createAsync(audioFiles[label]);
       soundRef.current = sound;
-      setNowPlaying(label);
       await sound.playAsync();
+      setCurrentTrack(label);
     } catch (e) {
       console.error("❌ 音源再生エラー:", e);
       Alert.alert("再生エラー", "音源を再生できませんでした");
     }
   };
 
+  const stopSound = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync();
+      await soundRef.current.unloadAsync();
+      soundRef.current = null;
+      setCurrentTrack(null);
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>🎵 音源一覧</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.heading}>🎵 音源一覧</Text>
 
-        {audioList.map((label, index) => (
-          <View key={index} style={styles.trackBox}>
-            <Text style={[styles.trackLabel, nowPlaying === label && styles.playing]}>
-              {label}{nowPlaying === label ? '（再生中）' : ''}
-            </Text>
-            <Button title="▶️ 再生" onPress={() => playSound(label)} />
-          </View>
-        ))}
-
-        {!canUsePremium && (
-          <Text style={styles.notice}>
-            ※ 無料期間が終了しているため、一部音源はご利用いただけません。
+      {audioList.map((label, index) => (
+        <View key={index} style={styles.trackBox}>
+          <Text style={label === currentTrack ? styles.playingLabel : styles.label}>
+            {label}{label === currentTrack ? '（再生中）' : ''}
           </Text>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          <Button title="▶️ 再生" onPress={() => playSound(label)} />
+          {label === currentTrack && (
+            <Button title="⏹️ 停止" color="red" onPress={stopSound} />
+          )}
+        </View>
+      ))}
+
+      {!canUsePremium && (
+        <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    backgroundColor: '#fff',
-  },
   container: {
     padding: 20,
-    paddingBottom: 40,
+    backgroundColor: '#fff',
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
   },
   trackBox: {
     marginBottom: 15,
@@ -125,11 +135,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     paddingBottom: 10,
   },
-  trackLabel: {
+  label: {
     fontSize: 16,
     marginBottom: 5,
   },
-  playing: {
+  playingLabel: {
+    fontSize: 16,
+    marginBottom: 5,
     color: 'green',
     fontWeight: 'bold',
   },
