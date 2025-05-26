@@ -105,6 +105,29 @@ export default function MusicScreen() {
           <Text style={styles.heading}>🎵 音源一覧</Text>
         </View>
 
+        <View style={styles.explanationBox}>
+          <Text style={styles.explanationTitle}>🎧 無料で聴ける音源</Text>
+          <Text style={styles.explanationText}>
+            以下の音源は、無料でいつでもご利用いただけます。
+          </Text>
+
+          {!canUsePremium && (
+            <Text style={styles.explanationWarning}>
+              ⚠️ 無料期間は終了しました。引き続きご利用いただくには、有料プラン（月額300円）への登録が必要です。
+            </Text>
+          )}
+
+          {canUsePremium && (
+            <Text style={styles.explanationNote}>
+              🎵 現在はプレミアム会員として、すべての音源（全18曲）をご利用いただけます。
+            </Text>
+          )}
+
+          <Text style={styles.explanationFooter}>
+            🔓 有料プランでは、より多くのリラクゼーション音源が解放されます。
+          </Text>
+        </View>
+
         {/* 音源リスト */}
         {audioList.map((label, index) => (
           <View key={index} style={styles.trackBox}>
@@ -165,5 +188,38 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 20,
     textAlign: 'center',
+  },
+  explanationBox: {
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  explanationTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  explanationText: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 6,
+  },
+  explanationWarning: {
+    fontSize: 14,
+    color: '#a00',
+    marginVertical: 6,
+  },
+  explanationNote: {
+    fontSize: 14,
+    color: '#007BFF',
+    marginVertical: 6,
+  },
+  explanationFooter: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 10,
   },
 });
