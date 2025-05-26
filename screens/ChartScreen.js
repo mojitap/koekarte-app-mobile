@@ -27,6 +27,7 @@ export default function ChartScreen() {
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log("✅ プロフィール情報:", data); // ← これを追加！
           const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
           setCanUsePremium(ok);
         })
