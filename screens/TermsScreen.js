@@ -108,7 +108,7 @@ export default function TermsScreen() {
       </Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Profile')} />
+          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate("Home")} />
         </View>
       </ScrollView>
     </SafeAreaView>
