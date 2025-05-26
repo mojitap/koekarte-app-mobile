@@ -1,3 +1,5 @@
+// ✅ MusicScreen.js 改善版（ラベル改善 + 無料誘導文 + 再生中強調 + 有料説明）
+
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -9,7 +11,7 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
-  Image  // ✅ ここだけでOK
+  Image
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
@@ -59,7 +61,6 @@ export default function MusicScreen() {
         });
 
       return () => {
-        // ⏹️ 画面離脱時に音を止める
         if (soundRef.current) {
           soundRef.current.stopAsync();
           soundRef.current.unloadAsync();
@@ -102,33 +103,13 @@ export default function MusicScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.heading}>🎵 音源一覧</Text>
-        </View>
-
-        <View style={styles.explanationBox}>
-          <Text style={styles.explanationTitle}>🎧 無料で聴ける音源</Text>
-          <Text style={styles.explanationText}>
+          <Text style={styles.heading}>🎧 無料で聴ける音源</Text>
+          <Text style={styles.description}>
             以下の音源は、無料でいつでもご利用いただけます。
-          </Text>
-
-          {!canUsePremium && (
-            <Text style={styles.explanationWarning}>
-              ⚠️ 無料期間は終了しました。引き続きご利用いただくには、有料プラン（月額300円）への登録が必要です。
-            </Text>
-          )}
-
-          {canUsePremium && (
-            <Text style={styles.explanationNote}>
-              🎵 現在はプレミアム会員として、すべての音源（全18曲）をご利用いただけます。
-            </Text>
-          )}
-
-          <Text style={styles.explanationFooter}>
-            🔓 有料プランでは、より多くのリラクゼーション音源が解放されます。
+            有料プランにご登録いただくと、さらに15曲の音源が再生可能になります。
           </Text>
         </View>
 
-        {/* 音源リスト */}
         {audioList.map((label, index) => (
           <View key={index} style={styles.trackBox}>
             <Text style={label === currentTrack ? styles.playingLabel : styles.label}>
@@ -142,7 +123,12 @@ export default function MusicScreen() {
         ))}
 
         {!canUsePremium && (
-          <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
+          <View style={styles.noticeBox}>
+            <Text style={styles.noticeText}>
+              🔒 無料期間が終了しています。有料プラン（月額300円）に登録すると、18曲の全音源が聴けるようになります。
+            </Text>
+            <Button title="🎟 有料プランに登録する" onPress={() => Alert.alert('ご案内', 'Web版よりご登録ください')} />
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -154,6 +140,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
+  },
+  container: {
+    padding: 20,
+    paddingBottom: 40,
   },
   header: {
     alignItems: 'center',
@@ -167,6 +157,14 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  description: {
+    fontSize: 13,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    lineHeight: 20,
   },
   trackBox: {
     marginBottom: 15,
@@ -184,42 +182,18 @@ const styles = StyleSheet.create({
     color: 'green',
     fontWeight: 'bold',
   },
-  notice: {
-    color: 'red',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  explanationBox: {
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    marginBottom: 20,
+  noticeBox: {
+    backgroundColor: '#fff5f5',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#faa',
+    borderRadius: 6,
+    padding: 15,
+    marginTop: 30,
   },
-  explanationTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  explanationText: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 6,
-  },
-  explanationWarning: {
-    fontSize: 14,
+  noticeText: {
     color: '#a00',
-    marginVertical: 6,
-  },
-  explanationNote: {
     fontSize: 14,
-    color: '#007BFF',
-    marginVertical: 6,
-  },
-  explanationFooter: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 10,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
