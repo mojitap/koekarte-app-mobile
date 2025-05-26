@@ -5,13 +5,12 @@ import {
   TextInput,
   Button,
   Alert,
-  StyleSheet,
   ScrollView,
   SafeAreaView,
   Platform,
   StatusBar,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { StyleSheet } from 'react-native'; // ← 明示的に分離
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
