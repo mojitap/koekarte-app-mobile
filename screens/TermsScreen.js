@@ -1,19 +1,13 @@
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { View, ScrollView, SafeAreaView, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-export default function TermsScreen({ navigation }) {
+export default function TermsScreen() {
+  const navigation = useNavigation();
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView>
+      <ScrollView>
         <Text style={styles.title}>📃 利用規約</Text>
 
       <Text style={styles.paragraph}>
@@ -105,7 +99,7 @@ export default function TermsScreen({ navigation }) {
       </Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Home')} />
+          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Profile')} />
         </View>
       </ScrollView>
     </SafeAreaView>
