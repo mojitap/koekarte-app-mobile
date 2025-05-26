@@ -25,7 +25,7 @@ export default function ChartScreen() {
       })
         .then((res) => res.json())
         .then((data) => {
-          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
           setCanUsePremium(ok);
         })
         .catch((err) => {
