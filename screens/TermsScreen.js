@@ -103,9 +103,6 @@ export default function TermsScreen() {
         2. 紛争については東京地方裁判所を専属的管轄裁判所とします。
       </Text>
 
-      <Text style={styles.paragraph}>
-        {/* ...省略してもOKですが、他の条文があればここに追加してください */}
-
         <Text style={styles.paragraph}>最終改定日：2025年5月15日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
