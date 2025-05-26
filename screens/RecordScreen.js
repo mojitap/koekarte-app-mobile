@@ -22,7 +22,7 @@ export default function RecordScreen() {
       fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
-          const ok = checkCanUsePremium(data.created_at, data.is_paid);
+          const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
           setCanUsePremium(ok);
         })
         .catch(err => {
