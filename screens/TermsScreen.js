@@ -15,26 +15,26 @@ export default function TermsScreen() {
   const navigation = useNavigation();
 
   return (
-    <SafeAreaView>
-      <ScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>📃 利用規約</Text>
 
-      <Text style={styles.paragraph}>
-        この利用規約（以下「本規約」といいます）は、ストレスチェックツール「コエカルテ」（以下「本サービス」といいます）の提供条件および利用者（以下「ユーザー」といいます）と提供者（以下「当方」といいます）との間の権利義務関係を定めるものです。本サービスをご利用いただく前に、本規約をよくお読みください。
-      </Text>
+        <Text style={styles.paragraph}>
+          この利用規約（以下「本規約」といいます）は、ストレスチェックツール「コエカルテ」（以下「本サービス」といいます）の提供条件および利用者（以下「ユーザー」といいます）と提供者（以下「当方」といいます）との間の権利義務関係を定めるものです。本サービスをご利用いただく前に、本規約をよくお読みください。
+        </Text>
 
-      <Text style={styles.subheading}>第1条（適用）</Text>
-      <Text style={styles.paragraph}>
-        1. 本規約は、ユーザーが本サービスを利用する際の一切の行為に適用されます。
-        2. 当方が本サービス上で随時掲載する追加規定やポリシーも、本規約の一部を構成します。
-      </Text>
+        <Text style={styles.subheading}>第1条（適用）</Text>
+        <Text style={styles.paragraph}>
+          1. 本規約は、ユーザーが本サービスを利用する際の一切の行為に適用されます。
+          2. 当方が本サービス上で随時掲載する追加規定やポリシーも、本規約の一部を構成します。
+        </Text>
 
-      <Text style={styles.subheading}>第2条（アカウント登録および本人確認）</Text>
-      <Text style={styles.paragraph}>
-        1. 本サービスの利用にあたり、ユーザーは所定の登録手続を経てアカウントを作成する必要があります。
-        2. 登録には、メールアドレス、パスワード、性別、地域、生年月日などの情報が必要となります。
-        3. 本人確認のため、登録メールアドレスへの確認メールを受信・承認する必要があります。
-      </Text>
+        <Text style={styles.subheading}>第2条（アカウント登録および本人確認）</Text>
+        <Text style={styles.paragraph}>
+          1. 本サービスの利用にあたり、ユーザーは所定の登録手続を経てアカウントを作成する必要があります。
+          2. 登録には、メールアドレス、パスワード、性別、地域、生年月日などの情報が必要となります。
+          3. 本人確認のため、登録メールアドレスへの確認メールを受信・承認する必要があります。
+        </Text>
 
       <Text style={styles.subheading}>第3条（サービス内容）</Text>
       <Text style={styles.paragraph}>
@@ -104,11 +104,12 @@ export default function TermsScreen() {
       </Text>
 
       <Text style={styles.paragraph}>
-        最終改定日：2025年5月15日
-      </Text>
+        {/* ...省略してもOKですが、他の条文があればここに追加してください */}
+
+        <Text style={styles.paragraph}>最終改定日：2025年5月15日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate("Home")} />
+          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Home')} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,
