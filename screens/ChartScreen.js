@@ -47,6 +47,20 @@ export default function ChartScreen() {
           <Text style={styles.heading}>📈 ストレススコアの推移</Text>
         </View>
 
+        <View style={styles.explanationBox}>
+          <Text style={styles.explanationText}>
+            ※ スコアは「声の元気さ・活力」を数値化したものです。{"\n"}
+            数値が高いほど、ストレスが少ない（調子が良い）傾向を示します。{"\n"}
+            登録初期5回の平均（ベースライン）と比較することで、日々の変化がわかります。
+          </Text>
+
+          {!canUsePremium && (
+            <Text style={styles.warningBox}>
+              ⚠️ 無料期間は終了しました。録音・分析・グラフの閲覧をご希望の場合は、有料プラン（月額300円）へのご登録をお願いいたします。
+            </Text>
+          )}
+        </View>
+
         {canUsePremium ? (
           <ScoreChart />
         ) : (
@@ -88,5 +102,26 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: 'center',
     fontSize: 14,
+  },
+  explanationBox: {
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  explanationText: {
+    fontSize: 13,
+    color: '#444',
+    lineHeight: 20,
+  },
+  warningBox: {
+    fontSize: 13,
+    color: '#a00',
+    marginTop: 10,
+    backgroundColor: '#fff0f0',
+    padding: 10,
+    borderRadius: 6,
   },
 });
