@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, Button, StyleSheet, ScrollView, Alert
 } from 'react-native';
+import { saveUser } from '../utils/auth';  // ✅ 追加
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -25,6 +26,8 @@ export default function RegisterScreen({ navigation }) {
         Alert.alert('登録エラー', data.error || '登録に失敗しました');
         return;
       }
+
+      await saveUser(data);  // ✅ ユーザー情報をローカルに保存
 
       Alert.alert('登録成功', 'ようこそ！', [
         { text: 'OK', onPress: () => navigation.navigate('Home') },
