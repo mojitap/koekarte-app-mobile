@@ -26,3 +26,11 @@ export const clearUser = async () => {
     console.error('❌ ユーザー情報の削除に失敗しました', e);
   }
 };
+
+export const logout = async () => {
+  try {
+    await AsyncStorage.removeItem('user');
+  } catch (e) {
+    console.error("❌ ログアウトエラー:", e);
+  }
+};
