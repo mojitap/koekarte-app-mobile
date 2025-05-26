@@ -1,7 +1,15 @@
 import React from 'react';
-import { View, ScrollView, SafeAreaView, Button } from 'react-native';
+import {
+  View,
+  ScrollView,
+  SafeAreaView,
+  Button,
+  Text,
+  StyleSheet,
+  Platform,
+  StatusBar
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from 'react-native';
 
 export default function TermsScreen() {
   const navigation = useNavigation();
