@@ -92,27 +92,27 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        <View style={styles.formItem}>
-          <Text style={styles.label}>生年月日</Text>
-          <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text>{form.birthdate || 'タップして選択'}</Text>
-          </Pressable>
-          {showDatePicker && (
-            <DateTimePicker
-              value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
-              mode="date"
-              display="spinner"
-              locale="ja-JP"
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  const isoDate = selectedDate.toISOString().split('T')[0];
-                  setForm({ ...form, birthdate: isoDate });
-                }
-              }}
-            />
-          )}
-        </View>
+        {/* 生年月日モーダル形式 */}
+        <Modal visible={showDatePicker} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <DateTimePicker
+                value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
+                mode="date"
+                display="spinner"
+                locale="ja-JP"
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    const iso = selectedDate.toISOString().split('T')[0];
+                    setForm({ ...form, birthdate: iso });
+                  }
+                  setShowDatePicker(false);
+                }}
+              />
+              <Button title="閉じる" onPress={() => setShowDatePicker(false)} />
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
@@ -224,5 +224,17 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+  },
+  modalOverlay: {
+  flex: 1,
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0,0,0,0.3)',  // 半透明背景
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
   },
 });
