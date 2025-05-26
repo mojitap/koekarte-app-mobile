@@ -97,28 +97,31 @@ export default function MusicScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-      　<Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
-      　<Text style={styles.heading}>🎵 音源一覧</Text>
-      </View>
-
-      {audioList.map((label, index) => (
-        <View key={index} style={styles.trackBox}>
-          <Text style={label === currentTrack ? styles.playingLabel : styles.label}>
-            {label}{label === currentTrack ? '（再生中）' : ''}
-          </Text>
-          <Button title="▶️ 再生" onPress={() => playSound(label)} />
-          {label === currentTrack && (
-            <Button title="⏹️ 停止" color="red" onPress={stopSound} />
-          )}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.heading}>🎵 音源一覧</Text>
         </View>
-      ))}
 
-      {!canUsePremium && (
-        <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
-      )}
-    </ScrollView>
+        {/* 音源リスト */}
+        {audioList.map((label, index) => (
+          <View key={index} style={styles.trackBox}>
+            <Text style={label === currentTrack ? styles.playingLabel : styles.label}>
+              {label}{label === currentTrack ? '（再生中）' : ''}
+            </Text>
+            <Button title="▶️ 再生" onPress={() => playSound(label)} />
+            {label === currentTrack && (
+              <Button title="⏹️ 停止" color="red" onPress={stopSound} />
+            )}
+          </View>
+        ))}
+
+        {!canUsePremium && (
+          <Text style={styles.notice}>※ 無料期間が終了しているため、一部音源はご利用いただけません。</Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
