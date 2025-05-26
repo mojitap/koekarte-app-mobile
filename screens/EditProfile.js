@@ -11,7 +11,7 @@ import {
   StatusBar,
   Alert,
   Modal,
-  TouchableOpacity
+  Pressable,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -55,17 +55,12 @@ export default function EditProfile({ navigation }) {
       credentials: 'include',
       body: JSON.stringify(form),
     })
-      .then(async (res) => {
-        const text = await res.text();
-        if (!res.ok) throw new Error(text);
-        return JSON.parse(text);
-      })
+      .then((res) => res.json())
       .then(() => {
         Alert.alert('成功', 'プロフィールを更新しました');
         navigation.goBack();
       })
-      .catch((err) => {
-        console.error("❌ プロフィール更新エラー:", err);
+      .catch(() => {
         Alert.alert('エラー', 'プロフィール更新に失敗しました');
       });
   };
@@ -99,9 +94,9 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.input}>{form.birthdate || 'タップして選択'}</Text>
-          </TouchableOpacity>
+          <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
+            <Text>{form.birthdate || 'タップして選択'}</Text>
+          </Pressable>
           {showDatePicker && (
             <DateTimePicker
               value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
@@ -121,23 +116,25 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
-          <TouchableOpacity onPress={() => setShowGenderPicker(true)}>
-            <Text style={styles.input}>{form.gender || '未選択'}</Text>
-          </TouchableOpacity>
+          <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
+            <Text>{form.gender || 'タップして選択'}</Text>
+          </Pressable>
           <Modal visible={showGenderPicker} transparent={true} animationType="slide">
-            <View style={styles.modalContainer}>
-              <Picker
-                selectedValue={form.gender}
-                onValueChange={(value) => {
-                  setForm({ ...form, gender: value });
-                  setShowGenderPicker(false);
-                }}
-              >
-                <Picker.Item label="未選択" value="" />
-                <Picker.Item label="男性" value="男性" />
-                <Picker.Item label="女性" value="女性" />
-                <Picker.Item label="その他" value="その他" />
-              </Picker>
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContainer}>
+                <Picker
+                  selectedValue={form.gender}
+                  onValueChange={(value) => {
+                    setForm({ ...form, gender: value });
+                    setShowGenderPicker(false);
+                  }}
+                >
+                  <Picker.Item label="未選択" value="" />
+                  <Picker.Item label="男性" value="男性" />
+                  <Picker.Item label="女性" value="女性" />
+                  <Picker.Item label="その他" value="その他" />
+                </Picker>
+              </View>
             </View>
           </Modal>
         </View>
@@ -154,23 +151,25 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
-          <TouchableOpacity onPress={() => setShowPrefPicker(true)}>
-            <Text style={styles.input}>{form.prefecture || '未選択'}</Text>
-          </TouchableOpacity>
+          <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
+            <Text>{form.prefecture || 'タップして選択'}</Text>
+          </Pressable>
           <Modal visible={showPrefPicker} transparent={true} animationType="slide">
-            <View style={styles.modalContainer}>
-              <Picker
-                selectedValue={form.prefecture}
-                onValueChange={(value) => {
-                  setForm({ ...form, prefecture: value });
-                  setShowPrefPicker(false);
-                }}
-              >
-                <Picker.Item label="未選択" value="" />
-                {[ '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県' ].map((pref) => (
-                  <Picker.Item key={pref} label={pref} value={pref} />
-                ))}
-              </Picker>
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContainer}>
+                <Picker
+                  selectedValue={form.prefecture}
+                  onValueChange={(value) => {
+                    setForm({ ...form, prefecture: value });
+                    setShowPrefPicker(false);
+                  }}
+                >
+                  <Picker.Item label="未選択" value="" />
+                  {[ '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県' ].map((pref) => (
+                    <Picker.Item key={pref} label={pref} value={pref} />
+                  ))}
+                </Picker>
+              </View>
             </View>
           </Modal>
         </View>
@@ -190,7 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   container: {
-    paddingHorizontal: 20,
+    padding: 20,
     paddingBottom: 40,
     backgroundColor: '#fff',
   },
@@ -215,8 +214,15 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
   modalContainer: {
     backgroundColor: '#fff',
-    marginTop: 'auto',
+    padding: 10,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
 });
