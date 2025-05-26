@@ -13,7 +13,7 @@ export default function ScoreChart() {
     fetch('http://192.168.0.42:5000/api/profile', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
-        const ok = checkCanUsePremium(data.created_at, data.is_paid);
+        const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
         setCanUse(ok);
       });
   }, []);
