@@ -1,9 +1,11 @@
-export function checkCanUsePremium(createdAt, isPaid, isFreeExtended = false) {
-  if (isPaid) return true;
-  if (isFreeExtended) return true;
+export function checkCanUsePremium(createdAt, isPaid, isFreeExtended) {
+  if (isPaid || isFreeExtended) return true;
 
-  const created = new Date(createdAt);
+  if (!createdAt) return false;
+  const createdDate = new Date(createdAt);
   const now = new Date();
-  const diffDays = (now - created) / (1000 * 60 * 60 * 24);
-  return diffDays <= 5;
+  const diffTime = now - createdDate;
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+  return diffDays < 5;
 }
