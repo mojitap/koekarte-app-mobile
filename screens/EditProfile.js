@@ -8,12 +8,15 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
-  StatusBar  // ← ここを必ず追加してください
+  StatusBar,
+  Alert,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
+    email: '',
     username: '',
     birthdate: '',
     gender: '',
@@ -21,11 +24,14 @@ export default function EditProfile({ navigation }) {
     prefecture: '',
   });
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   useEffect(() => {
     fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         setForm({
+          email: data.email || '',
           username: data.username || '',
           birthdate: data.birthdate || '',
           gender: data.gender || '',
@@ -61,6 +67,17 @@ export default function EditProfile({ navigation }) {
         <Text style={styles.heading}>✏️ プロフィール編集</Text>
 
         <View style={styles.formItem}>
+          <Text style={styles.label}>メールアドレス</Text>
+          <TextInput
+            value={form.email}
+            onChangeText={(text) => setForm({ ...form, email: text })}
+            style={styles.input}
+            placeholder="例: example@mail.com"
+            keyboardType="email-address"
+          />
+        </View>
+
+        <View style={styles.formItem}>
           <Text style={styles.label}>ニックネーム</Text>
           <TextInput
             value={form.username}
@@ -72,12 +89,24 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
-          <TextInput
-            value={form.birthdate}
-            onChangeText={(text) => setForm({ ...form, birthdate: text })}
-            style={styles.input}
-            placeholder="例: 1990-01-01"
+          <Button
+            title={form.birthdate ? form.birthdate : '生年月日を選択'}
+            onPress={() => setShowDatePicker(true)}
           />
+          {showDatePicker && (
+            <DateTimePicker
+              value={form.birthdate ? new Date(form.birthdate) : new Date()}
+              mode="date"
+              display="spinner"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) {
+                  const dateStr = selectedDate.toISOString().split('T')[0];
+                  setForm({ ...form, birthdate: dateStr });
+                }
+              }}
+            />
+          )}
         </View>
 
         <View style={styles.formItem}>
@@ -128,7 +157,9 @@ export default function EditProfile({ navigation }) {
           </View>
         </View>
 
-        <Button title="💾 保存する" onPress={handleSubmit} />
+        <View style={{ marginTop: 30 }}>
+          <Button title="💾 保存する" onPress={handleSubmit} />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -137,7 +168,7 @@ export default function EditProfile({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0,
     backgroundColor: '#fff',
   },
   container: {
@@ -165,10 +196,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
-  },
-  picker: {
-    height: 48,
-    backgroundColor: '#f9f9f9',
   },
   pickerWrapper: {
     borderWidth: 1,
