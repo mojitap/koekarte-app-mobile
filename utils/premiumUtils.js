@@ -5,7 +5,7 @@ export function checkCanUsePremium(createdAt, isPaid, isFreeExtended) {
   const createdDate = new Date(createdAt);
   const now = new Date();
   const diffTime = now - createdDate;
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));  // ← 切り捨て！
 
-  return diffDays < 5;
+  return diffDays < 5;  // 5日未満ならOK
 }
