@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ScrollView, SafeAreaView, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StatusBar } from 'react-native';
 
 export default function TermsScreen() {
   const navigation = useNavigation();
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0,
   },
   container: {
     padding: 20,
