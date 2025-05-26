@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
+import { logout } from '../utils/auth'; // ← 上部に追加
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
@@ -89,6 +90,22 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
           <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
           <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
+        </View>
+
+        <View style={{ marginTop: 40 }}>
+          <Text
+            style={{ color: 'red', textAlign: 'center', fontSize: 16 }}
+            onPress={async () => {
+              await logout();
+              Alert.alert('ログアウトしました');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Register' }]
+              });
+            }}
+          >
+            🚪 ログアウト
+          </Text>
         </View>
         
         {/* ✅ 新規登録リンク（ログインしていない場合のみ表示したいなら条件付きでもOK） */}
