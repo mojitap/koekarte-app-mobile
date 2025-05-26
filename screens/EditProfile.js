@@ -51,9 +51,11 @@ export default function EditProfile({ navigation }) {
   const handleSubmit = () => {
     fetch('http://192.168.0.27:5000/api/update-profile', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
-      body: JSON.stringify(form),
+      body: JSON.stringify(form), // ← ここで form の内容を文字列化
     })
       .then(res => res.json())
       .then(() => {
