@@ -1,16 +1,30 @@
+// ✅ ProfileScreen.js：マイページ画面（Web版情報とロゴ位置調整済）
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+  SafeAreaView,
+  Platform,
+  StatusBar
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen() {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
-      fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+      fetch('http://192.168.0.27:5000/api/profile', {
+        credentials: 'include'
+      })
         .then(res => res.json())
         .then(data => {
           setProfile(data);
@@ -28,98 +42,101 @@ export default function ProfileScreen({ navigation }) {
     }, [])
   );
 
-  if (!profile) return <Text>読み込み中...</Text>;
+  if (!profile) {
+    return <ActivityIndicator size="large" />;
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.title}>🤵 マイページ</Text>
+        </View>
 
-      <Text style={styles.title}>🤵 マイページ</Text>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>📧 メールアドレス:</Text>
+          <Text>{profile.email}</Text>
 
-      <View style={styles.infoBox}>
-        <Text style={styles.label}>📧 メールアドレス</Text>
-        <Text style={styles.text}>{profile.email}</Text>
+          <Text style={styles.label}>📅 登録日:</Text>
+          <Text>{profile.created_at?.slice(0, 10)}</Text>
 
-        <Text style={styles.label}>🗓 登録日</Text>
-        <Text style={styles.text}>{profile.created_at?.slice(0, 10)}</Text>
-      </View>
+          <Text style={styles.label}>🕛 最終記録日:</Text>
+          <Text>{profile.last_recorded_at || '記録なし'}</Text>
 
-      <View style={[styles.noticeBox, canUsePremium ? styles.okBox : styles.alertBox]}>
-        {canUsePremium ? (
-          <Text style={styles.okText}>✅ 利用可能です（無料 or 有料）</Text>
-        ) : (
-          <Text style={styles.alertText}>❗ 利用制限中（無料期間終了）</Text>
-        )}
-      </View>
+          <Text style={styles.label}>📊 基準スコア:</Text>
+          <Text>{profile.baseline || '—'} 点</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🛠 各種設定</Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('EditProfile')}>✏️ プロフィール編集</Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
-      </View>
-    </ScrollView>
+          <Text style={styles.label}>📝 今日のスコア:</Text>
+          <Text>{profile.today_score || '—'} 点</Text>
+
+          <Text style={styles.label}>📉 スコア差分:</Text>
+          <Text>{profile.score_deviation || '—'} 点</Text>
+        </View>
+
+        <View style={styles.statusBox}>
+          {canUsePremium ? (
+            <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
+          ) : (
+            <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
+          )}
+        </View>
+
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.label}>🛠 各種設定</Text>
+          <Text style={styles.link} onPress={() => navigation.navigate('EditProfile')}>✏️ プロフィール編集</Text>
+          <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
+          <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
+          <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#fff'
+  },
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
   logo: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
-    resizeMode: 'contain',
+    width: 80,
+    height: 80,
     marginBottom: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
   },
   infoBox: {
-    padding: 15,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 10,
     marginBottom: 20,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#fafafa',
   },
   label: {
-    fontWeight: 'bold',
     marginTop: 10,
+    fontWeight: 'bold',
   },
-  text: {
-    marginBottom: 5,
-  },
-  noticeBox: {
+  statusBox: {
     padding: 15,
+    backgroundColor: '#f8f8f8',
     borderRadius: 8,
-    marginBottom: 20,
-  },
-  okBox: {
-    backgroundColor: '#e0f7e9',
-  },
-  alertBox: {
-    backgroundColor: '#fff1f1',
-  },
-  okText: {
-    color: 'green',
-  },
-  alertText: {
-    color: 'red',
-  },
-  section: {
-    marginTop: 10,
-  },
-  sectionTitle: {
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
   link: {
+    marginTop: 10,
+    fontSize: 16,
     color: '#007AFF',
-    marginBottom: 10,
   },
 });
