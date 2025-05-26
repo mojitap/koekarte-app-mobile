@@ -1,13 +1,9 @@
-// utils/premiumUtils.js
-
-export const checkCanUsePremium = (createdAtStr, isPaid) => {
+export function checkCanUsePremium(createdAt, isPaid, isFreeExtended = false) {
   if (isPaid) return true;
-  if (!createdAtStr) return false;
+  if (isFreeExtended) return true;
 
-  const createdAt = new Date(createdAtStr);
-  const today = new Date();
-  const diffTime = today - createdAt;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays < 5;
-};
+  const created = new Date(createdAt);
+  const now = new Date();
+  const diffDays = (now - created) / (1000 * 60 * 60 * 24);
+  return diffDays <= 5;
+}
