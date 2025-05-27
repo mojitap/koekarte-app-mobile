@@ -47,28 +47,37 @@ export default function MusicScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      getUser().then(data => {
-        if (!data) {
-          setCanUsePremium(false);
-          setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
+      getUser().then(user => {
+        if (!user) {
+          Alert.alert("ログインが必要です", "", [
+            { text: "OK", onPress: () => navigation.navigate('Login') }
+          ]);
           return;
         }
 
-        const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-        setCanUsePremium(ok);
+        fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+          .then(res => res.json())
+          .then(data => {
+            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            setCanUsePremium(ok);
+            const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
+            setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
+          })
+          .catch(err => {
+            console.error("❌ プロフィール取得失敗:", err);
+            setCanUsePremium(false);
+            setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
+          });
 
-        const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
-        setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
+        return () => {
+          if (soundRef.current) {
+            soundRef.current.stopAsync();
+            soundRef.current.unloadAsync();
+            soundRef.current = null;
+            setCurrentTrack(null);
+          }
+        };
       });
-
-      return () => {
-        if (soundRef.current) {
-          soundRef.current.stopAsync();
-          soundRef.current.unloadAsync();
-          soundRef.current = null;
-          setCurrentTrack(null);
-        }
-      };
     }, [])
   );
 
