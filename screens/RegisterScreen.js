@@ -73,6 +73,26 @@ export default function RegisterScreen({ navigation }) {
           secureTextEntry
           onChangeText={(text) => setForm({ ...form, password: text })}
         />
+        <TextInput
+          style={styles.input}
+          placeholder="生年月日（YYYY-MM-DD）"
+          onChangeText={(text) => setForm({ ...form, birthdate: text })}
+        //>
+        <TextInput
+          style={styles.input}
+          placeholder="性別"
+          onChangeText={(text) => setForm({ ...form, gender: text })}
+        //>
+        <TextInput
+          style={styles.input}
+          placeholder="職業"
+          onChangeText={(text) => setForm({ ...form, occupation: text })}
+        //>
+        <TextInput
+          style={styles.input}
+          placeholder="都道府県"
+          onChangeText={(text) => setForm({ ...form, prefecture: text })}
+        //>
         <View style={{ marginTop: 20 }}>
           <Button title="登録する" onPress={handleSubmit} />
         </View>
