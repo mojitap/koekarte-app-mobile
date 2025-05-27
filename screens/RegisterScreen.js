@@ -18,6 +18,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { saveUser } from '../utils/auth';
+import { Modal, Pressable } from 'react-native';
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -138,18 +139,22 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
 
-        <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-          <Text>{form.prefecture || '都道府県を選択'}</Text>
-        </Pressable>
+        <View style={styles.formItem}>
+          <Text style={styles.label}>都道府県</Text>
+          <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
+            <Text>{form.prefecture || 'タップして選択'}</Text>
+          </Pressable>
+        </View>
+
         <Modal visible={showPrefPicker} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
               <Picker
                 selectedValue={form.prefecture}
-                onValueChange={(value) => setForm({ ...form, prefecture: value })}
+                onValueChange={value => setForm({ ...form, prefecture: value })}
               >
                 <Picker.Item label="未選択" value="" />
-                {prefectures.map(pref => (
+                {PREF_LIST.map((pref) => (
                   <Picker.Item key={pref} label={pref} value={pref} />
                 ))}
               </Picker>
