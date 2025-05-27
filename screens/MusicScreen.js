@@ -16,6 +16,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Audio } from 'expo-av';
+import { getUser } from '../utils/auth';
 
 const audioFiles = {
   'ポジティブ': require('../assets/audio/free/free-positive.mp3'),
