@@ -1,4 +1,4 @@
-// screens/RegisterScreen.js
+// RegisterScreen.js（最新版：プロフィール編集と同じくプルダウン対応＋余白調整）
 
 import React, { useState } from 'react';
 import {
@@ -10,12 +10,13 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
-  Platform,
-  Pressable,
   Modal,
+  Pressable,
+  Platform,
+  StatusBar
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { saveUser } from '../utils/auth';
 
 export default function RegisterScreen({ navigation }) {
@@ -26,7 +27,7 @@ export default function RegisterScreen({ navigation }) {
     birthdate: '',
     gender: '',
     occupation: '',
-    prefecture: '',
+    prefecture: ''
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -81,9 +82,8 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setForm({ ...form, password: text })}
         />
 
-        {/* 生年月日 */}
         <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-          <Text>{form.birthdate || '生年月日を選択'}</Text>
+          <Text>{form.birthdate || '生年月日（タップして選択）'}</Text>
         </Pressable>
         <Modal visible={showDatePicker} transparent animationType="slide">
           <View style={styles.modalOverlay}>
@@ -105,16 +105,15 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
-        {/* 性別 */}
         <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
-          <Text>{form.gender || '性別を選択'}</Text>
+          <Text>{form.gender || '性別（タップして選択）'}</Text>
         </Pressable>
         <Modal visible={showGenderPicker} transparent animationType="slide">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
               <Picker
                 selectedValue={form.gender}
-                onValueChange={value => setForm({ ...form, gender: value })}
+                onValueChange={(value) => setForm({ ...form, gender: value })}
               >
                 <Picker.Item label="未選択" value="" />
                 <Picker.Item label="男性" value="男性" />
@@ -132,27 +131,18 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
 
-        {/* 都道府県 */}
         <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-          <Text>{form.prefecture || '都道府県を選択'}</Text>
+          <Text>{form.prefecture || '都道府県（タップして選択）'}</Text>
         </Pressable>
         <Modal visible={showPrefPicker} transparent animationType="slide">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
               <Picker
                 selectedValue={form.prefecture}
-                onValueChange={value => setForm({ ...form, prefecture: value })}
+                onValueChange={(value) => setForm({ ...form, prefecture: value })}
               >
                 <Picker.Item label="未選択" value="" />
-                {[
-                  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
-                  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
-                  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
-                  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
-                  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
-                  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
-                  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
-                ].map(pref => (
+                {[...japanPrefectures].map(pref => (
                   <Picker.Item key={pref} label={pref} value={pref} />
                 ))}
               </Picker>
@@ -161,46 +151,58 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 30 }}>
           <Button title="登録する" onPress={handleSubmit} />
         </View>
 
-        {/* 🔽 少し余白を増やす */}
-        <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-          ▶ すでにアカウントをお持ちの方
-        </Text>
+        <View style={{ marginTop: 30 }}>
+          <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
+            ▶ すでにアカウントをお持ちの方
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+const japanPrefectures = [
+  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
+  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
+  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
+  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+];
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
     backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
   container: {
     padding: 20,
+    paddingBottom: 40,
   },
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 30,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
     padding: 10,
-    marginBottom: 15,
     borderRadius: 5,
+    marginBottom: 15,
   },
   link: {
-    marginTop: 20,
     color: '#007AFF',
     textAlign: 'center',
+    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
@@ -213,16 +215,5 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
   },
 });
