@@ -32,18 +32,27 @@ useFocusEffect(
       }
 
       fetch('http://192.168.0.27:5000/api/profile', {
-        credentials: 'include'
+        credentials: 'include',
       })
-        .then(res => res.json())
-        .then(data => {
-          setProfile(data);
-          const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-          setCanUsePremium(ok);
+        .then(async (res) => {
+          const text = await res.text();
 
-          const created = new Date(data.created_at);
-          const today = new Date();
-          const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
-          setRemainingDays(5 - diff);
+          try {
+            const data = JSON.parse(text);
+            setProfile(data);
+
+            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            setCanUsePremium(ok);
+
+            const created = new Date(data.created_at);
+            const today = new Date();
+            const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
+            setRemainingDays(5 - diff);
+          } catch (err) {
+            console.error("❌ JSON解析失敗:", err);
+            console.error("📦 レスポンス内容:", text);
+            navigation.navigate('Login'); // HTMLだった場合ログインへ
+          }
         })
         .catch(err => {
           console.error("❌ プロフィール取得失敗:", err);
