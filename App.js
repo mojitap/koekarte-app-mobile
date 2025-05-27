@@ -73,6 +73,7 @@ export default function App() {
           component={ForgotPasswordScreen}
           options={{ title: 'パスワード再設定' }}
         />
+        <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'ログイン' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
