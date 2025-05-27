@@ -87,7 +87,7 @@ export default function LegalScreen() {
         <Text style={styles.paragraph}>最終更新日：2025年5月15日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Home')} />
+          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate('Main')} />
         </View>
       </ScrollView>
     </SafeAreaView>
