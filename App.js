@@ -17,6 +17,7 @@ import LegalScreen from './screens/LegalScreen';
 import ScoreHistory from './screens/ScoreHistory';
 import RegisterScreen from './screens/RegisterScreen'; // ✅ 追加
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen'; // ← 上部に追加
+import LoginScreen from './screens/LoginScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
