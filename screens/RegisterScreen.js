@@ -2,8 +2,16 @@
 
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Button, StyleSheet, ScrollView, Alert
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  SafeAreaView  // ✅ これを追加！
 } from 'react-native';
+
 import { saveUser } from '../utils/auth';  // ✅ 追加
 
 export default function RegisterScreen({ navigation }) {
