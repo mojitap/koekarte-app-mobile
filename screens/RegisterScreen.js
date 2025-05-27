@@ -19,6 +19,10 @@ export default function RegisterScreen({ navigation }) {
     email: '',
     username: '',
     password: '',
+    birthdate: '',
+    gender: '',
+    occupation: '',
+    prefecture: ''
   });
 
   const handleSubmit = async () => {
