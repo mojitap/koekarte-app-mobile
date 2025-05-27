@@ -9,10 +9,14 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  SafeAreaView  // ✅ これを追加！
+  SafeAreaView,
+  Platform,
+  Pressable,
+  Modal,
 } from 'react-native';
-
-import { saveUser } from '../utils/auth';  // ✅ 追加
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { saveUser } from '../utils/auth';
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -22,8 +26,12 @@ export default function RegisterScreen({ navigation }) {
     birthdate: '',
     gender: '',
     occupation: '',
-    prefecture: ''
+    prefecture: '',
   });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [showPrefPicker, setShowPrefPicker] = useState(false);
 
   const handleSubmit = async () => {
     try {
@@ -39,8 +47,7 @@ export default function RegisterScreen({ navigation }) {
         return;
       }
 
-      await saveUser(data);  // ✅ ユーザー情報をローカルに保存
-
+      await saveUser(data);
       Alert.alert('登録成功', 'ようこそ！', [
         { text: 'OK', onPress: () => navigation.navigate('Main', { screen: 'Home' }) },
       ]);
@@ -73,26 +80,87 @@ export default function RegisterScreen({ navigation }) {
           secureTextEntry
           onChangeText={(text) => setForm({ ...form, password: text })}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="生年月日（YYYY-MM-DD）"
-          onChangeText={(text) => setForm({ ...form, birthdate: text })}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="性別"
-          onChangeText={(text) => setForm({ ...form, gender: text })}
-        />
+
+        {/* 生年月日 */}
+        <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
+          <Text>{form.birthdate || '生年月日を選択'}</Text>
+        </Pressable>
+        <Modal visible={showDatePicker} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <DateTimePicker
+                value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
+                mode="date"
+                display="spinner"
+                locale="ja-JP"
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    const iso = selectedDate.toISOString().split('T')[0];
+                    setForm({ ...form, birthdate: iso });
+                  }
+                }}
+              />
+              <Button title="決定" onPress={() => setShowDatePicker(false)} />
+            </View>
+          </View>
+        </Modal>
+
+        {/* 性別 */}
+        <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
+          <Text>{form.gender || '性別を選択'}</Text>
+        </Pressable>
+        <Modal visible={showGenderPicker} transparent animationType="slide">
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Picker
+                selectedValue={form.gender}
+                onValueChange={value => setForm({ ...form, gender: value })}
+              >
+                <Picker.Item label="未選択" value="" />
+                <Picker.Item label="男性" value="男性" />
+                <Picker.Item label="女性" value="女性" />
+                <Picker.Item label="その他" value="その他" />
+              </Picker>
+              <Button title="決定" onPress={() => setShowGenderPicker(false)} />
+            </View>
+          </View>
+        </Modal>
+
         <TextInput
           style={styles.input}
           placeholder="職業"
           onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="都道府県"
-          onChangeText={(text) => setForm({ ...form, prefecture: text })}
-        />
+
+        {/* 都道府県 */}
+        <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
+          <Text>{form.prefecture || '都道府県を選択'}</Text>
+        </Pressable>
+        <Modal visible={showPrefPicker} transparent animationType="slide">
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Picker
+                selectedValue={form.prefecture}
+                onValueChange={value => setForm({ ...form, prefecture: value })}
+              >
+                <Picker.Item label="未選択" value="" />
+                {[
+                  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+                  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+                  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
+                  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
+                  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+                  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
+                  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
+                ].map(pref => (
+                  <Picker.Item key={pref} label={pref} value={pref} />
+                ))}
+              </Picker>
+              <Button title="決定" onPress={() => setShowPrefPicker(false)} />
+            </View>
+          </View>
+        </Modal>
+
         <View style={{ marginTop: 20 }}>
           <Button title="登録する" onPress={handleSubmit} />
         </View>
@@ -109,6 +177,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
   container: {
     padding: 20,
@@ -131,5 +200,28 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#007AFF',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
 });
