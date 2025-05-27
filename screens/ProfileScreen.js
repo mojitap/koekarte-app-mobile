@@ -21,8 +21,14 @@ export default function ProfileScreen({ navigation }) {
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
+useFocusEffect(
+  React.useCallback(() => {
+    getUser().then(data => {
+      if (!data) {
+        navigation.navigate('Login');
+        return;
+      }
+
       fetch('http://192.168.0.27:5000/api/profile', {
         credentials: 'include'
       })
@@ -40,8 +46,9 @@ export default function ProfileScreen({ navigation }) {
         .catch(err => {
           console.error("❌ プロフィール取得失敗:", err);
         });
-    }, [])
-  );
+    });
+  }, [])
+);
 
   if (!profile) {
     return <ActivityIndicator size="large" />;
