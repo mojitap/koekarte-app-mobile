@@ -22,14 +22,26 @@ export default function ChartScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      getUser().then(data => {
-        if (!data) {
-          setCanUsePremium(false);
+      getUser().then(user => {
+        if (!user) {
+          Alert.alert("ログインが必要です", "", [
+            { text: "OK", onPress: () => navigation.navigate('Login') }
+          ]);
           return;
         }
 
-        const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-        setCanUsePremium(ok);
+        fetch('http://192.168.0.27:5000/api/profile', {
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(data => {
+            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            setCanUsePremium(ok);
+          })
+          .catch((err) => {
+            console.error('❌ プロフィール取得失敗:', err);
+            setCanUsePremium(false);
+          });
       });
     }, [])
   );
