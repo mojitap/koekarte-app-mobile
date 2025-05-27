@@ -156,7 +156,10 @@ export default function RegisterScreen({ navigation }) {
         </View>
 
         <View style={{ marginTop: 30 }}>
-          <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
+          <Text
+            style={[styles.link, { marginTop: 40 }]}  // ← ここでスペース調整
+            onPress={() => navigation.navigate('Login')}
+          >
             ▶ すでにアカウントをお持ちの方
           </Text>
         </View>
