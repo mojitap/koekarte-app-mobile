@@ -10,11 +10,13 @@ import {
   Image,
   SafeAreaView,
   Platform,
-  StatusBar
-} from 'react-native';
+  StatusBar,
+  Alert
+} from 'react-native'; // ← Alert も必要です（ログアウト後）
+
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
-import { logout } from '../utils/auth'; // ← 上部に追加
+import { getUser, logout } from '../utils/auth'; // ← ✅ 修正ポイント
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
