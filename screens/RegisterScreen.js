@@ -38,7 +38,7 @@ export default function RegisterScreen({ navigation }) {
       await saveUser(data);  // ✅ ユーザー情報をローカルに保存
 
       Alert.alert('登録成功', 'ようこそ！', [
-        { text: 'OK', onPress: () => navigation.navigate('Main') },
+        { text: 'OK', onPress: () => navigation.navigate('Main', { screen: 'Home' }) },
       ]);
     } catch (err) {
       console.error('❌ 登録通信エラー:', err);
