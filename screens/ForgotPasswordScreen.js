@@ -35,7 +35,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       }
 
       Alert.alert('送信完了', '再設定メールを送信しました', [
-        { text: 'OK', onPress: () => navigation.navigate('Home') },
+        { text: 'OK', onPress: () => navigation.navigate('Main') },
       ]);
     } catch (err) {
       console.error('❌ 通信エラー:', err);
