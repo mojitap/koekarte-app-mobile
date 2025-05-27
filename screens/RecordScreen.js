@@ -121,7 +121,7 @@ export default function RecordScreen() {
       }
       setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
-      navigation.navigate('Main');
+      navigation.navigate('Main', { screen: 'Home' });
     } catch (error) {
       console.error("❌ アップロード失敗:", error);
       Alert.alert("エラー", "アップロードに失敗しました");
