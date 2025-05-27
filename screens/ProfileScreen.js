@@ -115,8 +115,13 @@ export default function ProfileScreen({ navigation }) {
           >
             ▶ 新規登録はこちら
           </Text>
+          <Text
+            style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
+            onPress={() => navigation.navigate('Login')}
+          >
+            🔓 ログインはこちら
+          </Text>
         </View>
-
         <View style={{ marginTop: 30 }}>
           <Text
             style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
