@@ -165,6 +165,7 @@ export default function RegisterScreen({ navigation }) {
           <Button title="登録する" onPress={handleSubmit} />
         </View>
 
+        {/* 🔽 少し余白を増やす */}
         <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
           ▶ すでにアカウントをお持ちの方
         </Text>
