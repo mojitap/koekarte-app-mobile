@@ -1,4 +1,4 @@
-// RegisterScreen.js（完全修正版）
+// screens/RegisterScreen.js
 
 import React, { useState } from 'react';
 import {
@@ -10,15 +10,14 @@ import {
   ScrollView,
   Alert,
   SafeAreaView,
-  Platform,
-  StatusBar,
-  Pressable,
   Modal,
+  Pressable,
+  Platform,
+  StatusBar
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { saveUser } from '../utils/auth';
-import { Modal, Pressable } from 'react-native';
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -28,18 +27,12 @@ export default function RegisterScreen({ navigation }) {
     birthdate: '',
     gender: '',
     occupation: '',
-    prefecture: '',
+    prefecture: ''
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [showPrefPicker, setShowPrefPicker] = useState(false);
-
-  const prefectures = [
-    '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
-    '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
-    '鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
-  ];
 
   const handleSubmit = async () => {
     try {
@@ -61,14 +54,14 @@ export default function RegisterScreen({ navigation }) {
         { text: 'OK', onPress: () => navigation.navigate('Main', { screen: 'Home' }) },
       ]);
     } catch (err) {
-      console.error('❌ 通信エラー:', err);
+      console.error('❌ 登録通信エラー:', err);
       Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>📩 新規登録</Text>
 
         <TextInput
@@ -121,7 +114,7 @@ export default function RegisterScreen({ navigation }) {
             <View style={styles.modalContent}>
               <Picker
                 selectedValue={form.gender}
-                onValueChange={(value) => setForm({ ...form, gender: value })}
+                onValueChange={value => setForm({ ...form, gender: value })}
               >
                 <Picker.Item label="未選択" value="" />
                 <Picker.Item label="男性" value="男性" />
@@ -139,22 +132,21 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
 
-        <View style={styles.formItem}>
-          <Text style={styles.label}>都道府県</Text>
-          <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-            <Text>{form.prefecture || 'タップして選択'}</Text>
-          </Pressable>
-        </View>
-
+        <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
+          <Text>{form.prefecture || '都道府県を選択'}</Text>
+        </Pressable>
         <Modal visible={showPrefPicker} transparent animationType="slide">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
               <Picker
                 selectedValue={form.prefecture}
                 onValueChange={value => setForm({ ...form, prefecture: value })}
               >
                 <Picker.Item label="未選択" value="" />
-                {PREF_LIST.map((pref) => (
+                {['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+                  '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
+                  '鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
+                 ].map(pref => (
                   <Picker.Item key={pref} label={pref} value={pref} />
                 ))}
               </Picker>
@@ -167,7 +159,7 @@ export default function RegisterScreen({ navigation }) {
           <Button title="登録する" onPress={handleSubmit} />
         </View>
 
-        <Text style={[styles.link, { marginTop: 30 }]} onPress={() => navigation.navigate('Login')}>
+        <Text style={{ marginTop: 30, color: '#007AFF', textAlign: 'center' }} onPress={() => navigation.navigate('Login')}>
           ▶ すでにアカウントをお持ちの方
         </Text>
       </ScrollView>
@@ -178,8 +170,8 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,
@@ -188,20 +180,16 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    marginBottom: 30,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
     padding: 10,
-    marginBottom: 15,
     borderRadius: 5,
-  },
-  link: {
-    color: '#007AFF',
-    textAlign: 'center',
+    marginBottom: 15,
   },
   modalOverlay: {
     flex: 1,
