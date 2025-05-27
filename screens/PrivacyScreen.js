@@ -90,7 +90,10 @@ export default function PrivacyScreen() {
         <Text style={styles.date}>最終改定日：2025年5月15日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button title="🏠 マイページに戻る" onPress={() => navigation.navigate("Main")} />
+          <Button
+            title="🏠 マイページに戻る"
+            onPress={() => navigation.navigate('Main', { screen: 'Home' })}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
