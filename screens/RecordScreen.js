@@ -14,6 +14,7 @@ import {
 import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
+import { getUser } from '../utils/auth';
 
 export default function RecordScreen() {
   const navigation = useNavigation();
