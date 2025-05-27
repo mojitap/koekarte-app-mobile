@@ -46,21 +46,20 @@ function MainTabs() {
 }
 
 export default function App() {
-  const [isReady, setIsReady] = useState(false);
+  const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
-    // ✅ 起動時にログイン状態確認
     getUser().then(user => {
       console.log('📦 ローカル保存されたユーザー:', user);
-      setIsReady(true);
+      setInitialRoute(user ? 'Main' : 'Register');
     });
   }, []);
 
-  if (!isReady) return null; // or SplashScreen
+  if (!initialRoute) return null; // ローディング中
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName={initialRoute}>
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="EditProfile" component={EditProfile} options={{ title: 'プロフィール編集' }} />
         <Stack.Screen name="Terms" component={TermsScreen} options={{ title: '利用規約' }} />
@@ -68,11 +67,7 @@ export default function App() {
         <Stack.Screen name="Legal" component={LegalScreen} options={{ title: '特定商取引法に基づく表記' }} />
         <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: '新規登録' }} />
-        <Stack.Screen
-          name="ForgotPassword"
-          component={ForgotPasswordScreen}
-          options={{ title: 'パスワード再設定' }}
-        />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'パスワード再設定' }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'ログイン' }} />
       </Stack.Navigator>
     </NavigationContainer>
