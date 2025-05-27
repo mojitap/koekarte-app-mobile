@@ -44,7 +44,10 @@ export default function LoginScreen() {
 
       await saveUser(data); // ローカルに保存
       Alert.alert('ログイン成功', 'ようこそ！');
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main', params: { screen: 'Home' } }],
+      });
     } catch (error) {
       console.error('❌ ログイン通信エラー:', error);
       Alert.alert('エラー', 'サーバーに接続できませんでした');
