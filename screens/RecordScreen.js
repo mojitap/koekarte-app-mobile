@@ -29,9 +29,26 @@ export default function RecordScreen() {
   useFocusEffect(
     React.useCallback(() => {
       getUser().then(user => {
-        if (!user) return setCanUsePremium(false);
-        const ok = checkCanUsePremium(user.created_at, user.is_paid, user.is_free_extended);
-        setCanUsePremium(ok);
+        if (!user) {
+          // ✅ 未ログインならログイン画面に遷移
+          Alert.alert("ログインが必要です", "", [
+            { text: "OK", onPress: () => navigation.navigate('Login') }
+          ]);
+          return;
+        }
+
+        fetch('http://192.168.0.27:5000/api/profile', {
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(data => {
+            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            setCanUsePremium(ok);
+          })
+          .catch(err => {
+            console.error("❌ プロフィール取得失敗:", err);
+            setCanUsePremium(false);
+          });
       });
     }, [])
   );
