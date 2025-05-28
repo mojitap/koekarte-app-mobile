@@ -110,7 +110,7 @@ export default function RegisterScreen({ navigation }) {
         <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
           <Text>{form.gender || '性別を選択'}</Text>
         </Pressable>
-        <Modal visible={showGenderPicker} transparent animationType="slide">
+        <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Picker
@@ -138,7 +138,7 @@ export default function RegisterScreen({ navigation }) {
         <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
           <Text>{form.prefecture || '都道府県を選択'}</Text>
         </Pressable>
-        <Modal visible={showPrefPicker} transparent animationType="fade">
+        <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Picker
