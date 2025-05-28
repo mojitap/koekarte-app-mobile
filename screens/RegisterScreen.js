@@ -114,6 +114,7 @@ export default function RegisterScreen({ navigation }) {
                 selectedValue={form.gender}
                 onValueChange={(value) => setForm({ ...form, gender: value })}
                 style={styles.picker}
+                itemStyle={{ color: '#000' }}  // ← iOSで有効
               >
                 <Picker.Item label="未選択" value="" />
                 <Picker.Item label="男性" value="男性" />
@@ -143,6 +144,7 @@ export default function RegisterScreen({ navigation }) {
                 selectedValue={form.prefecture}
                 onValueChange={value => setForm({ ...form, prefecture: value })}
                 style={styles.picker}
+                itemStyle={{ color: '#000' }}
               >
                 <Picker.Item label="未選択" value="" />
                 {[
@@ -195,6 +197,7 @@ const styles = StyleSheet.create({
   picker: {
     width: '100%',
     height: 200,
+    color: '#000', // ← 追加（Androidにも有効）
   },
   pickerContainer: {
     backgroundColor: '#fff',
