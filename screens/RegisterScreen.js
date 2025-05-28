@@ -14,7 +14,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { saveUser } from '../utils/auth';
 
 export default function RegisterScreen({ navigation }) {
@@ -25,18 +24,24 @@ export default function RegisterScreen({ navigation }) {
     birthdate: '',
     gender: '',
     occupation: '',
-    prefecture: ''
+    prefecture: '',
   });
-  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [showPrefPicker, setShowPrefPicker] = useState(false);
+  const [showBirthPicker, setShowBirthPicker] = useState(false);
+
+  const [selectedYear, setSelectedYear] = useState('2000');
+  const [selectedMonth, setSelectedMonth] = useState('01');
+  const [selectedDay, setSelectedDay] = useState('01');
 
   const handleSubmit = async () => {
+    const birthdate = `${selectedYear}-${selectedMonth}-${selectedDay}`;
     try {
       const res = await fetch('http://192.168.0.16:5000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, birthdate }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -45,7 +50,14 @@ export default function RegisterScreen({ navigation }) {
       }
       await saveUser(data);
       Alert.alert('登録成功', 'ようこそ！', [
-        { text: 'OK', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen: 'Home' } }] }) }
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Main', params: { screen: 'Home' } }],
+            }),
+        },
       ]);
     } catch (err) {
       console.error('❌ 登録通信エラー:', err);
@@ -55,7 +67,7 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>📩 新規登録</Text>
 
         <TextInput
@@ -64,83 +76,68 @@ export default function RegisterScreen({ navigation }) {
           keyboardType="email-address"
           autoCapitalize="none"
           value={form.email}
-          onChangeText={text => setForm({ ...form, email: text })}
+          onChangeText={(text) => setForm({ ...form, email: text })}
         />
         <TextInput
           style={styles.input}
           placeholder="ニックネーム"
           value={form.username}
-          onChangeText={text => setForm({ ...form, username: text })}
+          onChangeText={(text) => setForm({ ...form, username: text })}
         />
         <TextInput
           style={styles.input}
           placeholder="パスワード"
           secureTextEntry
           value={form.password}
-          onChangeText={text => setForm({ ...form, password: text })}
+          onChangeText={(text) => setForm({ ...form, password: text })}
         />
 
-        {/* 生年月日（年・月・日） */}
-        <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-          <Text>
-            {form.birthdate
-              ? form.birthdate
-              : '生年月日を選択'}
-          </Text>
+        {/* 生年月日 */}
+        <Pressable onPress={() => setShowBirthPicker(true)} style={styles.input}>
+          <Text>{form.birthdate || '生年月日を選択'}</Text>
         </Pressable>
-
-        <Modal visible={showDatePicker} transparent animationType="fade">
+        <Modal visible={showBirthPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.pickerContainer}>
-              <Text style={{ marginBottom: 10 }}>生年月日を選択</Text>
-              {/* 年 */}
               <Picker
                 selectedValue={selectedYear}
-                onValueChange={setSelectedYear}
+                onValueChange={(v) => setSelectedYear(v)}
                 style={styles.picker}
                 itemStyle={{ color: '#000' }}
               >
-                {Array.from({ length: 100 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return <Picker.Item key={year} label={`${year}年`} value={year} />;
+                {[...Array(100)].map((_, i) => {
+                  const year = (2024 - i).toString();
+                  return <Picker.Item key={year} label={year} value={year} />;
                 })}
               </Picker>
-
-              {/* 月 */}
               <Picker
                 selectedValue={selectedMonth}
-                onValueChange={setSelectedMonth}
+                onValueChange={(v) => setSelectedMonth(v)}
                 style={styles.picker}
                 itemStyle={{ color: '#000' }}
               >
-                {Array.from({ length: 12 }, (_, i) => {
-                  const month = i + 1;
-                  return <Picker.Item key={month} label={`${month}月`} value={month} />;
+                {[...Array(12)].map((_, i) => {
+                  const month = String(i + 1).padStart(2, '0');
+                  return <Picker.Item key={month} label={month} value={month} />;
                 })}
               </Picker>
-
-              {/* 日 */}
               <Picker
                 selectedValue={selectedDay}
-                onValueChange={setSelectedDay}
+                onValueChange={(v) => setSelectedDay(v)}
                 style={styles.picker}
                 itemStyle={{ color: '#000' }}
               >
-                {Array.from({ length: 31 }, (_, i) => {
-                  const day = i + 1;
-                  return <Picker.Item key={day} label={`${day}日`} value={day} />;
+                {[...Array(31)].map((_, i) => {
+                  const day = String(i + 1).padStart(2, '0');
+                  return <Picker.Item key={day} label={day} value={day} />;
                 })}
               </Picker>
-
               <Button
                 title="決定"
                 onPress={() => {
-                  const y = selectedYear.toString().padStart(4, '0');
-                  const m = selectedMonth.toString().padStart(2, '0');
-                  const d = selectedDay.toString().padStart(2, '0');
-                  const dateString = `${y}-${m}-${d}`;
-                  setForm({ ...form, birthdate: dateString });
-                  setShowDatePicker(false);
+                  const date = `${selectedYear}-${selectedMonth}-${selectedDay}`;
+                  setForm({ ...form, birthdate: date });
+                  setShowBirthPicker(false);
                 }}
               />
             </View>
@@ -158,12 +155,12 @@ export default function RegisterScreen({ navigation }) {
                 selectedValue={form.gender}
                 onValueChange={(value) => setForm({ ...form, gender: value })}
                 style={styles.picker}
-                itemStyle={{ color: '#000' }}  // ← iOSで有効
+                itemStyle={{ color: '#000' }}
               >
-                <Picker.Item label="未選択" value="" color="#000" />
-                <Picker.Item label="男性" value="男性" color="#000" />
-                <Picker.Item label="女性" value="女性" color="#000" />
-                <Picker.Item label="その他" value="その他" color="#000" />
+                <Picker.Item label="未選択" value="" />
+                <Picker.Item label="男性" value="男性" />
+                <Picker.Item label="女性" value="女性" />
+                <Picker.Item label="その他" value="その他" />
               </Picker>
               <Button title="決定" onPress={() => setShowGenderPicker(false)} />
             </View>
@@ -174,7 +171,7 @@ export default function RegisterScreen({ navigation }) {
           style={styles.input}
           placeholder="職業"
           value={form.occupation}
-          onChangeText={text => setForm({ ...form, occupation: text })}
+          onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
 
         {/* 都道府県 */}
@@ -186,7 +183,7 @@ export default function RegisterScreen({ navigation }) {
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={form.prefecture}
-                onValueChange={value => setForm({ ...form, prefecture: value })}
+                onValueChange={(value) => setForm({ ...form, prefecture: value })}
                 style={styles.picker}
                 itemStyle={{ color: '#000' }}
               >
@@ -196,7 +193,7 @@ export default function RegisterScreen({ navigation }) {
                   '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
                   '鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
                 ].map(pref => (
-                  <Picker.Item key={pref} label={pref} value={pref} color="#000" />
+                  <Picker.Item key={pref} label={pref} value={pref} />
                 ))}
               </Picker>
               <Button title="決定" onPress={() => setShowPrefPicker(false)} />
@@ -242,8 +239,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
-    height: 200,
-    color: '#000', // ← 追加（Androidにも有効）
+    height: 100,
   },
   pickerContainer: {
     backgroundColor: '#fff',
