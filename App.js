@@ -1,75 +1,133 @@
-// App.js
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import { getUser } from './utils/auth'; // ✅ 追加
+import { NavigationContainer }                 from '@react-navigation/native';
+import { createBottomTabNavigator }            from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator }          from '@react-navigation/native-stack';
+import { Ionicons }                            from '@expo/vector-icons';
 
-import ProfileScreen from './screens/ProfileScreen';
-import RecordScreen from './screens/RecordScreen';
-import ChartScreen from './screens/ChartScreen';
-import MusicScreen from './screens/MusicScreen';
-import EditProfile from './screens/EditProfile';
-import TermsScreen from './screens/TermsScreen';
-import PrivacyScreen from './screens/PrivacyScreen';
-import LegalScreen from './screens/LegalScreen';
-import ScoreHistory from './screens/ScoreHistory';
-import RegisterScreen from './screens/RegisterScreen'; // ✅ 追加
-import ForgotPasswordScreen from './screens/ForgotPasswordScreen'; // ← 上部に追加
-import LoginScreen from './screens/LoginScreen';
+import { getUser, logout }                     from './utils/auth';
+import { checkCanUsePremium }                  from './utils/premiumUtils';
 
-const Tab = createBottomTabNavigator();
+import ProfileScreen   from './screens/ProfileScreen';
+import RecordScreen    from './screens/RecordScreen';
+import ChartScreen     from './screens/ChartScreen';
+import MusicScreen     from './screens/MusicScreen';
+import EditProfile     from './screens/EditProfile';
+import TermsScreen     from './screens/TermsScreen';
+import PrivacyScreen   from './screens/PrivacyScreen';
+import LegalScreen     from './screens/LegalScreen';
+import ScoreHistory    from './screens/ScoreHistory';
+import RegisterScreen         from './screens/RegisterScreen';
+import LoginScreen            from './screens/LoginScreen';
+import ForgotPasswordScreen   from './screens/ForgotPasswordScreen';
+
+const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+// ── 認証済みユーザー向けタブ ──
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ color, size }) => {
-          let iconName;
-          if (route.name === 'Home') iconName = 'person';
-          else if (route.name === 'Record') iconName = 'mic';
-          else if (route.name === 'Chart') iconName = 'bar-chart';
-          else if (route.name === 'Music') iconName = 'musical-notes';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          const icons = {
+            Home:   'person',
+            Record: 'mic',
+            Chart:  'bar-chart',
+            Music:  'musical-notes',
+          };
+          return <Ionicons name={icons[route.name]} size={size} color={color} />;
         },
       })}
     >
-      <Tab.Screen name="Home" component={ProfileScreen} options={{ title: 'マイページ' }} />
-      <Tab.Screen name="Record" component={RecordScreen} options={{ title: '録音' }} />
-      <Tab.Screen name="Chart" component={ChartScreen} options={{ title: 'グラフ' }} />
-      <Tab.Screen name="Music" component={MusicScreen} options={{ title: '音源' }} />
+      <Tab.Screen name="Home"   component={ProfileScreen} options={{ title: 'マイページ' }} />
+      <Tab.Screen name="Record" component={RecordScreen}  options={{ title: '録音' }} />
+      <Tab.Screen name="Chart"  component={ChartScreen}   options={{ title: 'グラフ' }} />
+      <Tab.Screen name="Music"  component={MusicScreen}   options={{ title: '音源' }} />
     </Tab.Navigator>
   );
 }
 
+// ── 認証用スタック ──
+function AuthStackScreens() {
+  return (
+    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerTitleAlign: 'center' }}>
+      <Stack.Screen name="Login"          component={LoginScreen}          options={{ title: 'ログイン' }} />
+      <Stack.Screen name="Register"       component={RegisterScreen}       options={{ title: '新規登録' }} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'パスワード再設定' }} />
+    </Stack.Navigator>
+  );
+}
+
+// ── アプリ本体スタック ──
+function AppStackScreens() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Main"       component={MainTabs}    />
+      <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, title: 'プロフィール編集' }} />
+      <Stack.Screen name="Terms"       component={TermsScreen} options={{ headerShown: true, title: '利用規約' }} />
+      <Stack.Screen name="Privacy"     component={PrivacyScreen} options={{ headerShown: true, title: 'プライバシーポリシー' }} />
+      <Stack.Screen name="Legal"       component={LegalScreen}   options={{ headerShown: true, title: '特定商取引法に基づく表記' }} />
+      <Stack.Screen name="History"     component={ScoreHistory}  options={{ headerShown: true, title: 'スコア履歴' }} />
+    </Stack.Navigator>
+  );
+}
+
+// ── ルートコンポーネント ──
 export default function App() {
-  const [initialRoute, setInitialRoute] = useState(null);
+  const [ready, setReady]             = useState(false);
+  const [showAuthStack, setShowAuth]  = useState(false);
 
   useEffect(() => {
-    getUser().then(user => {
-      console.log('📦 ローカル保存されたユーザー:', user);
-      setInitialRoute(user ? 'Main' : 'Register');
-    });
+    const initialize = async () => {
+      // 1) ローカルにユーザー情報がなければ認証画面へ
+      const localUser = await getUser();
+      if (!localUser) {
+        setShowAuth(true);
+        setReady(true);
+        return;
+      }
+
+      // 2) サーバー側で無料期間／有料ステータスを取得
+      try {
+        const res  = await fetch('http://192.168.0.16:5000/api/profile', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        const ok   = checkCanUsePremium(
+          data.created_at,
+          data.is_paid,
+          data.is_free_extended
+        );
+
+        // 3) 利用不可なら強制ログアウト＆認証画面へ
+        if (!ok) {
+          await logout();
+          setShowAuth(true);
+        } else {
+          setShowAuth(false);
+        }
+      } catch (err) {
+        // 通信エラー時も安全のためログアウト＆認証画面へ
+        await logout();
+        setShowAuth(true);
+      } finally {
+        setReady(true);
+      }
+    };
+
+    initialize();
   }, []);
 
-  if (!initialRoute) return null; // ローディング中
+  // スプラッシュ代わりにロード完了まで何も表示しない
+  if (!ready) return null;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRoute}>
-        <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="EditProfile" component={EditProfile} options={{ title: 'プロフィール編集' }} />
-        <Stack.Screen name="Terms" component={TermsScreen} options={{ title: '利用規約' }} />
-        <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: 'プライバシーポリシー' }} />
-        <Stack.Screen name="Legal" component={LegalScreen} options={{ title: '特定商取引法に基づく表記' }} />
-        <Stack.Screen name="History" component={ScoreHistory} options={{ title: 'スコア履歴' }} />
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ title: '新規登録' }} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'パスワード再設定' }} />
-        <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'ログイン' }} />
-      </Stack.Navigator>
+      {showAuthStack
+        ? <AuthStackScreens />
+        : <AppStackScreens />
+      }
     </NavigationContainer>
   );
 }
