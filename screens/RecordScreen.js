@@ -37,7 +37,7 @@ export default function RecordScreen() {
           return;
         }
 
-        fetch('http://192.168.0.27:5000/api/profile', {
+        fetch('http://192.168.0.16:5000/api/profile', {
           credentials: 'include',
         })
           .then(res => res.json())
@@ -110,7 +110,7 @@ export default function RecordScreen() {
       type: 'audio/m4a',
     });
     try {
-      const response = await fetch('http://192.168.0.27:5000/api/upload', {
+      const response = await fetch('http://192.168.0.16:5000/api/upload', {
         method: 'POST',
         body: formData,
       });
