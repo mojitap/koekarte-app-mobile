@@ -138,9 +138,10 @@ export default function RegisterScreen({ navigation }) {
         <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
           <Text>{form.prefecture || '都道府県を選択'}</Text>
         </Pressable>
+
         <Modal visible={showPrefPicker} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
               <Picker
                 selectedValue={form.prefecture}
                 onValueChange={value => setForm({ ...form, prefecture: value })}
@@ -195,16 +196,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 15,
   },
-  modalOverlay: {
+  modalBackground: {
     flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end',            // モーダルを画面下に配置
+    backgroundColor: 'rgba(0,0,0,0.4)',     // 半透明オーバーレイ
   },
-  modalContent: {
+  modalContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
 });
