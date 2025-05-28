@@ -1,4 +1,4 @@
-// ✅ ProfileScreen.js：マイページ画面（Web版情報とロゴ位置調整済）
+// ✅ ProfileScreen.js：マイページ画面（構文修正済み）
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -12,57 +12,82 @@ import {
   Platform,
   StatusBar,
   Alert
-} from 'react-native'; // ← Alert も必要です（ログアウト後）
+} from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
-import { getUser, logout } from '../utils/auth'; // ← ✅ 修正ポイント
+import { getUser, logout } from '../utils/auth';
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [remainingDays, setRemainingDays] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
 
-useFocusEffect(
-  React.useCallback(() => {
-    getUser().then(data => {
-      if (!data) {
-        navigation.navigate('Login');
-        return;
-      }
+  useFocusEffect(
+    React.useCallback(() => {
+      getUser().then(data => {
+        if (!data) {
+          navigation.navigate('Login');
+          return;
+        }
 
-      fetch('http://192.168.0.27:5000/api/profile', {
-        credentials: 'include',
-      })
-        .then(async (res) => {
-          const text = await res.text();
-
-          try {
-            const data = JSON.parse(text);
-            setProfile(data);
-
-            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-            setCanUsePremium(ok);
-
-            const created = new Date(data.created_at);
-            const today = new Date();
-            const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
-            setRemainingDays(5 - diff);
-          } catch (err) {
-            console.error("❌ JSON解析失敗:", err);
-            console.error("📦 レスポンス内容:", text);
-            navigation.navigate('Login'); // HTMLだった場合ログインへ
-          }
+        fetch('http://192.168.0.27:5000/api/profile', {
+          credentials: 'include',
         })
-        .catch(err => {
-          console.error("❌ プロフィール取得失敗:", err);
-        });
-    });
-  }, [])
-);
+          .then(async (res) => {
+            const text = await res.text();
+            try {
+              const data = JSON.parse(text);
+              setProfile(data);
+
+              const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+              setCanUsePremium(ok);
+
+              const created = new Date(data.created_at);
+              const today = new Date();
+              const diff = Math.floor((today - created) / (1000 * 60 * 60 * 24));
+              setRemainingDays(5 - diff);
+            } catch (err) {
+              console.error("❌ JSON解析失敗:", err);
+              console.error("📦 レスポンス内容:", text);
+              navigation.navigate('Login');
+            }
+          })
+          .catch(err => {
+            console.error("❌ プロフィール取得失敗:", err);
+          });
+      });
+    }, [])
+  );
 
   if (!profile) {
-    return <ActivityIndicator size="large" />;
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <ActivityIndicator size="large" />
+          <View style={{ marginTop: 40 }}>
+            <Text
+              style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
+              onPress={() => navigation.navigate('Register')}
+            >
+              ▶ 新規登録はこちら
+            </Text>
+            <Text
+              style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
+              onPress={() => navigation.navigate('Login')}
+            >
+              🔓 ログインはこちら
+            </Text>
+            <Text
+              style={{ color: '#007AFF', textAlign: 'center', fontSize: 16, marginTop: 20 }}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              🔑 パスワードを忘れた方はこちら
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -122,30 +147,6 @@ useFocusEffect(
             }}
           >
             🚪 ログアウト
-          </Text>
-        </View>
-        
-        {/* ✅ 新規登録リンク（ログインしていない場合のみ表示したいなら条件付きでもOK） */}
-        <View style={{ marginTop: 40 }}>
-          <Text
-            style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
-            onPress={() => navigation.navigate('Register')}
-          >
-            ▶ 新規登録はこちら
-          </Text>
-          <Text
-            style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
-            onPress={() => navigation.navigate('Login')}
-          >
-            🔓 ログインはこちら
-          </Text>
-        </View>
-        <View style={{ marginTop: 30 }}>
-          <Text
-            style={{ color: '#007AFF', textAlign: 'center', fontSize: 16 }}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
-            🔑 パスワードを忘れた方はこちら
           </Text>
         </View>
       </ScrollView>
