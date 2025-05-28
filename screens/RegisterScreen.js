@@ -120,7 +120,6 @@ export default function RegisterScreen({ navigation }) {
                 <Picker.Item label="女性" value="女性" />
                 <Picker.Item label="その他" value="その他" />
               </Picker>
-            </View>
               <Button title="決定" onPress={() => setShowGenderPicker(false)} />
             </View>
           </View>
