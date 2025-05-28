@@ -90,7 +90,7 @@ export default function RegisterScreen({ navigation }) {
               <DateTimePicker
                 value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
                 mode="date"
-                display="spinner"
+                display="default"
                 locale="ja-JP"
                 style={{ width: '100%' }}
                 onChange={(e, date) => {
