@@ -49,7 +49,7 @@ export default function EditProfile({ navigation }) {
   }, []);
 
   const handleSubmit = () => {
-    fetch('http://192.168.0.27:5000/api/update-profile', {
+    fetch('http://192.168.0.16:5000/api/update-profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
