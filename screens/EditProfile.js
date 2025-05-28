@@ -31,7 +31,7 @@ export default function EditProfile({ navigation }) {
   const [showPrefPicker, setShowPrefPicker] = useState(false);
 
   useEffect(() => {
-    fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
+    fetch('http://192.168.0.16:5000/api/profile', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setForm({
