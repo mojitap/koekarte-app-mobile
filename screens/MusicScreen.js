@@ -60,7 +60,7 @@ export default function MusicScreen() {
            return;
          }
 
-         const res = await fetch('http://192.168.0.27:5000/api/profile', {
+         const res = await fetch('http://192.168.0.16:5000/api/profile', {
            credentials: 'include',
          });
          const data = await res.json();
