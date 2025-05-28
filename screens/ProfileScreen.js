@@ -38,7 +38,7 @@ export default function ProfileScreen({ navigation }) {
         setLoggedIn(true);
         setHadProfile(true);
 
-        fetch('http://192.168.0.27:5000/api/profile', {
+        fetch('http://192.168.0.16:5000/api/profile', {
           credentials: 'include',
         })
           .then(async (res) => {
