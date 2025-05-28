@@ -139,8 +139,8 @@ export default function RegisterScreen({ navigation }) {
           <Text>{form.prefecture || '都道府県を選択'}</Text>
         </Pressable>
         <Modal visible={showPrefPicker} transparent animationType="fade">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
               <Picker
                 selectedValue={form.prefecture}
                 onValueChange={value => setForm({ ...form, prefecture: value })}
