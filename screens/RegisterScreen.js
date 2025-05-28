@@ -13,7 +13,7 @@ import {
   Modal,
   Pressable,
   Platform,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -49,7 +49,6 @@ export default function RegisterScreen({ navigation }) {
       }
 
       await saveUser(data);
-
       Alert.alert('登録成功', 'ようこそ！', [
         { text: 'OK', onPress: () => navigation.navigate('Main', { screen: 'Home' }) },
       ]);
@@ -83,6 +82,7 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setForm({ ...form, password: text })}
         />
 
+        {/* 生年月日 */}
         <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
           <Text>{form.birthdate || '生年月日を選択'}</Text>
         </Pressable>
@@ -106,6 +106,7 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
+        {/* 性別 */}
         <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
           <Text>{form.gender || '性別を選択'}</Text>
         </Pressable>
@@ -126,12 +127,14 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
+        {/* 職業 */}
         <TextInput
           style={styles.input}
           placeholder="職業"
           onChangeText={(text) => setForm({ ...form, occupation: text })}
         />
 
+        {/* 都道府県 */}
         <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
           <Text>{form.prefecture || '都道府県を選択'}</Text>
         </Pressable>
@@ -143,10 +146,11 @@ export default function RegisterScreen({ navigation }) {
                 onValueChange={value => setForm({ ...form, prefecture: value })}
               >
                 <Picker.Item label="未選択" value="" />
-                {['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+                {[
+                  '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
                   '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
                   '鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
-                 ].map(pref => (
+                ].map(pref => (
                   <Picker.Item key={pref} label={pref} value={pref} />
                 ))}
               </Picker>
