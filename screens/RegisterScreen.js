@@ -80,26 +80,69 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={text => setForm({ ...form, password: text })}
         />
 
-        {/* 生年月日 */}
+        {/* 生年月日（年・月・日） */}
         <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-          <Text>{form.birthdate || '生年月日を選択'}</Text>
+          <Text>
+            {form.birthdate
+              ? form.birthdate
+              : '生年月日を選択'}
+          </Text>
         </Pressable>
-        <Modal visible={showDatePicker} transparent animationType="slide">
+
+        <Modal visible={showDatePicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.pickerContainer}>
-              <DateTimePicker
-                value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
-                mode="date"
-                display="default"
-                locale="ja-JP"
-                style={{ width: '100%' }}
-                onChange={(e, date) => {
-                  if (date) {
-                    setForm({ ...form, birthdate: date.toISOString().split('T')[0] });
-                  }
+              <Text style={{ marginBottom: 10 }}>生年月日を選択</Text>
+              {/* 年 */}
+              <Picker
+                selectedValue={selectedYear}
+                onValueChange={setSelectedYear}
+                style={styles.picker}
+                itemStyle={{ color: '#000' }}
+              >
+                {Array.from({ length: 100 }, (_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return <Picker.Item key={year} label={`${year}年`} value={year} />;
+                })}
+              </Picker>
+
+              {/* 月 */}
+              <Picker
+                selectedValue={selectedMonth}
+                onValueChange={setSelectedMonth}
+                style={styles.picker}
+                itemStyle={{ color: '#000' }}
+              >
+                {Array.from({ length: 12 }, (_, i) => {
+                  const month = i + 1;
+                  return <Picker.Item key={month} label={`${month}月`} value={month} />;
+                })}
+              </Picker>
+
+              {/* 日 */}
+              <Picker
+                selectedValue={selectedDay}
+                onValueChange={setSelectedDay}
+                style={styles.picker}
+                itemStyle={{ color: '#000' }}
+              >
+                {Array.from({ length: 31 }, (_, i) => {
+                  const day = i + 1;
+                  return <Picker.Item key={day} label={`${day}日`} value={day} />;
+                })}
+              </Picker>
+
+              <Button
+                title="決定"
+                onPress={() => {
+                  const y = selectedYear.toString().padStart(4, '0');
+                  const m = selectedMonth.toString().padStart(2, '0');
+                  const d = selectedDay.toString().padStart(2, '0');
+                  const dateString = `${y}-${m}-${d}`;
+                  setForm({ ...form, birthdate: dateString });
+                  setShowDatePicker(false);
                 }}
               />
-              <Button title="決定" onPress={() => setShowDatePicker(false)} />
             </View>
           </View>
         </Modal>
