@@ -132,19 +132,6 @@ export default function MusicScreen() {
           </View>
         ))}
 
-        useFocusEffect(
-          React.useCallback(() => {
-            return () => {
-              if (soundRef.current) {
-                soundRef.current.stopAsync();
-                soundRef.current.unloadAsync();
-                soundRef.current = null;
-                setCurrentTrack(null);
-              }
-            };
-          }, [])
-        );
-
         {!canUsePremium && (
           <View style={styles.noticeBox}>
             <Text style={styles.noticeText}>
