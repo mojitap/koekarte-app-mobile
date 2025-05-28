@@ -17,6 +17,8 @@ import { checkCanUsePremium } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 import { getUser } from '../utils/auth';
 
+const navigation = useNavigation(); // ← 追加
+
 export default function ChartScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [range, setRange] = useState('all'); // all / week / month
