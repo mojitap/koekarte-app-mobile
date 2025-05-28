@@ -86,7 +86,7 @@ export default function RegisterScreen({ navigation }) {
         </Pressable>
         <Modal visible={showDatePicker} transparent animationType="slide">
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+            <View style={styles.pickerContainer}>
               <DateTimePicker
                 value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
                 mode="date"
@@ -109,10 +109,11 @@ export default function RegisterScreen({ navigation }) {
         </Pressable>
         <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+            <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={form.gender}
                 onValueChange={(value) => setForm({ ...form, gender: value })}
+                style={styles.picker}
               >
                 <Picker.Item label="未選択" value="" />
                 <Picker.Item label="男性" value="男性" />
@@ -124,7 +125,6 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
-        {/* 職業 */}
         <TextInput
           style={styles.input}
           placeholder="職業"
@@ -138,10 +138,11 @@ export default function RegisterScreen({ navigation }) {
         </Pressable>
         <Modal visible={showPrefPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+            <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={form.prefecture}
-                onValueChange={(value) => setForm({ ...form, prefecture: value })}
+                onValueChange={value => setForm({ ...form, prefecture: value })}
+                style={styles.picker}
               >
                 <Picker.Item label="未選択" value="" />
                 {[
@@ -193,7 +194,15 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
-    flex: 1,
+    height: 200,
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    margin: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitContainer: {
     marginTop: 30,
@@ -207,14 +216,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  modalContent: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    height: 300,
-    justifyContent: 'center',
   },
 });
