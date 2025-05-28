@@ -7,7 +7,7 @@ export default function ScoreChart({ range }) {
   const [chartData, setChartData] = useState({ labels: [], datasets: [{ data: [] }] });
 
   useEffect(() => {
-    fetch('http://192.168.0.27:5000/api/score-history', {
+    fetch('http://192.168.0.16:5000/api/score-history', {
       credentials: 'include'
     })
       .then(res => res.json())
