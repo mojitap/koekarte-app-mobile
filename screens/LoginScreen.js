@@ -1,79 +1,63 @@
-// screens/LoginScreen.js
-
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Button,
-  Alert,
   SafeAreaView,
-  Platform,
-  StatusBar,
-  ScrollView,
+  View, Text, TextInput,
+  Button, Alert,
+  StyleSheet, Platform, StatusBar
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { saveUser } from '../utils/auth';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState('');  // メール or ユーザー名
+  const [password,   setPassword]   = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('エラー', 'メールアドレスとパスワードを入力してください');
-      return;
+    if (!identifier || !password) {
+      return Alert.alert('エラー', 'ID（メールまたはユーザー名）とパスワードを入力してください');
     }
 
     try {
       const res = await fetch('http://192.168.0.16:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        credentials: 'include', // ← 必須
+        body: JSON.stringify({ email: identifier, password }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
-        Alert.alert('ログイン失敗', data.error || 'メールアドレスかパスワードが間違っています');
-        return;
+        return Alert.alert('ログイン失敗', data.error || 'IDまたはパスワードが間違っています');
       }
 
-      await saveUser(data); // ローカルに保存
-      Alert.alert('ログイン成功', 'ようこそ！');
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Main', params: { screen: 'Home' } }],
+        routes: [{ name: 'Main' }],
       });
-    } catch (error) {
-      console.error('❌ ログイン通信エラー:', error);
-      Alert.alert('エラー', 'サーバーに接続できませんでした');
+    } catch (err) {
+      console.error('❌ ログイン通信エラー:', err);
+      Alert.alert('通信エラー', 'サーバーに接続できませんでした');
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>🔑 ログイン</Text>
-
-        <Text style={styles.label}>メールアドレス</Text>
+      <View style={styles.container}>
+        <Text style={styles.heading}>🔑 ログイン</Text>
         <TextInput
-          value={email}
-          onChangeText={setEmail}
           style={styles.input}
-          keyboardType="email-address"
+          placeholder="メール or ユーザー名"
           autoCapitalize="none"
+          value={identifier}
+          onChangeText={setIdentifier}
         />
-
-        <Text style={styles.label}>パスワード</Text>
         <TextInput
+          style={styles.input}
+          placeholder="パスワード"
+          secureTextEntry
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
-          secureTextEntry
         />
 
         <Button title="ログイン" onPress={handleLogin} />
@@ -82,9 +66,9 @@ export default function LoginScreen() {
           ▶ 新規登録はこちら
         </Text>
         <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
-          🔑 パスワードを忘れた方はこちら
+          🔑 パスワード再設定
         </Text>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -92,32 +76,20 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  label: {
-    fontWeight: 'bold',
-    marginTop: 10,
+  heading: {
+    fontSize: 24, fontWeight: 'bold', marginBottom: 30, textAlign: 'center'
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 15,
-    borderRadius: 6,
+    borderWidth: 1, borderColor: '#ccc', padding: 10,
+    borderRadius: 5, marginBottom: 20,
   },
   link: {
-    color: '#007AFF',
-    marginTop: 20,
-    textAlign: 'center',
+    color: '#007AFF', marginTop: 15, textAlign: 'center'
   },
 });
