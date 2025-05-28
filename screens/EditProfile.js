@@ -130,7 +130,7 @@ export default function EditProfile({ navigation }) {
             <Text>{form.gender || 'タップして選択'}</Text>
           </Pressable>
         </View>
-        <Modal visible={showGenderPicker} transparent animationType="slide">
+        <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Picker
@@ -165,7 +165,7 @@ export default function EditProfile({ navigation }) {
             <Text>{form.prefecture || 'タップして選択'}</Text>
           </Pressable>
         </View>
-        <Modal visible={showPrefPicker} transparent animationType="slide">
+        <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Picker
@@ -243,13 +243,14 @@ const styles = StyleSheet.create({
   },
   modalBackground: {
     flex: 1,
-    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center', // ← 中央に表示されるようにする
+    alignItems: 'center',
   },
   modalContainer: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
   },
 });
