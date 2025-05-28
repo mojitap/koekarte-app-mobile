@@ -46,40 +46,52 @@ export default function MusicScreen() {
   const soundRef = useRef(null);
 
   useFocusEffect(
-    React.useCallback(() => {
-      getUser().then(user => {
-        if (!user) {
-          Alert.alert("ログインが必要です", "", [
-            { text: "OK", onPress: () => navigation.navigate('Login') }
-          ]);
-          return;
-        }
+   React.useCallback(() => {
+     let isActive = true;
 
-        fetch('http://192.168.0.27:5000/api/profile', { credentials: 'include' })
-          .then(res => res.json())
-          .then(data => {
-            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-            setCanUsePremium(ok);
-            const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
-            setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
-          })
-          .catch(err => {
-            console.error("❌ プロフィール取得失敗:", err);
-            setCanUsePremium(false);
-            setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
-          });
+     // データ取得などは副作用で
+     (async () => {
+       try {
+         const user = await getUser();
+         if (!user) {
+           Alert.alert("ログインが必要です", "", [
+             { text: "OK", onPress: () => navigation.navigate('Login') }
+           ]);
+           return;
+         }
 
-        return () => {
-          if (soundRef.current) {
-            soundRef.current.stopAsync();
-            soundRef.current.unloadAsync();
-            soundRef.current = null;
-            setCurrentTrack(null);
-          }
-        };
-      });
-    }, [])
-  );
+         const res = await fetch('http://192.168.0.27:5000/api/profile', {
+           credentials: 'include',
+         });
+         const data = await res.json();
+
+         if (isActive) {
+           const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+           setCanUsePremium(ok);
+           const freeTracks = ['ポジティブ', 'マインドフルネス', 'リラクゼーション'];
+           setAudioList(ok ? Object.keys(audioFiles) : freeTracks);
+         }
+       } catch (err) {
+         console.error("❌ プロフィール取得失敗:", err);
+         if (isActive) {
+           setCanUsePremium(false);
+           setAudioList(['ポジティブ', 'マインドフルネス', 'リラクゼーション']);
+         }
+       }
+     })();
+
+     // 🎯 画面から離れた時に音声を止める
+     return () => {
+       isActive = false;
+       if (soundRef.current) {
+         soundRef.current.stopAsync();
+         soundRef.current.unloadAsync();
+         soundRef.current = null;
+         setCurrentTrack(null);
+       }
+     };
+   }, [])
+ );
 
   const playSound = async (label) => {
     try {
