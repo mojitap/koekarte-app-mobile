@@ -15,6 +15,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
+import { getUser } from '../utils/auth';
 
 export default function ChartScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
@@ -35,7 +36,8 @@ export default function ChartScreen() {
         })
           .then(res => res.json())
           .then(data => {
-            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            const { created_at, is_paid, is_free_extended } = data;
+            const ok = checkCanUsePremium(created_at, is_paid, is_free_extended);
             setCanUsePremium(ok);
           })
           .catch((err) => {
