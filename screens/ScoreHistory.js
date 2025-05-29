@@ -15,7 +15,7 @@ export default function ScoreHistory() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://192.168.0.16:5000/api/score-history', {
+    fetch('http://192.168.0.28:5000/api/score-history', {
       credentials: 'include',
     })
       .then(res => res.json())
