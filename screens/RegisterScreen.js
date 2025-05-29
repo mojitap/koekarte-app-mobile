@@ -34,6 +34,7 @@ export default function RegisterScreen({ navigation }) {
   const [selectedDay, setSelectedDay] = useState('');
 
   const handleSubmit = async () => {
+    console.log('🟢 Register payload:', form);
     try {
       const res = await fetch('http://192.168.0.16:5000/api/register', {
         method: 'POST',
@@ -41,26 +42,39 @@ export default function RegisterScreen({ navigation }) {
         credentials: 'include',
         body: JSON.stringify(form),
       });
+      console.log('🟢 Response status:', res.status);
+      // ヘッダ一覧を見たいとき
+      res.headers.forEach((value, name) =>
+        console.log(`🟢 Header: ${name} = ${value}`)
+      );
       const data = await res.json();
+      console.log('🟢 Response body:', data);
+
       if (!res.ok) {
         Alert.alert('登録エラー', data.error || '登録に失敗しました');
         return;
       }
+
+      // ── 登録成功 ──
       await saveUser(data);
       Alert.alert('登録成功', 'ようこそ！', [
         {
           text: 'OK',
-          onPress: () => navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }]
-          })
+          onPress: () => {
+            // AuthStack の親(AppStackScreens)を取得してリセット
+            const rootNav = navigation.getParent();
+            rootNav.reset({
+              index: 0,
+              routes: [{ name: 'Main' }],  // AppStackScreens の <Stack.Screen name="Main" />
+            });
+          }
         }
       ]);
-    } catch (err) {
-      console.error('❌ 登録通信エラー:', err);
-      Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
-    }
-  };
+     } catch (err) {
+       console.error('❌ 登録通信エラー:', err);
+       Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
+     }
+   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
