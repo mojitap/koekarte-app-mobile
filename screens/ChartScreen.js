@@ -33,7 +33,7 @@ export default function ChartScreen() {
           return;
         }
 
-        fetch('http://192.168.0.28:5000/api/profile', {
+        fetch('http://192.168.0.12:5000/api/profile', {
           credentials: 'include',
         })
           .then(res => res.json())
