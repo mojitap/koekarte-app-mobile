@@ -41,7 +41,7 @@ export default function ProfileScreen({ navigation }) {
         (async () => {
           try {
             console.log('🟢 Fetching /api/profile …');
-            const res = await fetch('http://192.168.0.16:5000/api/profile', {
+            const res = await fetch('http://192.168.0.28:5000/api/profile', {
               method: 'GET',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
