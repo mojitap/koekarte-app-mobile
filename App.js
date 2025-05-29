@@ -63,7 +63,7 @@ function AuthStackScreens() {
 function AppStackScreens() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Main"       component={MainTabs}    />
+      <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, title: 'プロフィール編集' }} />
       <Stack.Screen name="Terms"       component={TermsScreen} options={{ headerShown: true, title: '利用規約' }} />
       <Stack.Screen name="Privacy"     component={PrivacyScreen} options={{ headerShown: true, title: 'プライバシーポリシー' }} />
