@@ -19,7 +19,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch('http://192.168.0.28:5000/api/login', {
+      const res = await fetch('http://192.168.0.12:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -32,16 +32,9 @@ export default function LoginScreen() {
         return Alert.alert('ログイン失敗', data.error || 'IDまたはパスワードが間違っています');
       }
 
-      if (rootNav) {
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-      } else {
-        console.error("❌ 親ナビゲーションが見つかりませんでした");
-        Alert.alert('ログイン成功', 'ただし画面遷移に失敗しました');
-      }
-
+      // ── 認証成功 ──
+      Alert.alert('ログイン成功', 'ようこそ！');
+      
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
       Alert.alert('通信エラー', 'サーバーに接続できませんでした');
