@@ -48,7 +48,13 @@ export default function RegisterScreen({ navigation }) {
       }
       await saveUser(data);
       Alert.alert('登録成功', 'ようこそ！', [
-        { text: 'OK', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen: 'Home' } }] }) }
+        {
+          text: 'OK',
+          onPress: () => navigation.reset({
+            index: 0,
+            routes: [{ name: 'Main' }]
+          })
+        }
       ]);
     } catch (err) {
       console.error('❌ 登録通信エラー:', err);
