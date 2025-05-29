@@ -10,7 +10,7 @@ export default function HomeScreen({ navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetch('http://192.168.0.16:5000/api/profile', {
+      fetch('http://192.168.0.28:5000/api/profile', {
         credentials: 'include'
       })
         .then(res => res.json())
