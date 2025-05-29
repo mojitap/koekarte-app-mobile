@@ -38,28 +38,34 @@ export default function ProfileScreen({ navigation }) {
         setLoggedIn(true);
         setHadProfile(true);
 
-        fetch('http://192.168.0.16:5000/api/profile', {
-          credentials: 'include',
-        })
-          .then(async (res) => {
-            const text = await res.text();
-            try {
-              const data = JSON.parse(text);
-              setProfile(data);
+        (async () => {
+          try {
+            console.log('🟢 Fetching /api/profile …');
+            const res = await fetch('http://192.168.0.16:5000/api/profile', {
+              method: 'GET',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            console.log('🟢 profile status:', res.status);
+            const data = await res.json();
+            console.log('🟢 profile data:', data);
 
-              const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-              setCanUsePremium(ok);
-            } catch (err) {
-              console.error("❌ JSON解析失敗:", err);
+            if (!res.ok) {
+              Alert.alert('認証エラー', data.error || 'プロフィール取得に失敗しました');
               setLoggedIn(false);
               setProfile({});
+              return;
             }
-          })
-          .catch(err => {
-            console.error("❌ プロフィール取得失敗:", err);
+            setProfile(data);
+            const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+            setCanUsePremium(ok);
+          } catch (err) {
+            console.error('❌ profile fetch error:', err);
+            Alert.alert('通信エラー', 'サーバーに接続できませんでした');
             setLoggedIn(false);
             setProfile({});
-          });
+          }
+        })();
       });
     }, [])
   );
