@@ -57,7 +57,13 @@ export default function RegisterScreen({ navigation }) {
 
       // ── 登録成功 ──
       await saveUser(data);
-      Alert.alert('登録成功', 'ようこそ！', 
+      Alert.alert('登録成功', 'ようこそ！', [
+        {
+          text: 'OK',
+          onPress: () => {}
+        }
+      ]);
+      
       } catch (err) {
        console.error('❌ 登録通信エラー:', err);
        Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
