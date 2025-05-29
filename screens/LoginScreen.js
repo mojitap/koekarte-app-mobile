@@ -22,19 +22,26 @@ export default function LoginScreen() {
       const res = await fetch('http://192.168.0.16:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ← 必須
+        credentials: 'include',
         body: JSON.stringify({ email: identifier, password }),
       });
+
       const data = await res.json();
 
       if (!res.ok) {
         return Alert.alert('ログイン失敗', data.error || 'IDまたはパスワードが間違っています');
       }
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+      if (rootNav) {
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      } else {
+        console.error("❌ 親ナビゲーションが見つかりませんでした");
+        Alert.alert('ログイン成功', 'ただし画面遷移に失敗しました');
+      }
+
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
       Alert.alert('通信エラー', 'サーバーに接続できませんでした');
