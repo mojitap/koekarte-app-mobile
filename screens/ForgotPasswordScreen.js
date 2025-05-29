@@ -22,7 +22,7 @@ export default function ForgotPasswordScreen({ navigation }) {
     }
 
     try {
-      const res = await fetch('http://192.168.0.16:5000/api/forgot-password', {
+      const res = await fetch('http://192.168.0.28:5000/api/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
