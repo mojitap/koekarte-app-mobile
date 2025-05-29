@@ -57,23 +57,11 @@ export default function RegisterScreen({ navigation }) {
 
       // ── 登録成功 ──
       await saveUser(data);
-      Alert.alert('登録成功', 'ようこそ！', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // AuthStack の親(AppStackScreens)を取得してリセット
-            const rootNav = navigation.getParent();
-            rootNav.reset({
-              index: 0,
-              routes: [{ name: 'Main' }],  // AppStackScreens の <Stack.Screen name="Main" />
-            });
-          }
-        }
-      ]);
-     } catch (err) {
+      Alert.alert('登録成功', 'ようこそ！', 
+      } catch (err) {
        console.error('❌ 登録通信エラー:', err);
        Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
-     }
+      }
    };
 
   return (
