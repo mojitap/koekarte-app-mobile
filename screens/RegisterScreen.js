@@ -36,7 +36,7 @@ export default function RegisterScreen({ navigation }) {
   const handleSubmit = async () => {
     console.log('🟢 Register payload:', form);
     try {
-      const res = await fetch('http://192.168.0.16:5000/api/register', {
+      const res = await fetch('http://192.168.0.28:5000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
