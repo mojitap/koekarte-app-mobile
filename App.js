@@ -90,7 +90,7 @@ export default function App() {
 
       // 2) サーバー側で無料期間／有料ステータスを取得
       try {
-        const res  = await fetch('http://192.168.0.28:5000/api/profile', {
+        const res  = await fetch('http://192.168.0.12:5000/api/profile', {
           credentials: 'include',
         });
         const data = await res.json();
