@@ -17,6 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { Audio } from 'expo-av';
 import { getUser } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 const audioFiles = {
   'ポジティブ': require('../assets/audio/free/free-positive.mp3'),
@@ -60,7 +61,7 @@ export default function MusicScreen() {
            return;
          }
 
-         const res = await fetch('http://192.168.0.12:5000/api/profile', {
+         const res = await fetch(`${API_BASE_URL}/api/profile`, {
            credentials: 'include',
          });
          const data = await res.json();
