@@ -11,6 +11,7 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
