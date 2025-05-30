@@ -17,6 +17,7 @@ import { checkCanUsePremium } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 import { getUser } from '../utils/auth';
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function ChartScreen() {
   const navigation = useNavigation(); // ← 追加
@@ -33,7 +34,7 @@ export default function ChartScreen() {
           return;
         }
 
-        fetch('http://192.168.0.12:5000/api/profile', {
+        fetch(`${API_BASE_URL}/api/profile`, {
           credentials: 'include',
         })
           .then(res => res.json())
