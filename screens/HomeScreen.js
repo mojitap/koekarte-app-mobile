@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function HomeScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
@@ -10,9 +11,9 @@ export default function HomeScreen({ navigation }) {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetch('http://192.168.0.12:5000/api/profile', {
+      fetch(`${API_BASE_URL}/api/profile`, {
         credentials: 'include'
-      })
+      });
         .then(res => res.json())
         .then(data => {
           setProfile(data);
@@ -25,7 +26,7 @@ export default function HomeScreen({ navigation }) {
           setRemainingDays(5 - diff);
         })
         .catch(err => {
-          console.error("\u274c \u30d7\u30ed\u30d5\u30a3\u30fc\u30eb\u53d6\u5f97\u5931\u6557:", err);
+          console.error("❌ プロフィール取得失敗:", err);
         });
     }, [])
   );
