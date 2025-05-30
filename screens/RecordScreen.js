@@ -15,6 +15,7 @@ import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function RecordScreen() {
   const navigation = useNavigation();
@@ -37,7 +38,7 @@ export default function RecordScreen() {
           return;
         }
 
-        fetch('http://192.168.0.12:5000/api/profile', {
+        fetch(`${API_BASE_URL}/api/profile`, {
           credentials: 'include',
         })
           .then(res => res.json())
@@ -110,7 +111,7 @@ export default function RecordScreen() {
       type: 'audio/m4a',
     });
     try {
-      const response = await fetch('http://192.168.0.12:5000/api/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
         body: formData,
       });
