@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { saveUser } from '../utils/auth';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -33,7 +34,20 @@ export default function LoginScreen() {
       }
 
       // ── 認証成功 ──
-      Alert.alert('ログイン成功', 'ようこそ！');
+      await saveUser(data); // ← ログイン成功時にローカル保存（追加）
+
+      Alert.alert('ログイン成功', 'ようこそ！', [
+        {
+          text: 'OK',
+          onPress: () => {
+            // ✅ navigation を使って画面を強制リロード（App.js が再評価される）
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Main' }],
+            });
+          }
+        }
+      ]);
       
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
