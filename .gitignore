@@ -35,3 +35,15 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Android / iOS build
+android/
+ios/
+*.apk
+*.ipa
+
+# Expo cache
+.expo-shared/
+
+# Logs
+*.log
