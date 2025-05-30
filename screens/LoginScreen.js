@@ -38,7 +38,10 @@ export default function LoginScreen() {
       await saveUser(data);
 
       // ✅ 正しい画面遷移：Mainタブの中の Home（マイページ）に飛ばす
-      navigation.navigate('Main', { screen: 'Home' });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
 
       Alert.alert('ログイン成功', 'ようこそ！');
       
