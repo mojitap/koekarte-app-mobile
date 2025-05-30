@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
@@ -31,7 +32,7 @@ export default function EditProfile({ navigation }) {
   const [showPrefPicker, setShowPrefPicker] = useState(false);
 
   useEffect(() => {
-    fetch('http://192.168.0.12:5000/api/profile', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setForm({
@@ -49,7 +50,7 @@ export default function EditProfile({ navigation }) {
   }, []);
 
   const handleSubmit = () => {
-    fetch('http://192.168.0.12:5000/api/update-profile', {
+    fetch(`${API_BASE_URL}/api/update-profile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
