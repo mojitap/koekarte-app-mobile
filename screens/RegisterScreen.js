@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { saveUser } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -36,7 +37,7 @@ export default function RegisterScreen({ navigation }) {
   const handleSubmit = async () => {
     console.log('🟢 Register payload:', form);
     try {
-      const res = await fetch('http://192.168.0.12:5000/api/register', {
+      const res = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
