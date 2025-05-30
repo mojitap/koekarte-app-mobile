@@ -34,20 +34,9 @@ export default function LoginScreen() {
       }
 
       // ── 認証成功 ──
-      await saveUser(data); // ← ログイン成功時にローカル保存（追加）
-
+      await saveUser(data);
+      navigation.navigate('Profile');  // ← ここで画面を切り替える
       Alert.alert('ログイン成功', 'ようこそ！', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // ✅ navigation を使って画面を強制リロード（App.js が再評価される）
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Main' }],
-            });
-          }
-        }
-      ]);
       
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
