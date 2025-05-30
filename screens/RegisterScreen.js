@@ -62,7 +62,10 @@ export default function RegisterScreen({ navigation }) {
         {
           text: 'OK',
           onPress: () => {
-            navigation.navigate('Main', { screen: 'Home' });
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Main' }],
+            });
           }
         }
       ]);
