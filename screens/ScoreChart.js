@@ -2,12 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function ScoreChart({ range }) {
   const [chartData, setChartData] = useState({ labels: [], datasets: [{ data: [] }] });
 
   useEffect(() => {
-    fetch('http://192.168.0.12:5000/api/score-history', {
+    fetch(`${API_BASE_URL}/api/score-history`, {
       credentials: 'include'
     })
       .then(res => res.json())
@@ -15,9 +16,7 @@ export default function ScoreChart({ range }) {
         const scores = data.scores || [];
         if (!scores.length) return;
 
-        // Sort by date
         const sorted = scores.sort((a, b) => new Date(a.date) - new Date(b.date));
-
         let filtered = sorted;
         const now = new Date();
 
@@ -34,7 +33,6 @@ export default function ScoreChart({ range }) {
         const labels = filtered.map(item => item.date.slice(5));
         const dataPoints = filtered.map(item => item.score);
 
-        // ベースライン（最初の5回の平均）
         const firstFive = sorted.slice(0, 5);
         const baseline = Math.round(firstFive.reduce((sum, item) => sum + item.score, 0) / Math.max(firstFive.length, 1));
 
