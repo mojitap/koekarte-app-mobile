@@ -8,6 +8,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { saveUser } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -20,7 +21,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const res = await fetch('http://192.168.0.12:5000/api/login', {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
