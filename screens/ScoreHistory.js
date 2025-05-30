@@ -9,13 +9,14 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function ScoreHistory() {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://192.168.0.12:5000/api/score-history', {
+    fetch(`${API_BASE_URL}/api/score-history`, {
       credentials: 'include',
     })
       .then(res => res.json())
