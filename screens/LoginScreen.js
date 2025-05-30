@@ -35,8 +35,11 @@ export default function LoginScreen() {
 
       // ── 認証成功 ──
       await saveUser(data);
-      navigation.navigate('Profile');  // ← ここで画面を切り替える
-      Alert.alert('ログイン成功', 'ようこそ！', [
+
+      // ✅ 正しい画面遷移：Mainタブの中の Home（マイページ）に飛ばす
+      navigation.navigate('Main', { screen: 'Home' });
+
+      Alert.alert('ログイン成功', 'ようこそ！');
       
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
