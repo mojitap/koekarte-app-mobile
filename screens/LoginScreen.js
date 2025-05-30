@@ -7,13 +7,14 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { saveUser } from '../utils/auth';
-import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
+import { saveUser, logout } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';
+import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const [identifier, setIdentifier] = useState('');  // メール or ユーザー名
-  const [password,   setPassword]   = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -34,17 +35,34 @@ export default function LoginScreen() {
         return Alert.alert('ログイン失敗', data.error || 'IDまたはパスワードが間違っています');
       }
 
-      // ── 認証成功 ──
+      // ユーザー情報を保存
       await saveUser(data);
 
-      // ✅ 正しい画面遷移：Mainタブの中の Home（マイページ）に飛ばす
+      // 🔍 ログイン直後にプロフィールを取得してプレミアム可否を確認
+      const profileRes = await fetch(`${API_BASE_URL}/api/profile`, {
+        credentials: 'include',
+      });
+      const profileData = await profileRes.json();
+
+      const ok = checkCanUsePremium(
+        profileData.created_at,
+        profileData.is_paid,
+        profileData.is_free_extended
+      );
+
+      if (!ok) {
+        await logout();
+        return Alert.alert('利用不可', '無料期間が終了しています');
+      }
+
+      // ✅ 正常な場合はメイン画面にリセット遷移
       navigation.reset({
         index: 0,
         routes: [{ name: 'Main' }],
       });
 
       Alert.alert('ログイン成功', 'ようこそ！');
-      
+
     } catch (err) {
       console.error('❌ ログイン通信エラー:', err);
       Alert.alert('通信エラー', 'サーバーに接続できませんでした');
