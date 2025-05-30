@@ -6,6 +6,7 @@ import { Ionicons }                            from '@expo/vector-icons';
 
 import { getUser, logout }                     from './utils/auth';
 import { checkCanUsePremium }                  from './utils/premiumUtils';
+import { API_BASE_URL } from './utils/config';
 
 import ProfileScreen   from './screens/ProfileScreen';
 import RecordScreen    from './screens/RecordScreen';
@@ -90,7 +91,7 @@ export default function App() {
 
       // 2) サーバー側で無料期間／有料ステータスを取得
       try {
-        const res  = await fetch('http://192.168.0.12:5000/api/profile', {
+        const res = await fetch(`${API_BASE_URL}/api/profile`, {
           credentials: 'include',
         });
         const data = await res.json();
