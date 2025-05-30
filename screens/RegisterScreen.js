@@ -14,8 +14,9 @@ import {
   StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { saveUser } from '../utils/auth';
-import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
+import { saveUser, logout } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';
+import { checkCanUsePremium } from '../utils/premiumUtils';
 
 export default function RegisterScreen({ navigation }) {
   const [form, setForm] = useState({
@@ -35,7 +36,6 @@ export default function RegisterScreen({ navigation }) {
   const [selectedDay, setSelectedDay] = useState('');
 
   const handleSubmit = async () => {
-    console.log('🟢 Register payload:', form);
     try {
       const res = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
@@ -43,21 +43,35 @@ export default function RegisterScreen({ navigation }) {
         credentials: 'include',
         body: JSON.stringify(form),
       });
-      console.log('🟢 Response status:', res.status);
-      // ヘッダ一覧を見たいとき
-      res.headers.forEach((value, name) =>
-        console.log(`🟢 Header: ${name} = ${value}`)
-      );
+
       const data = await res.json();
-      console.log('🟢 Response body:', data);
 
       if (!res.ok) {
         Alert.alert('登録エラー', data.error || '登録に失敗しました');
         return;
       }
 
-      // ── 登録成功 ──
+      // 登録成功 → 保存
       await saveUser(data);
+
+      // 🔍 プロフィール取得 → プレミアム利用可否チェック
+      const profileRes = await fetch(`${API_BASE_URL}/api/profile`, {
+        credentials: 'include',
+      });
+      const profileData = await profileRes.json();
+
+      const ok = checkCanUsePremium(
+        profileData.created_at,
+        profileData.is_paid,
+        profileData.is_free_extended
+      );
+
+      if (!ok) {
+        await logout();
+        return Alert.alert('利用不可', '無料期間が終了しています');
+      }
+
+      // ✅ 利用可能 → メイン画面へ遷移
       Alert.alert('登録成功', 'ようこそ！', [
         {
           text: 'OK',
@@ -70,11 +84,11 @@ export default function RegisterScreen({ navigation }) {
         }
       ]);
       
-      } catch (err) {
-       console.error('❌ 登録通信エラー:', err);
-       Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
-      }
-   };
+    } catch (err) {
+      console.error('❌ 登録通信エラー:', err);
+      Alert.alert('通信エラー', 'ネットワーク接続を確認してください');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -88,7 +102,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput style={styles.input} placeholder="パスワード" secureTextEntry
           value={form.password} onChangeText={text => setForm({ ...form, password: text })} />
 
-        {/* 生年月日 */}
+        {/* 生年月日 Picker */}
         <Pressable onPress={() => setShowBirthPicker(true)} style={styles.input}>
           <Text>{form.birthdate || '生年月日を選択'}</Text>
         </Pressable>
@@ -96,19 +110,19 @@ export default function RegisterScreen({ navigation }) {
           <View style={styles.modalOverlay}>
             <View style={styles.pickerContainer}>
               <View style={styles.pickerRow}>
-                <Picker selectedValue={selectedYear} onValueChange={setSelectedYear} style={styles.pickerColumn} itemStyle={{ fontSize: 16, color: '#000' }}>
+                <Picker selectedValue={selectedYear} onValueChange={setSelectedYear} style={styles.pickerColumn}>
                   {[...Array(100)].map((_, i) => {
                     const year = (2024 - i).toString();
                     return <Picker.Item key={year} label={year} value={year} />;
                   })}
                 </Picker>
-                <Picker selectedValue={selectedMonth} onValueChange={setSelectedMonth} style={styles.pickerColumn} itemStyle={{ fontSize: 16, color: '#000' }}>
+                <Picker selectedValue={selectedMonth} onValueChange={setSelectedMonth} style={styles.pickerColumn}>
                   {[...Array(12)].map((_, i) => {
                     const month = String(i + 1).padStart(2, '0');
                     return <Picker.Item key={month} label={month} value={month} />;
                   })}
                 </Picker>
-                <Picker selectedValue={selectedDay} onValueChange={setSelectedDay} style={styles.pickerColumn} itemStyle={{ fontSize: 16, color: '#000' }}>
+                <Picker selectedValue={selectedDay} onValueChange={setSelectedDay} style={styles.pickerColumn}>
                   {[...Array(31)].map((_, i) => {
                     const day = String(i + 1).padStart(2, '0');
                     return <Picker.Item key={day} label={day} value={day} />;
@@ -131,7 +145,7 @@ export default function RegisterScreen({ navigation }) {
         <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={form.gender} onValueChange={(v) => setForm({ ...form, gender: v })} style={styles.picker} itemStyle={{ color: '#000' }}>
+              <Picker selectedValue={form.gender} onValueChange={(v) => setForm({ ...form, gender: v })} style={styles.picker}>
                 <Picker.Item label="未選択" value="" />
                 <Picker.Item label="男性" value="男性" />
                 <Picker.Item label="女性" value="女性" />
@@ -142,6 +156,7 @@ export default function RegisterScreen({ navigation }) {
           </View>
         </Modal>
 
+        {/* 職業 */}
         <TextInput style={styles.input} placeholder="職業"
           value={form.occupation} onChangeText={text => setForm({ ...form, occupation: text })} />
 
@@ -152,7 +167,7 @@ export default function RegisterScreen({ navigation }) {
         <Modal visible={showPrefPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={form.prefecture} onValueChange={v => setForm({ ...form, prefecture: v })} style={styles.picker} itemStyle={{ color: '#000' }}>
+              <Picker selectedValue={form.prefecture} onValueChange={v => setForm({ ...form, prefecture: v })} style={styles.picker}>
                 <Picker.Item label="未選択" value="" />
                 {["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
                 "新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県",
