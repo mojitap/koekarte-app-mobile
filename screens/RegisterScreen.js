@@ -60,7 +60,9 @@ export default function RegisterScreen({ navigation }) {
       Alert.alert('登録成功', 'ようこそ！', [
         {
           text: 'OK',
-          onPress: () => {}
+          onPress: () => {
+            navigation.navigate('Main', { screen: 'Home' });
+          }
         }
       ]);
       
