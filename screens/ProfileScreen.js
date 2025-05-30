@@ -15,6 +15,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 import { getUser, logout } from '../utils/auth';
+import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
@@ -41,7 +42,7 @@ export default function ProfileScreen({ navigation }) {
         (async () => {
           try {
             console.log('🟢 Fetching /api/profile …');
-            const res = await fetch('http://192.168.0.12:5000/api/profile', {
+            const res = await fetch(`${API_BASE_URL}/api/profile`, {
               method: 'GET',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
