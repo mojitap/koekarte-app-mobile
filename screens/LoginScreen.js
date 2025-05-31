@@ -11,10 +11,14 @@ import { saveUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium } from '../utils/premiumUtils';
 
+import { AuthContext } from '../context/AuthContext'; // 追加
+import { useContext } from 'react'; // 追加
+
 export default function LoginScreen() {
   const navigation = useNavigation();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const { setShowAuthStack } = useContext(AuthContext); 
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -55,12 +59,7 @@ export default function LoginScreen() {
         return Alert.alert('利用不可', '無料期間が終了しています');
       }
 
-      // ✅ 正常な場合はメイン画面にリセット遷移
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-
+      setShowAuthStack(false);
       Alert.alert('ログイン成功', 'ようこそ！');
 
     } catch (err) {
