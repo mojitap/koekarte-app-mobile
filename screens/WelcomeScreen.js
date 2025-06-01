@@ -1,6 +1,12 @@
-// WelcomeScreen.js
 import React, { useState } from 'react';
-import { View, Text, Button, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function WelcomeScreen() {
@@ -10,10 +16,11 @@ export default function WelcomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>音声でストレスチェック｜コエカルテ</Text>
+
       <Text style={styles.description}>
         「コエカルテ」は、声の元気さ・活力をもとにストレス傾向をスコア化する
-        セルフチェックツールです。スマホやPCから簡単に録音するだけで、心の変化を
-        毎日グラフで見える化できます。
+        セルフチェックツールです。スマホやPCから簡単に録音するだけで、
+        心の変化を 毎日グラフで見える化できます。
       </Text>
 
       <View style={styles.bullets}>
@@ -39,15 +46,20 @@ export default function WelcomeScreen() {
           <Text>・就活・仕事・育児・学校などでストレスを感じやすい方</Text>
           <Text>・「これはストレス？体調？気のせい？」と感じる日常の不安に</Text>
 
-          <Text style={styles.caution}>※コエカルテは医療行為を目的としたサービスではありません。症状が気になる方は専門機関への相談をおすすめします。</Text>
+          <Text style={styles.caution}>
+            ※コエカルテは医療行為を目的としたサービスではありません。
+            症状が気になる方は専門機関への相談をおすすめします。
+          </Text>
         </View>
       )}
 
       <TouchableOpacity onPress={() => setShowFullText(!showFullText)}>
-        <Text style={styles.moreButton}>{showFullText ? '▲ 閉じる' : '▼ 続きを読む'}</Text>
+        <Text style={styles.moreButton}>
+          {showFullText ? '▲ 閉じる' : '▼ 続きを読む'}
+        </Text>
       </TouchableOpacity>
 
-      <Button title="ログインへ進む" onPress={() => navigation.navigate('Login')} />
+      <Button title="ログイン・はじめる" onPress={() => navigation.navigate('Auth')} />
     </ScrollView>
   );
 }
