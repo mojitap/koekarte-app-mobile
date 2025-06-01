@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   SafeAreaView,
   View, Text, TextInput,
@@ -10,9 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { saveUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium } from '../utils/premiumUtils';
-
-import { AuthContext } from '../context/AuthContext'; // 追加
-import { useContext } from 'react'; // 追加
+import { AuthContext } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -39,10 +37,8 @@ export default function LoginScreen() {
         return Alert.alert('ログイン失敗', data.error || 'IDまたはパスワードが間違っています');
       }
 
-      // ユーザー情報を保存
       await saveUser(data);
 
-      // 🔍 ログイン直後にプロフィールを取得してプレミアム可否を確認
       const profileRes = await fetch(`${API_BASE_URL}/api/profile`, {
         credentials: 'include',
       });
@@ -71,7 +67,13 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <Text style={styles.infoText}>
+          『コエカルテ』は、声からストレス傾向を測定するセルフチェックアプリです。{"\n"}
+          録音するだけで、あなたの「元気さ・活力」を数値化します。
+        </Text>
+
         <Text style={styles.heading}>🔑 ログイン</Text>
+
         <TextInput
           style={styles.input}
           placeholder="メール or ユーザー名"
@@ -110,13 +112,28 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   heading: {
-    fontSize: 24, fontWeight: 'bold', marginBottom: 30, textAlign: 'center'
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
   },
   input: {
-    borderWidth: 1, borderColor: '#ccc', padding: 10,
-    borderRadius: 5, marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
   },
   link: {
-    color: '#007AFF', marginTop: 15, textAlign: 'center'
+    color: '#007AFF',
+    marginTop: 15,
+    textAlign: 'center',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#555',
+    marginBottom: 15,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
