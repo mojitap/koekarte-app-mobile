@@ -54,14 +54,27 @@ export default function RecordScreen() {
     }, [])
   );
 
+  // ✅ ステップ2：録音画面の録音権限エラーの修正
+  // → startRecording 関数の先頭に権限チェックとガード処理を追加
+
   const startRecording = async () => {
     if (!canUsePremium) {
       Alert.alert("録音制限", "無料期間が終了しています。有料プランをご検討ください。");
       return;
     }
+
     try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      // 🎤 録音権限の確認（iOS対応）
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("録音許可が必要です", "録音機能を使うにはマイクのアクセスを許可してください。");
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
 
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
@@ -71,6 +84,7 @@ export default function RecordScreen() {
       setStatus('録音中...');
     } catch (err) {
       console.error('❌ 録音エラー:', err);
+      Alert.alert("エラー", "録音の開始に失敗しました。設定からマイクの許可をご確認ください。");
     }
   };
 
@@ -103,23 +117,28 @@ export default function RecordScreen() {
       Alert.alert("アップロード制限", "録音が存在しないか、利用制限中です。");
       return;
     }
+
     setStatus('アップロード中...');
     const formData = new FormData();
+
     formData.append('audio_data', {
       uri: recordingUri,
-      name: 'recording.m4a',
-      type: 'audio/m4a',
+      name: 'recording.webm',     // Flask 側と拡張子を合わせる
+      type: 'audio/webm',
     });
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
         body: formData,
+        // 👇 Content-Type を明示しない（自動で boundary をつけてもらう）
       });
-      const text = await response.text();
-      const data = JSON.parse(text);
+
+      const data = await response.json();
       if (!response.ok || typeof data.score !== 'number') {
         throw new Error(`HTTP error: ${response.status}`);
       }
+
       setScore(data.score);
       Alert.alert("ストレススコア", `${data.score} 点`);
       navigation.navigate('Main', { screen: 'Home' });
@@ -127,6 +146,7 @@ export default function RecordScreen() {
       console.error("❌ アップロード失敗:", error);
       Alert.alert("エラー", "アップロードに失敗しました");
     }
+
     setStatus('');
   };
 
