@@ -163,10 +163,12 @@ export default function EditProfile({ navigation }) {
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
           <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-            <Text>{form.prefecture || 'タップして選択'}</Text>
+           <Text style={{ color: form.prefecture ? '#000' : '#888' }}>
+             {form.prefecture || 'タップして選択'}
+           </Text>
           </Pressable>
         </View>
-        <Modal visible={showGenderPicker} transparent animationType="fade">
+        <Modal visible={showPrefPicker} transparent animationType="fade">
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Picker
