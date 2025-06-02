@@ -87,12 +87,12 @@ export default function PrivacyScreen() {
         運営者：コエカルテ運営代表
       </Text>
 
-        <Text style={styles.date}>最終改定日：2025年5月15日</Text>
+        <Text style={styles.date}>最終改定日：2025年06月02日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
           <Button
             title="🏠 マイページに戻る"
-            onPress={() => navigation.navigate('Main', { screen: 'Home' })}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
           />
         </View>
       </ScrollView>
