@@ -105,7 +105,7 @@ export default function MusicScreen() {
         await soundRef.current.stopAsync();
         await soundRef.current.unloadAsync();
       }
-      const { sound } = await Audio.Sound.createAsync(track.file);
+      const { sound } = await Audio.Sound.createAsync(track.file, { volume: 1.0 });
       soundRef.current = sound;
       await sound.playAsync();
       setCurrentTrack(track.label);
