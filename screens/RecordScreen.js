@@ -76,9 +76,28 @@ export default function RecordScreen() {
         playsInSilentModeIOS: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      const recordingOptions = {
+        android: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 256000,
+        },
+        ios: {
+          extension: '.m4a',
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 256000,
+          linearPCMBitDepth: 16,
+          linearPCMIsBigEndian: false,
+          linearPCMIsFloat: false,
+        },
+      };
+
+      const { recording } = await Audio.Recording.createAsync(recordingOptions);
       recordingRef.current = recording;
       setRecording(recording);
       setStatus('録音中...');
@@ -105,6 +124,7 @@ export default function RecordScreen() {
         setSound(null);
       }
       const { sound: newSound } = await Audio.Sound.createAsync({ uri: recordingUri });
+      await newSound.setStatusAsync({ volume: 1.0 });  // ← これを追加
       setSound(newSound);
       await newSound.playAsync();
     } catch (err) {
@@ -123,18 +143,26 @@ export default function RecordScreen() {
 
     formData.append('audio_data', {
       uri: recordingUri,
-      name: 'recording.webm',     // Flask 側と拡張子を合わせる
-      type: 'audio/webm',
+      name: 'recording.m4a',     // Flask 側と拡張子を合わせる
+      type: 'audio/m4a',
     });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/upload`, {
+      const response = await fetch(`${API_BASE_URL}/upload`, {
         method: 'POST',
         body: formData,
-        // 👇 Content-Type を明示しない（自動で boundary をつけてもらう）
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text(); // HTMLなどのエラー文（例："音声が見つかりません"）
+        console.error("❌ 非JSONレスポンス:", text);
+        throw new Error('非JSONレスポンス: ' + text);
+      }
+
       if (!response.ok || typeof data.score !== 'number') {
         throw new Error(`HTTP error: ${response.status}`);
       }
