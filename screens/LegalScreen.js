@@ -84,12 +84,12 @@ export default function LegalScreen() {
 
         <Text style={styles.paragraph}>本サービスのご利用にあたっては、「利用規約」および「プライバシーポリシー」をご確認の上、ご同意いただく必要があります。</Text>
 
-        <Text style={styles.paragraph}>最終更新日：2025年5月15日</Text>
+        <Text style={styles.paragraph}>最終更新日：2025年06月02日</Text>
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
           <Button
             title="🏠 マイページに戻る"
-            onPress={() => navigation.navigate('Main', { screen: 'Home' })}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
           />
         </View>
       </ScrollView>
