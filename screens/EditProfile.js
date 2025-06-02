@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
+import { API_BASE_URL } from '../utils/config';
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
@@ -56,7 +56,7 @@ export default function EditProfile({ navigation }) {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(form), // ← ここで form の内容を文字列化
+      body: JSON.stringify(form),
     })
       .then(res => res.json())
       .then(() => {
@@ -73,7 +73,6 @@ export default function EditProfile({ navigation }) {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.heading}>✏️ プロフィール編集</Text>
 
-        {/* メール */}
         <View style={styles.formItem}>
           <Text style={styles.label}>メールアドレス</Text>
           <TextInput
@@ -86,7 +85,6 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        {/* ニックネーム */}
         <View style={styles.formItem}>
           <Text style={styles.label}>ニックネーム</Text>
           <TextInput
@@ -97,11 +95,10 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        {/* 生年月日 */}
         <View style={styles.formItem}>
           <Text style={styles.label}>生年月日</Text>
           <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text>{form.birthdate || 'タップして選択'}</Text>
+            <Text style={{ color: form.birthdate ? '#000' : '#888' }}>{form.birthdate || 'タップして選択'}</Text>
           </Pressable>
         </View>
         <Modal visible={showDatePicker} transparent animationType="slide">
@@ -124,11 +121,10 @@ export default function EditProfile({ navigation }) {
           </View>
         </Modal>
 
-        {/* 性別 */}
         <View style={styles.formItem}>
           <Text style={styles.label}>性別</Text>
           <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
-            <Text>{form.gender || 'タップして選択'}</Text>
+            <Text style={{ color: form.gender ? '#000' : '#888' }}>{form.gender || 'タップして選択'}</Text>
           </Pressable>
         </View>
         <Modal visible={showGenderPicker} transparent animationType="fade">
@@ -148,7 +144,6 @@ export default function EditProfile({ navigation }) {
           </View>
         </Modal>
 
-        {/* 職業 */}
         <View style={styles.formItem}>
           <Text style={styles.label}>職業</Text>
           <TextInput
@@ -159,13 +154,10 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        {/* 都道府県 */}
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
           <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-           <Text style={{ color: form.prefecture ? '#000' : '#888' }}>
-             {form.prefecture || 'タップして選択'}
-           </Text>
+            <Text style={{ color: form.prefecture ? '#000' : '#888' }}>{form.prefecture || 'タップして選択'}</Text>
           </Pressable>
         </View>
         <Modal visible={showPrefPicker} transparent animationType="fade">
@@ -247,7 +239,7 @@ const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center', // ← 中央に表示されるようにする
+    justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
