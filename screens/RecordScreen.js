@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ export default function RecordScreen() {
   const [sound, setSound] = useState(null);
   const [recordingUri, setRecordingUri] = useState(null);
   const [score, setScore] = useState(null);
+  const [dotCount, setDotCount] = useState(0); // ←ここを追加
   const [status, setStatus] = useState('');
   const [canUsePremium, setCanUsePremium] = useState(false);
   const recordingRef = useRef(null);
@@ -54,6 +55,19 @@ export default function RecordScreen() {
     }, [])
   );
 
+  // ✅ 録音中ドットアニメーションの useEffect（ここが下）
+  useEffect(() => {
+    let interval;
+    if (status === '録音中...') {
+      interval = setInterval(() => {
+        setDotCount((prev) => (prev + 1) % 4);
+      }, 500);
+    } else {
+      setDotCount(0);
+    }
+    return () => clearInterval(interval);
+  }, [status]);
+
   // ✅ ステップ2：録音画面の録音権限エラーの修正
   // → startRecording 関数の先頭に権限チェックとガード処理を追加
 
@@ -72,8 +86,11 @@ export default function RecordScreen() {
       }
 
       await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
+        allowsRecordingIOS: true, // ←録音モード解除（スピーカー再生を有効に）
         playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
 
       const recordingOptions = {
@@ -90,7 +107,7 @@ export default function RecordScreen() {
           audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
           sampleRate: 44100,
           numberOfChannels: 1,
-          bitRate: 256000,
+          bitRate: 320000,
           linearPCMBitDepth: 16,
           linearPCMIsBigEndian: false,
           linearPCMIsFloat: false,
@@ -118,15 +135,27 @@ export default function RecordScreen() {
 
   const playRecording = async () => {
     if (!recordingUri) return;
+
     try {
       if (sound) {
         await sound.unloadAsync();
         setSound(null);
       }
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri: recordingUri });
-      await newSound.setStatusAsync({ volume: 1.0 });  // ← これを追加
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        playThroughEarpieceAndroid: false,
+      });
+
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: recordingUri },
+        { shouldPlay: false }
+      );
+
+      await newSound.setStatusAsync({ volume: 1.0 }); // 最大音量に設定
       setSound(newSound);
-      await newSound.playAsync();
+      await newSound.playAsync(); // 再生開始
     } catch (err) {
       console.error("❌ 再生エラー:", err);
     }
@@ -211,6 +240,13 @@ export default function RecordScreen() {
           </Text>
         </View>
 
+        <View style={{ backgroundColor: '#fff7e6', padding: 12, borderRadius: 6, marginBottom: 15 }}>
+          <Text style={{ fontSize: 13, color: '#cc6600' }}>
+            🎤 録音時はなるべく口元に近づけ、明るくはっきりと発声してください。{"\n"}
+            小さすぎる声だとスコアが正しく反映されない場合があります。
+          </Text>
+        </View>
+
         <View style={{ marginTop: 20 }}>
           <Text style={styles.notice}>
             ※現在のスコアは「声の大きさ・元気さ・活力」などに反応しやすい傾向があります。{"\n"}
@@ -234,6 +270,11 @@ export default function RecordScreen() {
           <Text style={styles.score}>ストレススコア：{score} 点</Text>
         )}
         <Text style={styles.status}>{status}</Text>
+        {status === '録音中...' && (
+          <Text style={{ fontSize: 16, color: 'red', fontWeight: 'bold', marginTop: 10, textAlign: 'center' }}>
+            🔴 録音中{'.'.repeat(dotCount)}
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
