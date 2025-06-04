@@ -30,9 +30,9 @@ export default function RecordScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
+      // フォーカス時の処理
       getUser().then(user => {
         if (!user) {
-          // ✅ 未ログインならログイン画面に遷移
           Alert.alert("ログインが必要です", "", [
             { text: "OK", onPress: () => navigation.navigate('Login') }
           ]);
@@ -52,7 +52,15 @@ export default function RecordScreen() {
             setCanUsePremium(false);
           });
       });
-    }, [])
+
+      // 🔴 ここがフォーカスが外れた時のクリーンアップ処理
+      return () => {
+        if (sound) {
+          sound.stopAsync();
+          sound.unloadAsync();
+        }
+      };
+    }, [sound])
   );
 
   // ✅ 録音中ドットアニメーションの useEffect（ここが下）
@@ -169,17 +177,20 @@ export default function RecordScreen() {
 
     setStatus('アップロード中...');
     const formData = new FormData();
-
     formData.append('audio_data', {
       uri: recordingUri,
-      name: 'recording.m4a',     // Flask 側と拡張子を合わせる
-      type: 'audio/m4a',
+      name: 'recording.webm',     // Flask 側と拡張子を合わせる
+      type: 'audio/webm',
     });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
+        credentials: 'include',
         body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       let data;
