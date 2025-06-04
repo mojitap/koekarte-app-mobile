@@ -91,10 +91,10 @@ export default function LoginScreen() {
 
         <Button title="ログイン" onPress={handleLogin} />
 
-        <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link} onPress={() => navigation.navigate('Auth', { screen: 'Register' });
           ▶ 新規登録はこちら
         </Text>
-        <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
+        <Text style={styles.link} onPress={() => navigation.navigate('Auth', { screen: 'ForgotPassword' });
           🔑 パスワード再設定
         </Text>
       </View>
