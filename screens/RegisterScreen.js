@@ -228,7 +228,7 @@ export default function RegisterScreen({ navigation }) {
           <Button title="登録する" onPress={handleSubmit} />
         </View>
 
-        <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.link} onPress={() => navigation.navigate('Auth', { screen: 'Login' });
           ▶ すでにアカウントをお持ちの方
         </Text>
       </ScrollView>
@@ -262,8 +262,10 @@ const styles = StyleSheet.create({
   },
   pickerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
+    gap: 10, // Android対応（ある程度間隔あける）
   },
   picker: {
     width: '100%',
