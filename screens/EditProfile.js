@@ -156,8 +156,13 @@ export default function EditProfile({ navigation }) {
 
         <View style={styles.formItem}>
           <Text style={styles.label}>都道府県</Text>
-          <Pressable onPress={() => setShowPrefPicker(true)} style={styles.input}>
-            <Text style={{ color: form.prefecture ? '#000' : '#888' }}>{form.prefecture || 'タップして選択'}</Text>
+          <Pressable
+            onPress={() => setShowPrefPicker(true)}
+            style={[styles.input, { zIndex: 10 }]}
+          >
+            <Text style={{ color: form.prefecture === '' ? '#888' : '#000' }}>
+              {form.prefecture === '' ? 'タップして選択' : form.prefecture}
+            </Text>
           </Pressable>
         </View>
         <Modal visible={showPrefPicker} transparent animationType="fade">
@@ -166,6 +171,8 @@ export default function EditProfile({ navigation }) {
               <Picker
                 selectedValue={form.prefecture}
                 onValueChange={value => setForm({ ...form, prefecture: value })}
+                style={{ width: '100%', height: 200 }}
+                itemStyle={{ color: '#000' }}
               >
                 <Picker.Item label="未選択" value="" />
                 {[
