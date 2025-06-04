@@ -228,7 +228,7 @@ export default function RegisterScreen({ navigation }) {
           <Button title="登録する" onPress={handleSubmit} />
         </View>
 
-        <Text style={styles.link} onPress={() => navigation.navigate('Auth', { screen: 'Login' });
+        <Text style={styles.link} onPress={() => navigation.navigate('Auth', { screen: 'Login' })}>
           ▶ すでにアカウントをお持ちの方
         </Text>
       </ScrollView>
