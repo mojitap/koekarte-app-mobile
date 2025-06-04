@@ -1,3 +1,5 @@
+// RegisterScreen.js
+
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -101,7 +103,9 @@ export default function RegisterScreen({ navigation }) {
 
         {/* 生年月日 */}
         <Pressable onPress={() => setShowBirthPicker(true)} style={[styles.input, { zIndex: 10 }]}>
-          <Text style={{ color: '#000' }}>{form.birthdate || '生年月日を選択'}</Text>
+          <Text style={{ color: '#000' }}>
+            {form.birthdate || '生年月日を選択'}
+          </Text>
         </Pressable>
         <Modal visible={showBirthPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
@@ -154,7 +158,9 @@ export default function RegisterScreen({ navigation }) {
 
         {/* 性別 */}
         <Pressable onPress={() => setShowGenderPicker(true)} style={[styles.input, { zIndex: 10 }]}>
-          <Text style={{ color: '#000' }}>{form.gender || '性別を選択'}</Text>
+          <Text style={{ color: '#000' }}>
+            {form.gender || '性別を選択'}
+          </Text>
         </Pressable>
         <Modal visible={showGenderPicker} transparent animationType="fade">
           <View style={styles.modalOverlay}>
@@ -180,38 +186,24 @@ export default function RegisterScreen({ navigation }) {
           value={form.occupation} onChangeText={text => setForm({ ...form, occupation: text })} />
 
         {/* 都道府県 */}
-        <Button
-          title={form.prefecture || '都道府県を選択'}
-          onPress={() => {
-            console.log('✅ 都道府県モーダルを開く');
-            setShowPrefPicker(true);
-          }}
-          color="#888"
-        />
-
+        <Pressable onPress={() => setShowPrefPicker(true)} style={[styles.input, { zIndex: 10 }]}>
+          <Text style={{ color: form.prefecture ? '#000' : '#555' }}>
+            {form.prefecture || '都道府県を選択'}
+          </Text>
+        </Pressable>
         <Modal
           visible={showPrefPicker}
           transparent
           animationType="fade"
           onRequestClose={() => setShowPrefPicker(false)}
         >
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)', // 背景を半透明に
-          }}>
-            <View style={{
-              backgroundColor: '#fff',
-              borderRadius: 10,
-              padding: 20,
-              width: '90%',
-            }}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
               <Text style={{ fontSize: 16, marginBottom: 10 }}>都道府県を選択</Text>
               <Picker
                 selectedValue={form.prefecture}
                 onValueChange={(v) => setForm({ ...form, prefecture: v })}
-                style={{ height: 200 }}
+                style={{ width: '100%', height: 200 }}
                 itemStyle={{ color: '#000' }}
               >
                 <Picker.Item label="未選択" value="" color="#000" />
@@ -285,7 +277,21 @@ const styles = StyleSheet.create({
     margin: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    maxHeight: '80%',  // ← 追加（表示のはみ出し防止）
+    maxHeight: '80%',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center', // ✅ 中央表示
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    alignItems: 'center',
   },
   submitContainer: {
     marginTop: 30,
@@ -294,10 +300,5 @@ const styles = StyleSheet.create({
     marginTop: 30,
     color: '#007AFF',
     textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
 });
