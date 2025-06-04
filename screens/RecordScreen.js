@@ -176,11 +176,11 @@ export default function RecordScreen() {
     }
 
     setStatus('アップロード中...');
-    const formData = new FormData();
+    const extension = Platform.OS === 'ios' ? 'm4a' : 'webm';
     formData.append('audio_data', {
       uri: recordingUri,
-      name: 'recording.webm',     // Flask 側と拡張子を合わせる
-      type: 'audio/webm',
+      name: `recording.${extension}`,
+      type: `audio/${extension}`,
     });
 
     try {
