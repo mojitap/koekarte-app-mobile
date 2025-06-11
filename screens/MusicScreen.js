@@ -76,19 +76,24 @@ export default function MusicScreen() {
           await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
             staysActiveInBackground: false,
-            interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
             playsInSilentModeIOS: true,
             shouldDuckAndroid: true,
-            interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
             playThroughEarpieceAndroid: false,
           });
           
           const user = await getUser();
           if (!user) return;
+
           const res = await fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' });
           const data = await res.json();
-          setCanUsePremium(checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended));
+
+          console.log("🎵 MusicScreen の profile データ:", data);
+          const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
+          console.log("🟢 checkCanUsePremium の結果:", ok);
+
+          setCanUsePremium(ok);
         } catch (e) {
+          console.error("❌ MusicScreen useFocusEffect エラー:", e);
           setCanUsePremium(false);
         }
       })();
