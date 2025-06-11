@@ -13,7 +13,7 @@ export default function HomeScreen({ navigation }) {
     React.useCallback(() => {
       fetch(`${API_BASE_URL}/api/profile`, {
         credentials: 'include'
-      });
+      })
         .then(res => res.json())
         .then(data => {
           setProfile(data);
@@ -37,34 +37,51 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>\ud83e\udd35\ufe0f \u30de\u30a4\u30da\u30fc\u30b8</Text>
+      <Text style={styles.heading}>
+      　 {profile.username ? `${profile.username}さんのマイページ` : 'マイページ'}
+      </Text>
 
       <View style={styles.infoBox}>
-        <Text style={styles.label}>\ud83d\udce7 \u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9:</Text>
-        <Text>{profile.email}</Text>
+        <Text style={styles.label}>📧 メールアドレス：</Text>
+        <Text style={styles.value}>{profile.email}</Text>
 
-        <Text style={styles.label}>\u767b\u9332\u65e5:</Text>
+        <Text style={styles.label}>🏠 地域：</Text>
+        <Text style={styles.value}>{profile.prefecture || '未設定'}</Text>
+
+        <Text style={styles.label}>👤 性別：</Text>
+        <Text style={styles.value}>{profile.gender || '未設定'}</Text>
+
+        <Text style={styles.label}>🎂 生年月日：</Text>
+        <Text style={styles.value}>{profile.birthdate || '未設定'}</Text>
+
+        <Text style={styles.label}>💼 職業：</Text>
+        <Text style={styles.value}>{profile.occupation || '未設定'}</Text>
+
+        <Text style={styles.label}>登録日:</Text>
         <Text>{profile.created_at?.slice(0, 10)}</Text>
+
+        <Text style={styles.label}>📝 今日のスコア:</Text>
+        <Text>{profile.last_score ?? '—'} 点</Text>
       </View>
 
       <View style={styles.statusBox}>
         {canUsePremium ? (
-          <Text style={{ color: 'green' }}>\u2705 \u5229\u7528\u53ef\u80fd\u3067\u3059\uff08\u7121\u6599 or \u6709\u6599\uff09</Text>
+          <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
         ) : (
-          <Text style={{ color: 'red' }}>\u203c\ufe0f \u5229\u7528\u5236\u9650\u4e2d\uff08\u7121\u6599\u671f\u9593\u7d42\u4e86\uff09</Text>
+          <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
         )}
       </View>
 
-      {/* \u203c\ufe0f \u3053\u3053\u304b\u3089\u4ed6\u753b\u9762\u306b\u79fb\u52d5 */}
       <View style={{ marginTop: 20 }}>
-        <Button title="\u9332\u97f3" onPress={() => navigation.navigate('Record')} />
-        <Button title="\u30b0\u30e9\u30d5" onPress={() => navigation.navigate('Chart')} />
-        <Button title="\u30b9\u30b3\u30a2\u5c65\u6b74" onPress={() => navigation.navigate('History')} />
-        <Button title="\u30d7\u30ed\u30d5\u30a3\u30fc\u30eb\u7de8\u96c6" onPress={() => navigation.navigate('EditProfile')} />
-        <Button title="\u5229\u7528\u898f\u7d04" onPress={() => navigation.navigate('Terms')} />
-        <Button title="\u30d7\u30e9\u30a4\u30d0\u30b7\u30fc\u30dd\u30ea\u30b7\u30fc" onPress={() => navigation.navigate('Privacy')} />
-        <Button title="\u7279\u5b9a\u5546\u53d6\u6cd5" onPress={() => navigation.navigate('Legal')} />
-        <Button title="\u97f3\u6e90" onPress={() => navigation.navigate('Music')} />
+        <Button title="録音" onPress={() => navigation.navigate('Record')} />
+        <Button title="グラフ" onPress={() => navigation.navigate('Chart')} />
+        <Button title="スコア履歴" onPress={() => navigation.navigate('History')} />
+        <Button title="プロフィール編集" onPress={() => navigation.navigate('EditProfile')} />
+        <Button title="利用規約" onPress={() => navigation.navigate('Terms')} />
+        <Button title="プライバシーポリシー" onPress={() => navigation.navigate('Privacy')} />
+        <Button title="特定商取法" onPress={() => navigation.navigate('Legal')} />
+        <Button title="音源" onPress={() => navigation.navigate('Music')} />
+        <Button title="📩 お問い合わせ" onPress={() => navigation.navigate('Contact')} />
       </View>
     </ScrollView>
   );
@@ -88,8 +105,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   label: {
-    marginTop: 10,
+    marginTop: 16,
     fontWeight: 'bold',
+    marginTop: 10,
+    color: '#444',
+  },
+  value: {
+    fontSize: 16,
+    marginBottom: 6,
+    color: '#000',
   },
   statusBox: {
     padding: 15,
