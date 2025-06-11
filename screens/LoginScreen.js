@@ -3,7 +3,8 @@ import {
   SafeAreaView,
   View, Text, TextInput,
   Button, Alert,
-  StyleSheet, Platform, StatusBar
+  StyleSheet, Platform, StatusBar,
+  TouchableOpacity
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -69,6 +70,7 @@ export default function LoginScreen() {
       <View style={styles.container}>
         <Text style={styles.infoText}>
           『コエカルテ』は、声からストレス傾向を測定するセルフチェックアプリです。{"\n"}
+
           録音するだけで、あなたの「元気さ・活力」を数値化します。
         </Text>
 
@@ -89,11 +91,14 @@ export default function LoginScreen() {
           onChangeText={setPassword}
         />
 
-        <Button title="ログイン" onPress={handleLogin} />
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>ログイン</Text>
+        </TouchableOpacity>
 
         <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
           ▶ 新規登録はこちら
         </Text>
+
         <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
           🔑 パスワード再設定
         </Text>
@@ -110,30 +115,48 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
+    flex: 1,
+    justifyContent: 'center',
   },
   heading: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 30,
+    marginBottom: 16,
     textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
+    fontSize: 16,  
     padding: 10,
     borderRadius: 5,
     marginBottom: 20,
   },
-  link: {
-    color: '#007AFF',
-    marginTop: 15,
+  loginButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,     // ✅ ボタン文字を大きく
+    fontWeight: 'bold',
     textAlign: 'center',
   },
-  infoText: {
-    fontSize: 13,
-    color: '#555',
-    marginBottom: 15,
+  link: {
+    color: '#007AFF',
+    fontSize: 16,
     textAlign: 'center',
-    lineHeight: 20,
+    marginTop: 12,
+  },
+  infoText: {
+    fontSize: 23,
+    color: '#555',
+    marginBottom: 20,
+    textAlign: 'left',
+    lineHeight: 24,
   },
 });
