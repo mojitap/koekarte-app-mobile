@@ -33,9 +33,9 @@ export default function RegisterScreen({ navigation }) {
   const [showBirthPicker, setShowBirthPicker] = useState(false);
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [showPrefPicker, setShowPrefPicker] = useState(false);
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedDay, setSelectedDay] = useState('');
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear() - 20)); // 例: 2005年
+  const [selectedMonth, setSelectedMonth] = useState('01');
+  const [selectedDay, setSelectedDay] = useState('01');
 
   const handleSubmit = async () => {
     try {
@@ -77,7 +77,7 @@ export default function RegisterScreen({ navigation }) {
           onPress: () => {
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Main' }],
+              routes: [{ name: 'MainTabs' }],
             });
           }
         }
@@ -148,8 +148,12 @@ export default function RegisterScreen({ navigation }) {
                 </Picker>
               </View>
               <Button title="決定" onPress={() => {
-                const date = `${selectedYear}-${selectedMonth}-${selectedDay}`;
-                setForm({ ...form, birthdate: date });
+                if (selectedYear && selectedMonth && selectedDay) {
+                  const date = `${selectedYear}-${selectedMonth}-${selectedDay}`;
+                  setForm({ ...form, birthdate: date });
+                } else {
+                  Alert.alert("生年月日をすべて選択してください");
+                }
                 setShowBirthPicker(false);
               }} />
             </View>
