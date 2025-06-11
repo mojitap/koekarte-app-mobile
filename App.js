@@ -24,6 +24,7 @@ import { checkCanUsePremium } from './utils/premiumUtils';
 import { API_BASE_URL } from './utils/config';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import ContactScreen from './screens/ContactScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -72,6 +73,7 @@ function AppStackScreens() {
       <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ headerShown: true, title: 'プライバシーポリシー' }} />
       <Stack.Screen name="Legal" component={LegalScreen} options={{ headerShown: true, title: '特定商取引法に基づく表記' }} />
       <Stack.Screen name="History" component={ScoreHistory} options={{ headerShown: true, title: 'スコア履歴' }} />
+      <Stack.Screen name="Contact" component={ContactScreen} options={{ headerShown: true, title: 'お問い合わせ' }} />
     </Stack.Navigator>
   );
 }
