@@ -19,7 +19,7 @@ import { getUser } from '../utils/auth';
 import { useNavigation } from '@react-navigation/native';
 import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
-export default function ChartScreen() {
+export default function ChartScreen({ route }) {
   const navigation = useNavigation(); // ← 追加
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [range, setRange] = useState('all'); // all / week / month
@@ -76,7 +76,11 @@ export default function ChartScreen() {
         </View>
 
         {canUsePremium ? (
-          <ScoreChart range={range} smooth={true} />
+          <ScoreChart
+            key={route?.params?.refresh ?? 'static'}   // ★ ここがポイント ★
+            range={range}
+            smooth={true}
+          />
         ) : (
           <Text style={styles.notice}>
             ※ グラフ機能は無料期間終了後、<Text style={{ fontWeight: 'bold' }}>有料プラン専用</Text>です。
