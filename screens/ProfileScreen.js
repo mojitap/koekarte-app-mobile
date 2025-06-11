@@ -75,37 +75,55 @@ export default function ProfileScreen({ navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Image source={require('../assets/koekoekarte.png')} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.title}>🤵 マイページ</Text>
+          <Image
+            source={require('../assets/koekoekarte.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>
+            {profile && profile.username ? `${profile.username}さんのマイページ` : 'マイページ'}
+          </Text>
         </View>
 
         {loggedIn && profile && (
           <>
             <View style={styles.infoBox}>
-              <Text style={styles.label}>📧 メールアドレス:</Text>
-              <Text>{profile.email}</Text>
+              <Text style={styles.label}>📧 メールアドレス：</Text>
+              <Text style={styles.value}>{profile.email}</Text>
 
-              <Text style={styles.label}>📅 登録日:</Text>
-              <Text>{profile.created_at?.slice(0, 10)}</Text>
+                <Text style={styles.label}>🏠 地域：</Text>
+                <Text style={styles.value}>{profile.prefecture || '未設定'}</Text>
 
-              <Text style={styles.label}>🕛 最終記録日:</Text>
-              <Text>{profile.last_recorded_at || '記録なし'}</Text>
+                <Text style={styles.label}>👤 性別：</Text>
+                <Text style={styles.value}>{profile.gender || '未設定'}</Text>
 
-              <Text style={styles.label}>📊 基準スコア:</Text>
-              <Text>{profile.baseline || '—'} 点</Text>
+                <Text style={styles.label}>🎂 生年月日：</Text>
+                <Text style={styles.value}>{profile.birthdate || '未設定'}</Text>
 
-              <Text style={styles.label}>📝 今日のスコア:</Text>
-              <Text>{profile.today_score || '—'} 点</Text>
+                <Text style={styles.label}>💼 職業：</Text>
+                <Text style={styles.value}>{profile.occupation || '未設定'}</Text>
 
-              <Text style={styles.label}>📉 スコア差分:</Text>
-              <Text>{profile.score_deviation || '—'} 点</Text>
-            </View>
+                <Text style={styles.label}>📅 登録日:</Text>
+                <Text style={styles.value}>{profile.created_at?.slice(0, 10)}</Text>
+
+                <Text style={styles.label}>🕛 最終記録日:</Text>
+                <Text style={styles.value}>{profile.last_recorded || '記録なし'}</Text>
+
+                <Text style={styles.label}>📊 基準スコア:</Text>
+                <Text style={styles.value}>{profile.baseline || '—'} 点</Text>
+
+                <Text style={styles.label}>📝 今日のスコア:</Text>
+                <Text style={styles.value}>{profile.last_score ?? '—'} 点</Text>
+
+                <Text style={styles.label}>📉 スコア差分:</Text>
+                <Text style={styles.value}>{profile.score_deviation || '—'} 点</Text>
+                </View>
 
             <View style={styles.statusBox}>
               {canUsePremium ? (
-                <Text style={{ color: 'green' }}>✅ 利用可能です（無料 or 有料）</Text>
+                <Text style={{ color: 'green', fontSize: 17 }}>✅ 利用可能です（無料 or 有料）</Text>
               ) : (
-                <Text style={{ color: 'red' }}>‼️ 利用制限中（無料期間終了）</Text>
+                <Text style={{ color: 'red', fontSize: 17 }}>‼️ 利用制限中（無料期間終了）</Text>
               )}
             </View>
 
@@ -115,6 +133,7 @@ export default function ProfileScreen({ navigation }) {
               <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
               <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
               <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
+              <Text style={styles.link} onPress={() => navigation.navigate('Contact')}>📩 お問い合わせ</Text>
             </View>
 
             <View style={{ marginTop: 40 }}>
@@ -200,7 +219,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   infoBox: {
@@ -214,6 +233,13 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 10,
     fontWeight: 'bold',
+    color: '#444',
+    fontSize: 17, 
+  },
+  value: {
+    fontSize: 17,
+    marginBottom: 6,
+    color: '#000',
   },
   statusBox: {
     padding: 15,
@@ -222,7 +248,7 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 17,
     color: '#007AFF',
   },
 });
