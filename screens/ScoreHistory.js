@@ -42,8 +42,8 @@ export default function ScoreHistory() {
         ) : (
           scores.map((item, index) => (
             <View key={index} style={styles.item}>
-              <Text style={styles.date}>{item.date}</Text>
-              <Text style={styles.score}>スコア：{item.score} 点</Text>
+              <Text style={styles.date}>{item.timestamp}</Text>  // 日時
+              <Text style={styles.score}>スコア：{item.score} 点</Text>  // スコア
             </View>
           ))
         )}
