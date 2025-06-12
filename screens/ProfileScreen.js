@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
-import { checkCanUsePremium } from '../utils/premiumUtils';
+import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 
@@ -124,6 +124,12 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={{ color: 'green', fontSize: 17 }}>✅ 利用可能です（無料 or 有料）</Text>
               ) : (
                 <Text style={{ color: 'red', fontSize: 17 }}>‼️ 利用制限中（無料期間終了）</Text>
+              )}
+
+              {!canUsePremium && profile?.created_at && (
+                <Text style={{ color: 'orange', fontSize: 15, marginTop: 8 }}>
+                  ⏳ あと {getFreeDaysLeft(profile.created_at)} 日、無料でご利用いただけます
+                </Text>
               )}
             </View>
 
