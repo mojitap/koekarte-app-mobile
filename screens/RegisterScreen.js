@@ -37,6 +37,24 @@ export default function RegisterScreen({ navigation }) {
   const [selectedMonth, setSelectedMonth] = useState('01');
   const [selectedDay, setSelectedDay] = useState('01');
 
+  const openBirthPicker = () => {
+    setShowGenderPicker(false);
+    setShowPrefPicker(false);
+    setShowBirthPicker(true);
+  };
+
+  const openGenderPicker = () => {
+    setShowBirthPicker(false);
+    setShowPrefPicker(false);
+    setShowGenderPicker(true);
+  };
+
+  const openPrefPicker = () => {
+    setShowBirthPicker(false);
+    setShowGenderPicker(false);
+    setShowPrefPicker(true);
+  };
+
   const handleSubmit = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/register`, {
@@ -102,7 +120,7 @@ export default function RegisterScreen({ navigation }) {
           value={form.password} onChangeText={text => setForm({ ...form, password: text })} />
 
         {/* 生年月日 */}
-        <Pressable onPress={() => setShowBirthPicker(true)} style={[styles.input, { zIndex: 10 }]}>
+        <Pressable onPress={openBirthPicker} style={[styles.input, { zIndex: 10 }]}>
           <Text style={{ color: '#000' }}>
             {form.birthdate || '生年月日を選択'}
           </Text>
@@ -150,18 +168,21 @@ export default function RegisterScreen({ navigation }) {
               <Button title="決定" onPress={() => {
                 if (selectedYear && selectedMonth && selectedDay) {
                   const date = `${selectedYear}-${selectedMonth}-${selectedDay}`;
-                  setForm({ ...form, birthdate: date });
+                  setForm(prev => ({ ...prev, birthdate: date }));
+
+                  setTimeout(() => {
+                    setShowBirthPicker(false);
+                  }, 100);
                 } else {
                   Alert.alert("生年月日をすべて選択してください");
                 }
-                setShowBirthPicker(false);
               }} />
             </View>
           </View>
         </Modal>
 
         {/* 性別 */}
-        <Pressable onPress={() => setShowGenderPicker(true)} style={[styles.input, { zIndex: 10 }]}>
+        <Pressable onPress={openGenderPicker} style={[styles.input, { zIndex: 10 }]}>
           <Text style={{ color: '#000' }}>
             {form.gender || '性別を選択'}
           </Text>
@@ -190,7 +211,7 @@ export default function RegisterScreen({ navigation }) {
           value={form.occupation} onChangeText={text => setForm({ ...form, occupation: text })} />
 
         {/* 都道府県 */}
-        <Pressable onPress={() => setShowPrefPicker(true)} style={[styles.input, { zIndex: 10 }]}>
+        <Pressable onPress={openPrefPicker} style={[styles.input, { zIndex: 10 }]}>
           <Text style={{ color: form.prefecture ? '#000' : '#555' }}>
             {form.prefecture || '都道府県を選択'}
           </Text>
