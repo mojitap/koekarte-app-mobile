@@ -209,19 +209,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   description: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#555',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 20,
   },
   heading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
   },
   groupTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     backgroundColor: '#f0f0f0',
     padding: 10,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   noticeText: {
     color: '#a00',
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
   },
 });
