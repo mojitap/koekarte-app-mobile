@@ -111,13 +111,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heading: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   description: {
-    fontSize: 13,
+    fontSize: 16,
     color: '#444',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 20,
   },
   rangeButtons: {
@@ -129,6 +129,6 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 20,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 16,
   },
 });
