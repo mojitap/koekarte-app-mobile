@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '../utils/config';
 
 export default function ContactScreen() {
   const navigation = useNavigation();
@@ -8,18 +9,34 @@ export default function ContactScreen() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !email || !message) {
       Alert.alert('入力エラー', 'すべての項目を入力してください。');
       return;
     }
 
-    // ✅ ここでAPI送信処理を追加可能（現時点ではconsoleに出力）
-    console.log({ name, email, message });
-    Alert.alert('送信完了', 'お問い合わせ内容を受け付けました。');
-    setName('');
-    setEmail('');
-    setMessage('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        Alert.alert('エラー', data.error || '送信に失敗しました');
+        return;
+      }
+
+      Alert.alert('送信完了', 'お問い合わせ内容を受け付けました。');
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch (error) {
+      console.error('送信エラー:', error);
+      Alert.alert('通信エラー', '送信に失敗しました。ネットワークを確認してください。');
+    }
   };
 
   return (
