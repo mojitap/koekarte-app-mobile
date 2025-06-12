@@ -69,7 +69,23 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.infoText}>
-          『コエカルテ』は、声からストレス傾向を測定するセルフチェックアプリです。{"\n"}
+          『コエカルテ』は、声からストレス傾向をスコア化するセルフチェックアプリです。{"\n"}
+          スマホで録音するだけで「元気さ・活力」を数値化し、心の変化をグラフで見える化。
+          匿名OK・無料ではじめられ、音楽によるメンタルケア機能も搭載。
+
+          🌿 こんな方におすすめ：
+            • 気分の落ち込みや不安を感じる日が増えた
+            • 原因不明の不調が続いている
+            • 日々のメンタル変化を記録・振り返りたい
+
+          💬 ご利用中の方：
+            • 療養中の方（うつ・PTSD・パニック障害など）
+            • ストレスの多い就活・仕事・育児・学業環境にある方
+            • 「これはストレス？気のせい？」と感じる方
+
+          ※ 医療行為を目的としたサービスではありません。
+          　必要に応じて専門機関への相談を推奨します。
+
 
           録音するだけで、あなたの「元気さ・活力」を数値化します。
         </Text>
@@ -103,6 +119,27 @@ export default function LoginScreen() {
           🔑 パスワード再設定
         </Text>
       </View>
+
+      <View style={styles.policyContainer}>
+        <Text style={styles.policyLink} onPress={() => navigation.navigate('Terms')}>
+          利用規約
+        </Text>
+        <Text style={styles.policySeparator}>|</Text>
+        <Text style={styles.policyLink} onPress={() => navigation.navigate('Privacy')}>
+          プライバシーポリシー
+        </Text>
+        <Text style={styles.policySeparator}>|</Text>
+        <Text style={styles.policyLink} onPress={() => navigation.navigate('Legal')}>
+          特定商取引法に基づく表記
+        </Text>
+        <Text style={styles.policySeparator}>|</Text>
+        <Text style={styles.policyLink} onPress={() => navigation.navigate('Contact')}>
+          お問い合わせ
+        </Text>
+      </View>
+
+
+
     </SafeAreaView>
   );
 }
@@ -158,5 +195,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'left',
     lineHeight: 24,
+  },
+  policyContainer: {
+    marginTop: 30,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  policyLink: {
+    fontSize: 13,
+    color: '#007AFF',
+    marginHorizontal: 4,
+  },
+  policySeparator: {
+    fontSize: 13,
+    color: '#888',
   },
 });
