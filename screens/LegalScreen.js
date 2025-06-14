@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -10,16 +10,28 @@ import {
   StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getUser } from '../utils/auth';
 
 export default function LegalScreen() {
   const navigation = useNavigation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      setIsLoggedIn(!!user);
+    };
+    fetchUser();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>📜 特定商取引法に基づく表記</Text>
 
-        <Text style={styles.paragraph}>本表記は、音声ストレスチェックツール「コエカルテ」（以下「本サービス」）における、特定商取引法第11条に基づく情報提供のためのものです。</Text>
+        <Text style={styles.paragraph}>
+          本表記は、音声ストレスチェックツール「コエカルテ」（以下「本サービス」）における、特定商取引法第11条に基づく情報提供のためのものです。
+        </Text>
 
         <Text style={styles.subheading}>■ 運営事業者</Text>
         <Text style={styles.paragraph}>コエカルテ 運営者</Text>
@@ -88,8 +100,10 @@ export default function LegalScreen() {
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
           <Button
-            title="🏠 マイページに戻る"
-            onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
+            title="◀ マイページへ戻る"
+            onPress={() => {
+              navigation.goBack();
+            }}
           />
         </View>
       </ScrollView>
