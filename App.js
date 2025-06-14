@@ -8,7 +8,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { enableScreens } from 'react-native-screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { navigationRef } from './utils/navigationRef';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { getUser, logout } from './utils/auth';
