@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -10,9 +10,19 @@ import {
   StatusBar
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getUser } from '../utils/auth';
 
 export default function TermsScreen() {
   const navigation = useNavigation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      setIsLoggedIn(!!user);
+    };
+    fetchUser();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -107,8 +117,10 @@ export default function TermsScreen() {
 
         <View style={{ marginTop: 30, alignItems: 'center' }}>
           <Button
-            title="🏠 マイページに戻る"
-            onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
+            title="◀ マイページへ戻る"
+            onPress={() => {
+              navigation.goBack();
+            }}
           />
         </View>
       </ScrollView>
