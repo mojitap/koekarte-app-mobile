@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+// screens/EditProfile.js
+
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -12,10 +14,11 @@ import {
   Alert,
   Modal,
   Pressable,
-} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { API_BASE_URL } from '../utils/config';
+  KeyboardAvoidingView,
+} from 'react-native'
+import { Picker } from '@react-native-picker/picker'
+import DateTimePicker from '@react-native-community/datetimepicker'
+import { API_BASE_URL } from '../utils/config'
 
 export default function EditProfile({ navigation }) {
   const [form, setForm] = useState({
@@ -25,11 +28,10 @@ export default function EditProfile({ navigation }) {
     gender: '',
     occupation: '',
     prefecture: '',
-  });
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showGenderPicker, setShowGenderPicker] = useState(false);
-  const [showPrefPicker, setShowPrefPicker] = useState(false);
+  })
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showGenderPicker, setShowGenderPicker] = useState(false)
+  const [showPrefPicker, setShowPrefPicker] = useState(false)
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
@@ -42,169 +44,182 @@ export default function EditProfile({ navigation }) {
           gender: data.gender || '',
           occupation: data.occupation || '',
           prefecture: data.prefecture || '',
-        });
+        })
       })
       .catch(() => {
-        Alert.alert('エラー', 'プロフィール取得に失敗しました');
-      });
-  }, []);
+        Alert.alert('エラー', 'プロフィール取得に失敗しました')
+      })
+  }, [])
 
   const handleSubmit = () => {
     fetch(`${API_BASE_URL}/api/update-profile`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(form),
     })
-      .then(res => res.json())
       .then(() => {
-        Alert.alert('成功', 'プロフィールを更新しました');
-        navigation.goBack();
+        Alert.alert('成功', 'プロフィールを更新しました')
+        navigation.goBack()
       })
       .catch(() => {
-        Alert.alert('エラー', 'プロフィール更新に失敗しました');
-      });
-  };
+        Alert.alert('エラー', 'プロフィール更新に失敗しました')
+      })
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>✏️ プロフィール編集</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 44 : 0}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.heading}>✏️ プロフィール編集</Text>
 
-        <View style={styles.formItem}>
-          <Text style={styles.label}>メールアドレス</Text>
-          <TextInput
-            value={form.email}
-            onChangeText={text => setForm({ ...form, email: text })}
-            style={styles.input}
-            placeholder="例: example@mail.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.formItem}>
-          <Text style={styles.label}>ニックネーム</Text>
-          <TextInput
-            value={form.username}
-            onChangeText={text => setForm({ ...form, username: text })}
-            style={styles.input}
-            placeholder="ニックネームを入力"
-          />
-        </View>
-
-        <View style={styles.formItem}>
-          <Text style={styles.label}>生年月日</Text>
-          <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text style={{ color: form.birthdate ? '#000' : '#888' }}>{form.birthdate || 'タップして選択'}</Text>
-          </Pressable>
-        </View>
-        <Modal visible={showDatePicker} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <DateTimePicker
-                value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
-                mode="date"
-                display="spinner"
-                locale="ja-JP"
-                onChange={(event, selectedDate) => {
-                  if (selectedDate) {
-                    const iso = selectedDate.toISOString().split('T')[0];
-                    setForm({ ...form, birthdate: iso });
-                  }
-                }}
-              />
-              <Button title="決定" onPress={() => setShowDatePicker(false)} />
-            </View>
+          {/* メール */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>メールアドレス</Text>
+            <TextInput
+              value={form.email}
+              onChangeText={t => setForm({ ...form, email: t })}
+              style={styles.input}
+              placeholder="例: example@mail.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
           </View>
-        </Modal>
 
-        <View style={styles.formItem}>
-          <Text style={styles.label}>性別</Text>
-          <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
-            <Text style={{ color: form.gender ? '#000' : '#888' }}>{form.gender || 'タップして選択'}</Text>
-          </Pressable>
-        </View>
-        <Modal visible={showGenderPicker} transparent animationType="fade">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
-              <Picker
-                selectedValue={form.gender}
-                onValueChange={value => setForm({ ...form, gender: value })}
-              >
-                <Picker.Item label="未選択" value="" />
-                <Picker.Item label="男性" value="男性" />
-                <Picker.Item label="女性" value="女性" />
-                <Picker.Item label="その他" value="その他" />
-              </Picker>
-              <Button title="決定" onPress={() => setShowGenderPicker(false)} />
-            </View>
+          {/* ニックネーム */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>ニックネーム</Text>
+            <TextInput
+              value={form.username}
+              onChangeText={t => setForm({ ...form, username: t })}
+              style={styles.input}
+              placeholder="ニックネームを入力"
+            />
           </View>
-        </Modal>
 
-        <View style={styles.formItem}>
-          <Text style={styles.label}>職業</Text>
-          <TextInput
-            value={form.occupation}
-            onChangeText={text => setForm({ ...form, occupation: text })}
-            style={styles.input}
-            placeholder="例: 学生 / 会社員 / フリーランス"
-          />
-        </View>
-
-        <View style={styles.formItem}>
-          <Text style={styles.label}>都道府県</Text>
-          <Pressable
-            onPress={() => setShowPrefPicker(true)}
-            style={[styles.input, { zIndex: 10 }]}
-          >
-            <Text style={{ color: form.prefecture === '' ? '#888' : '#000' }}>
-              {form.prefecture === '' ? 'タップして選択' : form.prefecture}
-            </Text>
-          </Pressable>
-        </View>
-        <Modal visible={showPrefPicker} transparent animationType="fade">
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
-              <Picker
-                selectedValue={form.prefecture}
-                onValueChange={value => setForm({ ...form, prefecture: value })}
-                style={{ width: '100%', height: 200 }}
-                itemStyle={{ color: '#000' }}
-              >
-                <Picker.Item label="未選択" value="" />
-                {[
-                  '北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
-                  '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
-                  '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県',
-                  '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県',
-                  '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県',
-                  '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県',
-                  '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'
-                ].map(pref => (
-                  <Picker.Item key={pref} label={pref} value={pref} />
-                ))}
-              </Picker>
-              <Button title="決定" onPress={() => setShowPrefPicker(false)} />
-            </View>
+          {/* 生年月日 */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>生年月日</Text>
+            {!showDatePicker && (
+              <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
+                <Text style={{ color: form.birthdate ? '#000' : '#888' }}>
+                  {form.birthdate || 'タップして選択'}
+                </Text>
+              </Pressable>
+            )}
           </View>
-        </Modal>
+          <Modal visible={showDatePicker} transparent animationType="fade">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <DateTimePicker
+                  value={form.birthdate ? new Date(form.birthdate) : new Date(2000, 0, 1)}
+                  mode="date"
+                  display="spinner"
+                  locale="ja-JP"
+                  onChange={(_, d) => {
+                    if (d) {
+                      const iso = d.toISOString().split('T')[0]
+                      setForm({ ...form, birthdate: iso })
+                    }
+                  }}
+                  textColor="#000"
+                  style={{ backgroundColor: '#fff', width: '100%' }}
+                />
+                <Button title="決定" onPress={() => setShowDatePicker(false)} />
+              </View>
+            </View>
+          </Modal>
 
-        <View style={{ marginTop: 30 }}>
-          <Button title="💾 保存する" onPress={handleSubmit} />
-        </View>
-      </ScrollView>
+          {/* 性別 */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>性別</Text>
+            <Pressable onPress={() => setShowGenderPicker(true)} style={styles.input}>
+              <Text style={{ color: form.gender ? '#000' : '#888' }}>
+                {form.gender || 'タップして選択'}
+              </Text>
+            </Pressable>
+          </View>
+          <Modal visible={showGenderPicker} transparent animationType="fade">
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContainer}>
+                <Picker
+                  selectedValue={form.gender}
+                  onValueChange={v => setForm({ ...form, gender: v })}
+                  itemStyle={{ fontSize: 18, color: '#000' }}
+                >
+                  <Picker.Item label="未選択" value="" />
+                  <Picker.Item label="男性" value="男性" />
+                  <Picker.Item label="女性" value="女性" />
+                  <Picker.Item label="その他" value="その他" />
+                </Picker>
+                <Button title="決定" onPress={() => setShowGenderPicker(false)} />
+              </View>
+            </View>
+          </Modal>
+
+          {/* 職業 */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>職業</Text>
+            <TextInput
+              value={form.occupation}
+              onChangeText={t => setForm({ ...form, occupation: t })}
+              style={styles.input}
+              placeholder="例: 学生 / 会社員 / フリーランス"
+            />
+          </View>
+
+          {/* 都道府県 */}
+          <View style={styles.formItem}>
+            <Text style={styles.label}>都道府県</Text>
+            <Pressable onPress={() => setShowPrefPicker(true)} style={[styles.input, { zIndex: 10 }]}>
+              <Text style={{ color: form.prefecture ? '#000' : '#888' }}>
+                {form.prefecture || 'タップして選択'}
+              </Text>
+            </Pressable>
+          </View>
+          <Modal visible={showPrefPicker} transparent animationType="fade">
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContainer}>
+                <Picker
+                  selectedValue={form.prefecture}
+                  onValueChange={v => setForm({ ...form, prefecture: v })}
+                  style={{ width: '100%', height: 200 }}
+                  itemStyle={{ color: '#000' }}
+                >
+                  <Picker.Item label="未選択" value="" />
+                  {[
+                    '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+                    '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+                    '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
+                    '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
+                    '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
+                    '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
+                    '熊本県','大分県','宮崎県','鹿児島県','沖縄県'
+                  ].map(p => <Picker.Item key={p} label={p} value={p} />)}
+                </Picker>
+                <Button title="決定" onPress={() => setShowPrefPicker(false)} />
+              </View>
+            </View>
+          </Modal>
+
+          <View style={{ marginTop: 30 }}>
+            <Button title="💾 保存する" onPress={handleSubmit} />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,
   },
   container: {
     padding: 20,
@@ -213,15 +228,15 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    textAlign: 'center',
     marginBottom: 30,
+    textAlign: 'center',
   },
   formItem: {
     marginBottom: 20,
   },
   label: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 5,
   },
   input: {
@@ -232,15 +247,17 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   modalOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
   },
   modalContent: {
+    width: '80%',
     backgroundColor: '#fff',
-    marginHorizontal: 20,
+    borderRadius: 8,
     padding: 20,
-    borderRadius: 10,
     alignItems: 'center',
   },
   modalBackground: {
@@ -250,9 +267,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 20,
-    borderRadius: 10,
     width: '80%',
   },
-});
+})
