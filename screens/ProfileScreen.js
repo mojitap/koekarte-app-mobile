@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import {
   View,
   Text,
@@ -22,6 +23,7 @@ export default function ProfileScreen({ navigation }) {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [hadProfile, setHadProfile] = useState(false); // 🔑 ログアウト済みかどうか
+  const { setShowAuthStack } = useContext(AuthContext);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -148,7 +150,7 @@ export default function ProfileScreen({ navigation }) {
                 onPress={async () => {
                   await logout();
                   Alert.alert('ログアウトしました');
-                  navigation.reset({ index: 0, routes: [{ name: 'Profile' }] });
+                  setShowAuthStack(true);
                 }}
               >
                 🚪 ログアウト
