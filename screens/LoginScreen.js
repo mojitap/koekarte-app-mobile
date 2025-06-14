@@ -58,7 +58,11 @@ export default function LoginScreen() {
         keyboardVerticalOffset={Platform.OS==='ios'?44:0}
       >
         <ScrollView
-          contentContainerStyle={{padding:20,flexGrow:1}}
+          contentContainerStyle={{
+            padding: 20,
+            flexGrow: 1,
+            paddingBottom: Platform.OS === 'android' ? 80 : 40, // ✅ ここにまとめる！
+          }}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ width: '100%', maxWidth: 360, alignSelf: 'center' }}>
@@ -81,6 +85,7 @@ export default function LoginScreen() {
             <Text style={styles.subtext}>※ 本サービスは医療行為を目的としたものではありません。{"\n"}
             気になる症状がある方は専門機関へご相談ください。</Text>
 
+            <View style={{ marginBottom: 8 }} />
 
             <Text style={styles.heading}>🔑 ログイン</Text>
 
@@ -195,6 +200,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#777',
     marginTop: 12,
+    marginBottom: 10,
     lineHeight: 18,
   },
   heading: {
