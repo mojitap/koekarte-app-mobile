@@ -1,13 +1,35 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Platform,
+  StatusBar,
+  SafeAreaView,
+  Button,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { API_BASE_URL } from '../utils/config';
+import { getUser } from '../utils/auth';
 
 export default function ContactScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      setIsLoggedIn(!!user);
+    };
+    fetchUser();
+  }, []);
 
   const handleSubmit = async () => {
     if (!name || !email || !message) {
@@ -40,39 +62,63 @@ export default function ContactScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>📩 お問い合わせ</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.heading}>📩 お問い合わせ</Text>
 
-      <Text style={styles.label}>お名前：</Text>
-      <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="お名前" />
+        <Text style={styles.label}>お名前：</Text>
+        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="お名前" />
 
-      <Text style={styles.label}>メールアドレス：</Text>
-      <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="メールアドレス" keyboardType="email-address" />
+        <Text style={styles.label}>メールアドレス：</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="メールアドレス"
+          keyboardType="email-address"
+        />
 
-      <Text style={styles.label}>内容：</Text>
-      <TextInput
-        style={[styles.input, { height: 100 }]}
-        value={message}
-        onChangeText={setMessage}
-        placeholder="お問い合わせ内容"
-        multiline
-      />
+        <Text style={{ marginBottom: 12, color: '#333', fontSize: 15 }}>
+          お問い合わせ内容をご記入ください。{"\n"}
+          {"\n"}
+          ※パスワードまたはメールアドレスをお忘れの方は、{"\n"}
+          「パスワード再発行希望」と記載し、{"\n"}
+          ご登録時の「ユーザー名・生年月日・都道府県」など{"\n"}
+          覚えている限り、ご入力ください。{"\n"}
+          確認でき次第、サポートよりご案内します。{"\n"}
+        </Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>送信する</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={[styles.input, { height: 100 }]}
+          value={message}
+          onChangeText={setMessage}
+          placeholder="お問い合わせ内容"
+          multiline
+        />
 
-      <TouchableOpacity
-        style={styles.backButton}
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
-      >
-        <Text style={styles.backButtonText}>🏠 マイページに戻る</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>送信する</Text>
+        </TouchableOpacity>
+
+        <View style={{ marginTop: 30, alignItems: 'center' }}>
+          <Button
+            title="◀ マイページへ戻る"
+            onPress={() => {
+              navigation.goBack();
+            }}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
   },
