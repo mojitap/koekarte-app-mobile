@@ -19,10 +19,15 @@ import { Picker } from '@react-native-picker/picker';
 import { saveUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium } from '../utils/premiumUtils';
+import { CommonActions } from '@react-navigation/native';
+
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 const MAX_CONTENT_WIDTH = 360;
 
 export default function RegisterScreen({ navigation }) {
+  const { setShowAuthStack } = useContext(AuthContext);
   const [form, setForm] = useState({
     email: '', username: '', password: '',
     birthdate: '', gender: '', occupation: '', prefecture: ''
@@ -54,17 +59,29 @@ export default function RegisterScreen({ navigation }) {
       await saveUser(data);
       const profileRes = await fetch(`${API_BASE_URL}/api/profile`, { credentials:'include' });
       const profileData = await profileRes.json();
-      const ok = checkCanUsePremium(profileData.created_at, profileData.is_paid, profileData.is_free_extended);
+      const ok = checkCanUsePremium(
+        profileData.created_at || '',
+        profileData.is_paid || false,
+        profileData.is_free_extended || false
+      );
       if (!ok) {
         await logout();
         Alert.alert('利用不可', '無料期間が終了しています');
         return;
       }
-      Alert.alert('登録成功','ようこそ！',[{
-        text:'OK', onPress:() => navigation.reset({
-          index:0,
-          routes:[{ name:'MainTabs' }]
-        })
+      Alert.alert('登録成功','ようこそ！', [{
+        text: 'OK',
+        onPress: async () => {
+          setShowAuthStack(false);
+          setTimeout(() => {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'MainTabs' }],
+              })
+            );
+          }, 50);
+        }
       }]);
     } catch (err) {
       console.error(err);
