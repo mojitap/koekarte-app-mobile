@@ -38,13 +38,12 @@ const Stack = createNativeStackNavigator();
 function MainTabs() {
   return (
     <Tab.Navigator
-      // 全タブを初回マウント、アンマウント・アニメをOFF
       lazy={false}
+      detachInactiveScreens={true}
       screenOptions={({ route }) => ({
         headerShown: false,
         unmountOnBlur: false,
         animationEnabled: false,
-        detachInactiveScreens: false,
         sceneContainerStyle: { backgroundColor: '#fff' },
         tabBarActiveTintColor: '#007AFF',
         tabBarIcon: ({ color, size }) => {
