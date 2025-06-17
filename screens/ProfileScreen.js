@@ -122,16 +122,28 @@ export default function ProfileScreen({ navigation }) {
                 </View>
 
             <View style={styles.statusBox}>
-              {canUsePremium ? (
-                <Text style={{ color: 'green', fontSize: 17 }}>✅ 利用可能です（無料 or 有料）</Text>
+              {profile?.is_paid ? (
+                <>
+                  <Text style={{ color: 'green', fontSize: 16, fontWeight: 'bold' }}>💎 有料プランをご利用中です</Text>
+                  <Text style={{ marginTop: 10, color: '#444' }}>
+                    ストレススコアの取得、グラフの閲覧、プレミアム音源など全ての機能をご利用いただけます。
+                  </Text>
+                </>
+              ) : getFreeDaysLeft(profile?.created_at) > 0 ? (
+                <>
+                  <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>🆓 現在は <Text style={{ color: '#007AFF' }}>無料プラン</Text> をご利用中です</Text>
+                  <Text style={{ marginTop: 8, color: '#444' }}>
+                    ⏳ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile?.created_at)}</Text> 日で終了します。
+                    無料期間終了後は録音・分析・グラフ機能に制限がかかります。
+                  </Text>
+                </>
               ) : (
-                <Text style={{ color: 'red', fontSize: 17 }}>‼️ 利用制限中（無料期間終了）</Text>
-              )}
-
-              {!canUsePremium && profile?.created_at && (
-                <Text style={{ color: 'orange', fontSize: 15, marginTop: 8 }}>
-                  ⏳ あと {getFreeDaysLeft(profile.created_at)} 日、無料でご利用いただけます
-                </Text>
+                <>
+                  <Text style={{ color: '#a00', fontSize: 16, fontWeight: 'bold' }}>⚠️ 無料期間は終了しました</Text>
+                  <Text style={{ marginTop: 8, color: '#444' }}>
+                    引き続きご利用いただくには、有料プラン（月額300円）へのご登録が必要です。
+                  </Text>
+                </>
               )}
             </View>
 
@@ -251,8 +263,11 @@ const styles = StyleSheet.create({
   },
   statusBox: {
     padding: 15,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fefefe',
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 8,
+    marginTop: 20,
   },
   link: {
     marginTop: 10,
