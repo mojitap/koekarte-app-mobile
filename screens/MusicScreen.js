@@ -1,4 +1,4 @@
-// ✅ MusicScreen.js（整理済み・説明文＋制限メッセージの条件表示あり）
+// ✅ MusicScreen.js（修正済み・再生制御あり）
 
 import React, { useState, useRef } from 'react';
 import {
@@ -20,7 +20,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
-import { checkCanUsePremium } from '../utils/premiumUtils';
+import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -36,38 +36,60 @@ const audioGroups = {
   },
   'ポジティブ': {
     tracks: [
-      { label: 'ポジティブ1', file: require('../assets/audio/paid/positive1.mp3') },
-      { label: 'ポジティブ2', file: require('../assets/audio/paid/positive2.mp3') },
-      { label: 'ポジティブ3', file: require('../assets/audio/paid/positive3.mp3') },
-      { label: 'ポジティブ4', file: require('../assets/audio/paid/positive4.mp3') },
-      { label: 'ポジティブ5', file: require('../assets/audio/paid/positive5.mp3') },
+      { label: 'ポジティブ1', file: require('../assets/audio/paid/positive1.mp3'), isPremium: true },
+      { label: 'ポジティブ2', file: require('../assets/audio/paid/positive2.mp3'), isPremium: true },
+      { label: 'ポジティブ3', file: require('../assets/audio/paid/positive3.mp3'), isPremium: true },
+      { label: 'ポジティブ4', file: require('../assets/audio/paid/positive4.mp3'), isPremium: true },
+      { label: 'ポジティブ5', file: require('../assets/audio/paid/positive5.mp3'), isPremium: true },
     ],
   },
   'リラックス': {
     tracks: [
-      { label: 'リラックス1', file: require('../assets/audio/paid/relax1.mp3') },
-      { label: 'リラックス2', file: require('../assets/audio/paid/relax2.mp3') },
-      { label: 'リラックス3', file: require('../assets/audio/paid/relax3.mp3') },
-      { label: 'リラックス4', file: require('../assets/audio/paid/relax4.mp3') },
-      { label: 'リラックス5', file: require('../assets/audio/paid/relax5.mp3') },
+      { label: 'リラックス1', file: require('../assets/audio/paid/relax1.mp3'), isPremium: true },
+      { label: 'リラックス2', file: require('../assets/audio/paid/relax2.mp3'), isPremium: true },
+      { label: 'リラックス3', file: require('../assets/audio/paid/relax3.mp3'), isPremium: true },
+      { label: 'リラックス4', file: require('../assets/audio/paid/relax4.mp3'), isPremium: true },
+      { label: 'リラックス5', file: require('../assets/audio/paid/relax5.mp3'), isPremium: true },
     ],
   },
   '瞑想': {
     tracks: [
-      { label: '瞑想1', file: require('../assets/audio/paid/mindfulness1.mp3') },
-      { label: '瞑想2', file: require('../assets/audio/paid/mindfulness2.mp3') },
-      { label: '瞑想3', file: require('../assets/audio/paid/mindfulness3.mp3') },
-      { label: '瞑想4', file: require('../assets/audio/paid/mindfulness4.mp3') },
-      { label: '瞑想5', file: require('../assets/audio/paid/mindfulness5.mp3') },
+      { label: '瞑想1', file: require('../assets/audio/paid/mindfulness1.mp3'), isPremium: true },
+      { label: '瞑想2', file: require('../assets/audio/paid/mindfulness2.mp3'), isPremium: true },
+      { label: '瞑想3', file: require('../assets/audio/paid/mindfulness3.mp3'), isPremium: true },
+      { label: '瞑想4', file: require('../assets/audio/paid/mindfulness4.mp3'), isPremium: true },
+      { label: '瞑想5', file: require('../assets/audio/paid/mindfulness5.mp3'), isPremium: true },
     ],
   },
 };
 
 export default function MusicScreen() {
-  const [canUsePremium, setCanUsePremium] = useState(false);
+  const [canUsePremium, setCanUsePremium] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(null);
   const soundRef = useRef(null);
+
+  const playSound = async (track) => {
+    if (canUsePremium !== true && track.isPremium) {
+      Alert.alert("🔒 有料音源", "この音源は有料プラン専用です。プランをご確認ください。");
+      return;
+    }
+
+    try {
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync();
+      }
+      const { sound } = await Audio.Sound.createAsync(track.file, { volume: 1.0 });
+      soundRef.current = sound;
+      await sound.playAsync();
+      setCurrentTrack(track.label);
+    } catch (e) {
+      console.error("❌ 再生失敗:", e);
+      Alert.alert("再生エラー", "音源を再生できませんでした\n" + e.message);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -80,7 +102,7 @@ export default function MusicScreen() {
             shouldDuckAndroid: true,
             playThroughEarpieceAndroid: false,
           });
-          
+
           const user = await getUser();
           if (!user) return;
 
@@ -89,9 +111,10 @@ export default function MusicScreen() {
 
           console.log("🎵 MusicScreen の profile データ:", data);
           const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
-          console.log("🟢 checkCanUsePremium の結果:", ok);
+          console.log("🟢 checkCanUsePremium:", ok);
 
           setCanUsePremium(ok);
+          setUserProfile(data);
         } catch (e) {
           console.error("❌ MusicScreen useFocusEffect エラー:", e);
           setCanUsePremium(false);
@@ -112,22 +135,6 @@ export default function MusicScreen() {
   const toggleGroup = (group) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedGroup(group === expandedGroup ? null : group);
-  };
-
-  const playSound = async (track) => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-      }
-      const { sound } = await Audio.Sound.createAsync(track.file, { volume: 1.0 });
-      soundRef.current = sound;
-      await sound.playAsync();
-      setCurrentTrack(track.label);
-    } catch (e) {
-      console.error("❌ 再生失敗:", e);
-      Alert.alert("再生エラー", "音源を再生できませんでした\n" + e.message);
-    }
   };
 
   const stopSound = async () => {
@@ -154,20 +161,31 @@ export default function MusicScreen() {
           ※音源は個人の目的や好みに応じて自由に選んでご利用いただけます。
         </Text>
 
-        {!canUsePremium && (
+        {userProfile && userProfile.created_at && !userProfile.is_paid && (
           <View style={styles.noticeBox}>
-            <Text style={styles.noticeText}>
-              💡 無料期間は登録日から5日間です。{"\n"}
-              無料期間が終了すると以下の機能はご利用いただけません：{"\n\n"}
-              ・録音とスコア分析{"\n"}
-              ・全18曲の音源再生{"\n\n"}
-              ご利用には有料プラン（月額300円）への移行が必要です。
-            </Text>
+            {getFreeDaysLeft(userProfile.created_at) > 0 ? (
+              <Text style={styles.noticeText}>
+                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>
+                  {getFreeDaysLeft(userProfile.created_at)}
+                </Text> 日です。{"\n\n"}
+                ・録音とスコア分析{"\n"}
+                ・全18曲の音源再生{"\n"}
+                は引き続きご利用いただけます。
+              </Text>
+            ) : (
+              <Text style={styles.noticeText}>
+                ⚠️ 無料期間は終了しました。{"\n\n"}
+                録音・スコア分析・音源再生のご利用には、{'\n'}有料プラン（月額300円）が必要です。
+              </Text>
+            )}
           </View>
         )}
 
+        <View style={{ height: 16 }} />
+
         {Object.entries(audioGroups).map(([group, { tracks }]) => {
-          if (!canUsePremium && group !== '無料') return null;
+          if (canUsePremium === false && group !== '無料') return null;
+          if (canUsePremium === null && group !== '無料') return null;
           return (
             <View key={group} style={{ marginBottom: 20 }}>
               <TouchableOpacity onPress={() => toggleGroup(group)}>
@@ -250,6 +268,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 15,
     marginTop: 30,
+    marginBottom: 16,
   },
   noticeText: {
     color: '#a00',
