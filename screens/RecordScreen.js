@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { checkCanUsePremium } from '../utils/premiumUtils';
+import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import * as FileSystem from 'expo-file-system';
@@ -22,8 +22,6 @@ import * as FileSystem from 'expo-file-system';
 export default function RecordScreen() {
   const navigation = useNavigation();
   const [submitted, setSubmitted] = useState(false);
-
-  // ハイブリッド処理用ジョブID
   const [detailJobId, setDetailJobId] = useState(null);
   const [recording, setRecording] = useState(null);
   const [sound, setSound] = useState(null);
@@ -32,6 +30,7 @@ export default function RecordScreen() {
   const [dotCount, setDotCount] = useState(0);
   const [status, setStatus] = useState('');
   const [canUsePremium, setCanUsePremium] = useState(false);
+  const [profile, setProfile] = useState(null);
   const recordingRef = useRef(null);
 
   // ログイン状態と利用可否チェック
@@ -53,6 +52,7 @@ export default function RecordScreen() {
               data.is_free_extended
             );
             setCanUsePremium(ok);
+            setProfile(data);
           })
           .catch((err) => {
             console.error('❌ プロフィール取得失敗:', err);
@@ -257,6 +257,22 @@ export default function RecordScreen() {
           />
           <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
         </View>
+
+        {/* 🔔 無料期間の案内表示 */}
+        {profile && !profile.is_paid && profile.created_at && (
+          <View style={styles.noticeBox}>
+            {getFreeDaysLeft(profile.created_at) > 0 ? (
+              <Text style={styles.noticeText}>
+                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
+                無料期間終了後は録音・分析・スコアグラフの利用に制限がかかります。
+              </Text>
+            ) : (
+              <Text style={[styles.noticeText, { color: '#a00' }]}>
+                ⚠️ 無料期間は終了しました。録音機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* 説明文章 */}
         <View style={{ marginTop: 20 }}>
@@ -474,5 +490,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: '#333',
     lineHeight: 24,
+  },
+  noticeBox: {
+    padding: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff8f6',
+    marginBottom: 20,
+  },
+  noticeText: {
+    fontSize: 14,
+    color: '#444',
+    lineHeight: 20,
   },
 });
