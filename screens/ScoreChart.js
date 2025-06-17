@@ -14,63 +14,92 @@ export default function ScoreChart({ range = 'all', smooth = true }) {
   useEffect(() => {
     let ignore = false;
     (async () => {
-      const res  = await fetch(`${API_BASE_URL}/api/score-history`, { credentials: 'include' });
-      const { scores = [] } = await res.json();
-      const raw = scores.filter(v => Number.isFinite(v.score));
-      if (!raw.length || ignore) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/score-history`, { credentials: 'include' });
+        const { scores = [] } = await res.json();
 
-      const sorted = raw.slice().sort((a,b)=>toDate(a.timestamp)-toDate(b.timestamp));
+        console.log("📊 /api/score-history fetch結果:", scores);
 
-      /* range filter */
-      let data = sorted;
-      const now = new Date();
-      if (range==='week') {
-        const wk = new Date(now); wk.setDate(now.getDate()-7);
-        data = sorted.filter(v => toDate(v.timestamp) >= wk);
-      } else if (range==='month') {
-        const mo = new Date(now); mo.setMonth(now.getMonth()-1);
-        data = sorted.filter(v => toDate(v.timestamp) >= mo);
-      }
-      if (!data.length) { setChartData(null); return; }
+        const raw = scores.filter(v => Number.isFinite(v.score));
 
-      const labels = data.map(v=>{
-        const d=toDate(v.timestamp);
-        return `${d.getMonth()+1}/${d.getDate()}`;
-      });
-      const mainSeries = data.map(v=>v.score);
+        console.log("📊 rawデータ:", raw);
 
-      const baseline = sorted.length>=5
-        ? Math.round(sorted.slice(0,5).reduce((s,v)=>s+v.score,0)/5)
-        : null;
-      const baseSeries = baseline ? data.map(()=>baseline) : null;
+        if (!raw.length || ignore) {
+          setChartData(null);
+          return;
+        }
 
-      const fallbackSeries = data.map(v=>v.is_fallback?v.score:NaN);
-      const hasFallback   = fallbackSeries.some(v=>!isNaN(v));
+        const sorted = raw.slice().sort((a, b) => toDate(a.timestamp) - toDate(b.timestamp));
+        let data = sorted;
 
-      /* datasets & legend 同期 */
-      const datasets = [
-        { data: mainSeries, strokeWidth:2, color:()=> 'rgba(75,192,192,1)' }
-      ];
-      const legendArr = ['ストレススコア'];
+        console.log("📊 最終表示用データ:", data);
 
-      if (baseSeries) {
-        datasets.push({
-          data: baseSeries, strokeWidth:1,
-          color:()=> 'rgba(255,99,132,0.7)', withDots:false
+        const now = new Date();
+
+        if (range === 'week') {
+          const wk = new Date(now);
+          wk.setDate(now.getDate() - 7);
+          data = sorted.filter(v => toDate(v.timestamp) >= wk);
+        } else if (range === 'month') {
+          const mo = new Date(now);
+          mo.setDate(1);
+          data = sorted.filter(v => {
+            const dt = toDate(v.timestamp);
+            return dt >= mo && dt.getMonth() === mo.getMonth();
+          });
+        } else if (range === 'past') {
+          const mo = new Date(now);
+          mo.setDate(1);
+          data = sorted.filter(v => {
+            const dt = toDate(v.timestamp);
+            return dt < mo;
+          });
+        } else {
+          data = sorted;
+        }
+
+        const labels = data.map(v => {
+          const d = toDate(v.timestamp);
+          return `${d.getMonth() + 1}/${d.getDate()}`;
         });
-        legendArr.push('ベースライン');
-      }
-      if (hasFallback) {
-        datasets.push({
-          data: fallbackSeries, strokeWidth:0,
-          color:()=> 'rgba(255,165,0,0.9)', withDots:true
-        });
-        legendArr.push('仮スコア');
-      }
 
-      setChartData({ labels, datasets, legend: legendArr });
+        const mainSeries = data.map(v => v.score);
+
+        const baseline = sorted.length >= 5
+          ? Math.round(sorted.slice(0, 5).reduce((s, v) => s + v.score, 0) / 5)
+          : null;
+        const baseSeries = baseline ? data.map(() => baseline) : null;
+
+        const fallbackSeries = data.map(v => v.is_fallback ? v.score : NaN);
+        const hasFallback = fallbackSeries.some(v => !isNaN(v));
+
+        const datasets = [
+          { data: mainSeries, strokeWidth: 2, color: () => 'rgba(75,192,192,1)' }
+        ];
+        const legendArr = ['ストレススコア'];
+
+        if (baseSeries) {
+          datasets.push({
+            data: baseSeries, strokeWidth: 1,
+            color: () => 'rgba(255,99,132,0.7)', withDots: false
+          });
+          legendArr.push('ベースライン');
+        }
+        if (hasFallback) {
+          datasets.push({
+            data: fallbackSeries, strokeWidth: 0,
+            color: () => 'rgba(255,165,0,0.9)', withDots: true
+          });
+          legendArr.push('仮スコア');
+        }
+
+        setChartData({ labels, datasets, legend: legendArr });
+      } catch (err) {
+        console.error("❌ ScoreChart fetch error:", err);
+        setChartData(null);
+      }
     })();
-    return ()=>{ ignore=true; };
+    return () => { ignore = true; };
   }, [range]);
 
   if (!chartData) {
