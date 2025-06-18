@@ -15,51 +15,36 @@ export default function ScoreChart({ range = 'all', smooth = true }) {
     let ignore = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/score-history`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/scores?range=${range}`, {
+          credentials: 'include'
+        });
         const { scores = [] } = await res.json();
 
-        console.log("📊 /api/score-history fetch結果:", scores);
-
         const raw = scores.filter(v => Number.isFinite(v.score));
-
-        console.log("📊 rawデータ:", raw);
 
         if (!raw.length || ignore) {
           setChartData(null);
           return;
         }
 
-        const sorted = raw.slice().sort((a, b) => toDate(a.timestamp) - toDate(b.timestamp));
-        let data = sorted;
-
-        console.log("📊 最終表示用データ:", data);
+        const sorted = raw.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        let data = [...sorted];
 
         const now = new Date();
-
         if (range === 'week') {
-          const wk = new Date(now);
+          const wk = new Date();
           wk.setDate(now.getDate() - 7);
-          data = sorted.filter(v => toDate(v.timestamp) >= wk);
+          data = sorted.filter(v => new Date(v.date) >= wk);
         } else if (range === 'month') {
-          const mo = new Date(now);
-          mo.setDate(1);
-          data = sorted.filter(v => {
-            const dt = toDate(v.timestamp);
-            return dt >= mo && dt.getMonth() === mo.getMonth();
-          });
+          const mo = new Date(now.getFullYear(), now.getMonth(), 1);
+          data = sorted.filter(v => new Date(v.date) >= mo);
         } else if (range === 'past') {
-          const mo = new Date(now);
-          mo.setDate(1);
-          data = sorted.filter(v => {
-            const dt = toDate(v.timestamp);
-            return dt < mo;
-          });
-        } else {
-          data = sorted;
+          const mo = new Date(now.getFullYear(), now.getMonth(), 1);
+          data = sorted.filter(v => new Date(v.date) < mo);
         }
 
         const labels = data.map(v => {
-          const d = toDate(v.timestamp);
+          const d = new Date(v.date);
           return `${d.getMonth() + 1}/${d.getDate()}`;
         });
 
@@ -69,9 +54,6 @@ export default function ScoreChart({ range = 'all', smooth = true }) {
           ? Math.round(sorted.slice(0, 5).reduce((s, v) => s + v.score, 0) / 5)
           : null;
         const baseSeries = baseline ? data.map(() => baseline) : null;
-
-        const fallbackSeries = data.map(v => v.is_fallback ? v.score : NaN);
-        const hasFallback = fallbackSeries.some(v => !isNaN(v));
 
         const datasets = [
           { data: mainSeries, strokeWidth: 2, color: () => 'rgba(75,192,192,1)' }
@@ -84,13 +66,6 @@ export default function ScoreChart({ range = 'all', smooth = true }) {
             color: () => 'rgba(255,99,132,0.7)', withDots: false
           });
           legendArr.push('ベースライン');
-        }
-        if (hasFallback) {
-          datasets.push({
-            data: fallbackSeries, strokeWidth: 0,
-            color: () => 'rgba(255,165,0,0.9)', withDots: true
-          });
-          legendArr.push('仮スコア');
         }
 
         setChartData({ labels, datasets, legend: legendArr });
