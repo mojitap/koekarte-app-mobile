@@ -100,14 +100,26 @@ export default function ContactScreen() {
           <Text style={styles.buttonText}>送信する</Text>
         </TouchableOpacity>
 
-        <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button
-            title="◀ マイページへ戻る"
-            onPress={() => {
-              navigation.goBack();
-            }}
-          />
+        <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+              <Text style={styles.linkText}>利用規約</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+              <Text style={styles.linkText}>プライバシーポリシー</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+              <Text style={styles.linkText}>特定商取引法</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+          </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -159,5 +171,16 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  linkText: {
+    fontSize: 16,
+    color: '#007bff',
+    marginHorizontal: 2,
+    minHeight: 24,
+    textDecorationLine: 'underline',
+  },
+  separator: {
+    fontSize: 12,
+    color: '#666',
   },
 });
