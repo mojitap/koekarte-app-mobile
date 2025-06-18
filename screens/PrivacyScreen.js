@@ -3,6 +3,7 @@ import {
   View,
   Text,
   ScrollView,
+  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   Platform,
@@ -99,14 +100,25 @@ export default function PrivacyScreen() {
 
         <Text style={styles.date}>最終改定日：2025年06月02日</Text>
 
-        <View style={{ marginTop: 30, alignItems: 'center' }}>
-          <Button
-            title="◀ マイページへ戻る"
-            onPress={() => {
-              navigation.goBack();
-            }}
-          />
+        {/* 利用規約などのリンク */}
+        <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+              <Text style={styles.linkText}>利用規約</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+              <Text style={styles.linkText}>特定商取引法</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+              <Text style={styles.linkText}>お問い合わせ</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -143,5 +155,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'gray',
     marginTop: 20,
+  },
+  linkText: {
+    fontSize: 16,
+    color: '#007bff',
+    marginHorizontal: 2,
+    minHeight: 24,
+    textDecorationLine: 'underline',
+  },
+  separator: {
+    fontSize: 12,
+    color: '#666',
   },
 });
