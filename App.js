@@ -46,6 +46,14 @@ function MainTabs() {
         animationEnabled: false,
         sceneContainerStyle: { backgroundColor: '#fff' },
         tabBarActiveTintColor: '#007AFF',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          textAlign: 'center',
+        },
+        tabBarStyle: {
+          paddingBottom: 5,
+          height: 60,
+        },
         tabBarIcon: ({ color, size }) => {
           const icons = {
             Home: 'person',
@@ -57,10 +65,16 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home"   component={ProfileScreen} options={{ title: 'マイページ' }} />
+      <Tab.Screen name="Home" component={ProfileScreen} options={{ title: 'マイページ' }} />
       <Tab.Screen name="Record" component={RecordScreen} options={{ title: '録音' }} />
-      <Tab.Screen name="Chart"  component={ChartScreen} options={{ title: 'グラフ' }} />
-      <Tab.Screen name="Music"  component={MusicScreen} options={{ title: '音源' }} />
+      <Tab.Screen name="Chart" component={ChartScreen} options={{ title: 'グラフ' }} />
+      <Tab.Screen name="Music" component={MusicScreen} options={{ title: '音源' }} />
+
+      {/* 以下4つを追加：タブは非表示だけど画面は存在 */}
+      <Tab.Screen name="Terms" component={TermsScreen} options={{ tabBarButton: () => null }} />
+      <Tab.Screen name="Privacy" component={PrivacyScreen} options={{ tabBarButton: () => null }} />
+      <Tab.Screen name="Legal" component={LegalScreen} options={{ tabBarButton: () => null }} />
+      <Tab.Screen name="Contact" component={ContactScreen} options={{ tabBarButton: () => null }} />
     </Tab.Navigator>
   );
 }
