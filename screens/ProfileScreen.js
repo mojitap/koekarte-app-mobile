@@ -17,6 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
+import { Linking, TouchableOpacity } from 'react-native';
 
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
@@ -121,39 +122,68 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={styles.value}>{profile.score_deviation || '—'} 点</Text>
                 </View>
 
-            <View style={styles.statusBox}>
-              {profile?.is_paid ? (
-                <>
-                  <Text style={{ color: 'green', fontSize: 16, fontWeight: 'bold' }}>💎 有料プランをご利用中です</Text>
-                  <Text style={{ marginTop: 10, color: '#444' }}>
-                    ストレススコアの取得、グラフの閲覧、プレミアム音源など全ての機能をご利用いただけます。
+            {profile && !profile.is_paid && profile.created_at && (
+              <View style={{
+                backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
+                borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
+                borderWidth: 1,
+                borderRadius: 6,
+                padding: 12,
+                marginBottom: 20,
+              }}>
+                {getFreeDaysLeft(profile.created_at) > 0 ? (
+                  <Text style={{ fontSize: 14, color: '#444' }}>
+                    ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
+                    無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
                   </Text>
-                </>
-              ) : getFreeDaysLeft(profile?.created_at) > 0 ? (
-                <>
-                  <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>🆓 現在は <Text style={{ color: '#007AFF' }}>無料プラン</Text> をご利用中です</Text>
-                  <Text style={{ marginTop: 8, color: '#444' }}>
-                    ⏳ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile?.created_at)}</Text> 日で終了します。
-                    無料期間終了後は録音・分析・グラフ機能に制限がかかります。
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Text style={{ color: '#a00', fontSize: 16, fontWeight: 'bold' }}>⚠️ 無料期間は終了しました</Text>
-                  <Text style={{ marginTop: 8, color: '#444' }}>
-                    引き続きご利用いただくには、有料プラン（月額300円）へのご登録が必要です。
-                  </Text>
-                </>
-              )}
-            </View>
+                ) : (
+                  <>
+                    <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
+                      ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        Linking.openURL('https://koekarte.com/checkout');
+                      }}
+                      style={{
+                        backgroundColor: '#ffc107',
+                        paddingVertical: 8,
+                        paddingHorizontal: 16,
+                        borderRadius: 5,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Text style={{ fontWeight: 'bold', color: '#000' }}>
+                        🎟 今すぐ有料登録する
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            )}
 
-            <View style={{ marginTop: 20 }}>
-              <Text style={styles.label}>🛠 各種設定</Text>
-              <Text style={styles.link} onPress={() => navigation.navigate('EditProfile')}>✏️ プロフィール編集</Text>
-              <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>📃 利用規約</Text>
-              <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>🔒 プライバシーポリシー</Text>
-              <Text style={styles.link} onPress={() => navigation.navigate('Legal')}>📜 特定商取引法</Text>
-              <Text style={styles.link} onPress={() => navigation.navigate('Contact')}>📩 お問い合わせ</Text>
+            {/* 利用規約などのリンク */}
+            <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+                  <Text style={styles.linkText}>利用規約</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}> | </Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+                  <Text style={styles.linkText}>プライバシーポリシー</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}> | </Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+                  <Text style={styles.linkText}>特定商取引法</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}> | </Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+                  <Text style={styles.linkText}>お問い合わせ</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={{ marginTop: 40 }}>
@@ -168,6 +198,8 @@ export default function ProfileScreen({ navigation }) {
                 🚪 ログアウト
               </Text>
             </View>
+
+            <View style={{ height: 40 }} />
           </>
         )}
 
@@ -261,17 +293,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: '#000',
   },
-  statusBox: {
-    padding: 15,
-    backgroundColor: '#fefefe',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginTop: 20,
+  linkText: {
+    fontSize: 12,
+    color: '#007bff',
+    marginHorizontal: 2,
+    textDecorationLine: 'underline',
   },
-  link: {
-    marginTop: 10,
-    fontSize: 17,
-    color: '#007AFF',
+  separator: {
+    fontSize: 12,
+    color: '#666',
   },
 });
