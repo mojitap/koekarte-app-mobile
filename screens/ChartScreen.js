@@ -1,5 +1,4 @@
-// ✅ ChartScreen.js（グラフ画面の全コード：期間指定＋説明文＋滑らか表現対応）
-
+// screens/ChartScreen.js（修正済み ChartScreen コンポーネント）
 import React, { useState } from 'react';
 import {
   View,
@@ -16,11 +15,12 @@ import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 import { getUser } from '../utils/auth';
 import { useNavigation } from '@react-navigation/native';
-import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
+import { API_BASE_URL } from '../utils/config';
 import { TouchableOpacity } from 'react-native';
+import { Linking } from 'react-native';
 
 export default function ChartScreen({ route }) {
-  const navigation = useNavigation(); // ← 追加
+  const navigation = useNavigation();
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [range, setRange] = useState('all');
   const [profile, setProfile] = useState(null);
@@ -52,6 +52,18 @@ export default function ChartScreen({ route }) {
       });
     }, [])
   );
+
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={{ paddingTop: 100, alignItems: 'center' }}>
+          <Text>📊 プロフィールを取得中です…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const daysLeft = profile?.created_at ? getFreeDaysLeft(profile.created_at) : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -88,39 +100,38 @@ export default function ChartScreen({ route }) {
                 backgroundColor: range === item.value ? '#007AFF' : '#eee',
               }}
             >
-              <Text style={{ color: range === item.value ? '#fff' : '#333' }}>{item.label}</Text>
+              <Text style={{ color: range === item.value ? '#fff' : '#333', fontSize: 16 }}>
+                {item.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={{ height: 16 }} />
+        <ScoreChart range={range} profile={profile} />
+        
+        {/* 利用規約などのリンク */}
+        <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+              <Text style={styles.linkText}>利用規約</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
 
-        {/* 📣 無料期間の案内表示（グラフの上） */}
-        {profile && !profile.is_paid && profile.created_at && (
-          <View style={styles.noticeBox}>
-            {getFreeDaysLeft(profile.created_at) > 0 ? (
-              <Text style={styles.noticeText}>
-                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                無料期間終了後はグラフ機能をご利用いただけません。
-              </Text>
-            ) : (
-              <Text style={[styles.noticeText, { color: '#a00' }]}>
-                ⚠️ 無料期間は終了しました。グラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
-              </Text>
-            )}
+            <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+              <Text style={styles.linkText}>プライバシーポリシー</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+              <Text style={styles.linkText}>特定商取引法</Text>
+            </TouchableOpacity>
+            <Text style={styles.separator}> | </Text>
+
+            <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+              <Text style={styles.linkText}>お問い合わせ</Text>
+            </TouchableOpacity>
           </View>
-        )}
-
-        {canUsePremium && (
-          <>
-            <Text style={{ textAlign: 'center', marginTop: 20 }}>✅ Premium OK</Text>
-            <ScoreChart
-              key={route?.params?.refresh ?? 'static'}
-              range={range}
-              smooth={true}
-            />
-          </>
-        )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -146,32 +157,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
   },
   description: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#444',
     lineHeight: 22,
     marginBottom: 20,
   },
-  notice: {
-    color: 'red',
-    marginTop: 20,
-    textAlign: 'center',
-    fontSize: 16,
+  linkText: {
+    fontSize: 12,
+    color: '#007bff',
+    marginHorizontal: 2,
+    textDecorationLine: 'underline',
   },
-  noticeBox: {
-    padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff8f6',
-    marginBottom: 20,
-  },
-  noticeText: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 20,
+  separator: {
+    fontSize: 12,
+    color: '#666',
   },
 });
