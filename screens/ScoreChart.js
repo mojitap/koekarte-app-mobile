@@ -154,7 +154,16 @@ export default function ChartScreen() {
           ))}
         </View>
 
-        {getFreeDaysLeft(profile.created_at) > 0 ? (
+        {profile && !profile.is_paid && profile.created_at && (
+          <View style={{
+            backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
+            borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
+            borderWidth: 1,
+            borderRadius: 6,
+            padding: 12,
+            marginBottom: 20,
+          }}>
+            {getFreeDaysLeft(profile.created_at) > 0 ? (
               <Text style={{ fontSize: 14, color: '#444' }}>
                 ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
                 無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
@@ -185,6 +194,7 @@ export default function ChartScreen() {
           </View>
         )}
 
+
         {/* 利用規約などのリンク */}
         <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -212,6 +222,7 @@ export default function ChartScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
 
 /* ────────────────────
    スタイル
