@@ -9,36 +9,66 @@ import { Ionicons } from '@expo/vector-icons';
 import { enableScreens } from 'react-native-screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dimensions } from 'react-native';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { getUser, logout } from './utils/auth';
 import { checkCanUsePremium } from './utils/premiumUtils';
 import { API_BASE_URL } from './utils/config';
 
+// 認証・共通画面
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
-import TermsScreen from './screens/TermsScreen';
-import PrivacyScreen from './screens/PrivacyScreen';
-import LegalScreen from './screens/LegalScreen';
-import ContactScreen from './screens/ContactScreen';
 
+// タブ画面
 import ProfileScreen from './screens/ProfileScreen';
 import RecordScreen from './screens/RecordScreen';
 import ChartScreen from './screens/ChartScreen';
 import MusicScreen from './screens/MusicScreen';
+
+// その他ページ
+import TermsScreen from './screens/TermsScreen';
+import PrivacyScreen from './screens/PrivacyScreen';
+import LegalScreen from './screens/LegalScreen';
+import ContactScreen from './screens/ContactScreen';
 import ScoreHistory from './screens/ScoreHistory';
 import EditProfile from './screens/EditProfile';
 
-enableScreens(false);  // react-native-screens を部分的に無効化してちらつきを防止
+enableScreens(false);
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+// ─────────────────────────────
+// Stack Navigator inside each Tab to retain tabs on subpages
+// ─────────────────────────────
+function TabWithStack({ screen }) {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name={screen.name} component={screen.component} />
+      <Stack.Screen name="Terms" component={TermsScreen} />
+      <Stack.Screen name="Privacy" component={PrivacyScreen} />
+      <Stack.Screen name="Legal" component={LegalScreen} />
+      <Stack.Screen name="Contact" component={ContactScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfile} />
+      <Stack.Screen name="History" component={ScoreHistory} />
+    </Stack.Navigator>
+  );
+}
+
+// ─────────────────────────────
+// Bottom Tabs Navigator
+// ─────────────────────────────
 function MainTabs() {
   const insets = useSafeAreaInsets();
+  const tabs = [
+    { name: 'Home', title: 'マイページ', component: ProfileScreen, icon: 'person' },
+    { name: 'Record', title: '録音', component: RecordScreen, icon: 'mic' },
+    { name: 'Chart', title: 'グラフ', component: ChartScreen, icon: 'bar-chart' },
+    { name: 'Music', title: '音源', component: MusicScreen, icon: 'musical-notes' },
+  ];
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -48,49 +78,51 @@ function MainTabs() {
         detachInactiveScreens: false,
         sceneContainerStyle: { backgroundColor: '#fff' },
         tabBarActiveTintColor: '#007AFF',
-        tabBarLabelStyle: {
-          fontSize: 14,
-          textAlign: 'center',
-          paddingBottom: 4,
-        },
+        tabBarLabelStyle: { fontSize: 14, textAlign: 'center', paddingBottom: 4 },
         tabBarStyle: {
-          height: 60 + insets.bottom, 
+          height: 60 + insets.bottom,
           paddingBottom: insets.bottom + 6,
           paddingTop: 6,
           borderTopWidth: 0.5,
           borderTopColor: '#ccc',
         },
-        tabBarItemStyle: {            // ← flex:1 で幅を均等化
+        tabBarItemStyle: {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
         },
         tabBarIcon: ({ color }) => {
-          const icons = {
+          const iconMap = {
             Home: 'person',
             Record: 'mic',
             Chart: 'bar-chart',
             Music: 'musical-notes',
           };
-          return <Ionicons name={icons[route.name]} size={24} color={color} />;
+          return <Ionicons name={iconMap[route.name]} size={24} color={color} />;
         },
       })}
     >
-      <Tab.Screen name="Home"   component={ProfileScreen} options={{ title: 'マイページ' }} />
-      <Tab.Screen name="Record" component={RecordScreen}  options={{ title: '録音' }} />
-      <Tab.Screen name="Chart"  component={ChartScreen}   options={{ title: 'グラフ' }} />
-      <Tab.Screen name="Music"  component={MusicScreen}   options={{ title: '音源' }} />
+      {tabs.map(tab => (
+        <Tab.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{ title: tab.title }}
+        >
+          {() => <TabWithStack screen={{ name: tab.name, component: tab.component }} />}
+        </Tab.Screen>
+      ))}
     </Tab.Navigator>
   );
 }
 
+// ─────────────────────────────
+// Root Navigator
+// ─────────────────────────────
 function RootNavigator() {
-  // ── 必須ステート宣言 ──
-  const [isReady, setIsReady]             = useState(false);
-  const [firstLaunch, setFirstLaunch]     = useState(null);                // 初回起動チェック用
-  const { showAuthStack, setShowAuthStack } = useContext(AuthContext);     // 認証スタック表示フラグ
+  const [isReady, setIsReady] = useState(false);
+  const [firstLaunch, setFirstLaunch] = useState(null);
+  const { showAuthStack, setShowAuthStack } = useContext(AuthContext);
 
-  // ── 1) 初回起動チェック ──
   useEffect(() => {
     (async () => {
       const hasLaunched = await AsyncStorage.getItem('hasLaunched');
@@ -103,11 +135,9 @@ function RootNavigator() {
     })();
   }, []);
 
-  // ── 2) 認証＆プレミアム判定 ──
   useEffect(() => {
-    if (firstLaunch === null) return;   // チェック中は待機
+    if (firstLaunch === null) return;
     if (firstLaunch) {
-      // 初回起動なら Welcome 画面のみ
       setIsReady(true);
       return;
     }
@@ -119,7 +149,9 @@ function RootNavigator() {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/profile`, {
+          credentials: 'include',
+        });
         const data = await res.json();
         const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
         setShowAuthStack(!ok);
@@ -133,24 +165,22 @@ function RootNavigator() {
     })();
   }, [firstLaunch]);
 
-  // ── ローディング表示 ──
   if (!isReady || firstLaunch === null || showAuthStack === null) {
     return (
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
 
-  // ── 画面遷移の振り分け ──
   return (
     <Stack.Navigator
       initialRouteName={
         firstLaunch
           ? 'Welcome'
           : showAuthStack
-            ? 'Login'
-            : 'MainTabs'
+          ? 'Login'
+          : 'MainTabs'
       }
       screenOptions={{ headerShown: false }}
     >
@@ -167,20 +197,15 @@ function RootNavigator() {
           <Stack.Screen name="Contact" component={ContactScreen} />
         </>
       ) : (
-        <>
-          <Stack.Screen name="MainTabs" component={MainTabs} />
-          <Stack.Screen name="EditProfile" component={EditProfile} />
-          <Stack.Screen name="History" component={ScoreHistory} />
-          <Stack.Screen name="Terms" component={TermsScreen} />
-          <Stack.Screen name="Privacy" component={PrivacyScreen} />
-          <Stack.Screen name="Legal" component={LegalScreen} />
-          <Stack.Screen name="Contact" component={ContactScreen} />
-        </>
+        <Stack.Screen name="MainTabs" component={MainTabs} />
       )}
     </Stack.Navigator>
   );
 }
 
+// ─────────────────────────────
+// App
+// ─────────────────────────────
 export default function App() {
   return (
     <AuthProvider>
