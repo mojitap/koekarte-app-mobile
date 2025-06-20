@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { enableScreens } from 'react-native-screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { getUser, logout } from './utils/auth';
@@ -36,39 +37,46 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 function MainTabs() {
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
-      lazy={false}
-      detachInactiveScreens={true}
       screenOptions={({ route }) => ({
         headerShown: false,
         unmountOnBlur: false,
         animationEnabled: false,
+        detachInactiveScreens: false,
         sceneContainerStyle: { backgroundColor: '#fff' },
         tabBarActiveTintColor: '#007AFF',
         tabBarLabelStyle: {
           fontSize: 12,
           textAlign: 'center',
+          paddingBottom: 4,
         },
         tabBarStyle: {
-          paddingBottom: 5,
-          height: 60,
+          height: 60 + insets.bottom, 
+          paddingBottom: insets.bottom + 6,
+          paddingTop: 6,
         },
-        tabBarIcon: ({ color, size }) => {
+        tabBarItemStyle: {            // ← flex:1 で幅を均等化
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        tabBarIcon: ({ color }) => {
           const icons = {
             Home: 'person',
             Record: 'mic',
             Chart: 'bar-chart',
             Music: 'musical-notes',
           };
-          return <Ionicons name={icons[route.name]} size={size} color={color} />;
+          return <Ionicons name={icons[route.name]} size={24} color={color} />;
         },
       })}
     >
-      <Tab.Screen name="Home" component={ProfileScreen} options={{ title: 'マイページ' }} />
-      <Tab.Screen name="Record" component={RecordScreen} options={{ title: '録音' }} />
-      <Tab.Screen name="Chart" component={ChartScreen} options={{ title: 'グラフ' }} />
-      <Tab.Screen name="Music" component={MusicScreen} options={{ title: '音源' }} />
+      <Tab.Screen name="Home"   component={ProfileScreen} options={{ title: 'マイページ' }} />
+      <Tab.Screen name="Record" component={RecordScreen}  options={{ title: '録音' }} />
+      <Tab.Screen name="Chart"  component={ChartScreen}   options={{ title: 'グラフ' }} />
+      <Tab.Screen name="Music"  component={MusicScreen}   options={{ title: '音源' }} />
 
       {/* 以下4つを追加：タブは非表示だけど画面は存在 */}
       <Tab.Screen name="Terms" component={TermsScreen} options={{ tabBarButton: () => null }} />
