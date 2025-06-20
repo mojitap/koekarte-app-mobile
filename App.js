@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { enableScreens } from 'react-native-screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dimensions } from 'react-native';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { getUser, logout } from './utils/auth';
@@ -48,7 +49,7 @@ function MainTabs() {
         sceneContainerStyle: { backgroundColor: '#fff' },
         tabBarActiveTintColor: '#007AFF',
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 14,
           textAlign: 'center',
           paddingBottom: 4,
         },
@@ -56,6 +57,8 @@ function MainTabs() {
           height: 60 + insets.bottom, 
           paddingBottom: insets.bottom + 6,
           paddingTop: 6,
+          borderTopWidth: 0.5,
+          borderTopColor: '#ccc',
         },
         tabBarItemStyle: {            // ← flex:1 で幅を均等化
           flex: 1,
@@ -77,12 +80,6 @@ function MainTabs() {
       <Tab.Screen name="Record" component={RecordScreen}  options={{ title: '録音' }} />
       <Tab.Screen name="Chart"  component={ChartScreen}   options={{ title: 'グラフ' }} />
       <Tab.Screen name="Music"  component={MusicScreen}   options={{ title: '音源' }} />
-
-      {/* 以下4つを追加：タブは非表示だけど画面は存在 */}
-      <Tab.Screen name="Terms" component={TermsScreen} options={{ tabBarButton: () => null }} />
-      <Tab.Screen name="Privacy" component={PrivacyScreen} options={{ tabBarButton: () => null }} />
-      <Tab.Screen name="Legal" component={LegalScreen} options={{ tabBarButton: () => null }} />
-      <Tab.Screen name="Contact" component={ContactScreen} options={{ tabBarButton: () => null }} />
     </Tab.Navigator>
   );
 }
