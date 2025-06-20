@@ -173,14 +173,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   linkText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#007bff',
     marginHorizontal: 2,
     minHeight: 24,
     textDecorationLine: 'underline',
   },
   separator: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
 });
