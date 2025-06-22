@@ -107,122 +107,8 @@ function ScoreChart({ range = 'all', smooth = true, profile }) {
   );
 }
 
-/* ────────────────────
-   ② 本画面コンポーネント
-   ──────────────────── */
-export default function ChartScreen() {
-  const [profile, setProfile] = useState(null);
-  const navigation = useNavigation();
-
-  /* プロフィール取得（無料期間判定に使用） */
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' });
-        setProfile(await res.json());
-      } catch (e) {
-        console.error('ChartScreen profile fetch error:', e);
-      }
-    })();
-  }, []);
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
-      >
-        {/* ヘッダ */}
-        <Text style={styles.heading}>📊 スコアグラフ</Text>
-
-        {/* グラフ本体 */}
-        <ScoreChart range="all" smooth profile={profile} />
-
-        {/* スコア目安の凡例（ScoreChart 内に書いても可） */}
-        <View style={{ marginTop: 16 }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 6 }}>【スコアの目安】</Text>
-          {[
-            ['🟢 95',        '非常にリラックス'],
-            ['😊 70-90',    '安定しています'],
-            ['😟 50-69',    'やや不安定'],
-            ['🔴 〜49',     'ストレスが高いかも'],
-          ].map(([label, desc]) => (
-            <View key={label} style={{ flexDirection: 'row', marginBottom: 4 }}>
-              <Text style={{ width: 80 }}>{label}</Text>
-              <Text>{desc}</Text>
-            </View>
-          ))}
-        </View>
-
-        {profile && !profile.is_paid && profile.created_at && (
-          <View style={{
-            backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
-            borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
-            borderWidth: 1,
-            borderRadius: 6,
-            padding: 12,
-            marginBottom: 20,
-          }}>
-            {getFreeDaysLeft(profile.created_at) > 0 ? (
-              <Text style={{ fontSize: 14, color: '#444' }}>
-                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
-              </Text>
-            ) : (
-              <>
-                <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                  ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Linking.openURL('https://koekarte.com/checkout');
-                  }}
-                  style={{
-                    backgroundColor: '#ffc107',
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 5,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                    🎟 今すぐ有料登録する
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        )}
-
-
-        {/* 利用規約などのリンク */}
-        <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
-              <Text style={styles.linkText}>利用規約</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
-              <Text style={styles.linkText}>プライバシーポリシー</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
-              <Text style={styles.linkText}>特定商取引法</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
-              <Text style={styles.linkText}>お問い合わせ</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+// これを追加！
+export default ScoreChart;
 
 /* ────────────────────
    スタイル
@@ -260,15 +146,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     marginHorizontal: 6,
     paddingVertical: 6,
-  },
-  linkText: {
-    fontSize: 18,
-    color: '#007bff',
-    marginHorizontal: 2,
-    textDecorationLine: 'underline',
-  },
-  separator: {
-    fontSize: 16,
-    color: '#666',
   },
 });
