@@ -1,4 +1,4 @@
-// screens/ChartScreen.js（修正済み ChartScreen コンポーネント）
+// ChartScreen.js（グラフ画面の本体）
 import React, { useState } from 'react';
 import {
   View,
@@ -9,15 +9,15 @@ import {
   Platform,
   StatusBar,
   Image,
+  TouchableOpacity,
+  Linking,
+  Alert,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 import { getUser } from '../utils/auth';
-import { useNavigation } from '@react-navigation/native';
 import { API_BASE_URL } from '../utils/config';
-import { TouchableOpacity } from 'react-native';
-import { Linking } from 'react-native';
 
 export default function ChartScreen({ route }) {
   const navigation = useNavigation();
@@ -67,7 +67,7 @@ export default function ChartScreen({ route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Image
             source={require('../assets/koekoekarte.png')}
@@ -108,8 +108,62 @@ export default function ChartScreen({ route }) {
         </View>
 
         <ScoreChart range={range} profile={profile} />
-        
-        {/* 利用規約などのリンク */}
+
+        <View style={{ marginTop: 16 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 6 }}>【スコアの目安】</Text>
+          {[
+            ['🟢 95', '非常にリラックス'],
+            ['😊 70-90', '安定しています'],
+            ['😟 50-69', 'やや不安定'],
+            ['🔴 〜49', 'ストレスが高いかも'],
+          ].map(([label, desc]) => (
+            <View key={label} style={{ flexDirection: 'row', marginBottom: 4 }}>
+              <Text style={{ width: 80 }}>{label}</Text>
+              <Text>{desc}</Text>
+            </View>
+          ))}
+        </View>
+
+        {!canUsePremium && daysLeft !== null && (
+          <View style={{
+            backgroundColor: daysLeft > 0 ? '#fefefe' : '#fff8f6',
+            borderColor: daysLeft > 0 ? '#ccc' : '#faa',
+            borderWidth: 1,
+            borderRadius: 6,
+            padding: 12,
+            marginTop: 20,
+          }}>
+            {daysLeft > 0 ? (
+              <Text style={{ fontSize: 14, color: '#444' }}>
+                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{daysLeft}</Text> 日で終了します。{"\n"}
+                無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
+              </Text>
+            ) : (
+              <>
+                <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
+                  ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    Linking.openURL('https://koekarte.com/checkout');
+                  }}
+                  style={{
+                    backgroundColor: '#ffc107',
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 5,
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  <Text style={{ fontWeight: 'bold', color: '#000' }}>
+                    🎟 今すぐ有料登録する
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        )}
+
         <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
             <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
@@ -132,6 +186,7 @@ export default function ChartScreen({ route }) {
             </TouchableOpacity>
           </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -167,13 +222,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   linkText: {
-    fontSize: 12,
+    fontSize: 18,
     color: '#007bff',
     marginHorizontal: 2,
     textDecorationLine: 'underline',
   },
   separator: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
   },
 });
