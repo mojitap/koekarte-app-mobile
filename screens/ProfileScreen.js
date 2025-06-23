@@ -120,7 +120,15 @@ export default function ProfileScreen({ navigation }) {
 
                 <Text style={styles.label}>📉 スコア差分:</Text>
                 <Text style={styles.value}>{profile.score_deviation || '—'} 点</Text>
-                </View>
+
+                <Text style={styles.label}>📝 プロフィールを編集：</Text>
+                <Text
+                  style={[styles.value, { color: '#007bff', textDecorationLine: 'underline' }]}
+                  onPress={() => navigation.navigate('EditProfile')}
+                >
+                  編集画面を開く
+                </Text>
+            </View>
 
             {profile && !profile.is_paid && profile.created_at && (
               <View style={{
