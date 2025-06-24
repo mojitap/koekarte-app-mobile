@@ -37,13 +37,14 @@ export default function RecordScreen() {
   // ログイン状態と利用可否チェック
   useFocusEffect(
     React.useCallback(() => {
-      getUser().then((user) => {
-        if (!user) {
+      getUser().then(data => {
+        if (!data) {
           Alert.alert('ログインが必要です', '', [
             { text: 'OK', onPress: () => navigation.navigate('Login') },
           ]);
           return;
         }
+
         fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
           .then((res) => res.json())
           .then((data) => {
@@ -60,6 +61,7 @@ export default function RecordScreen() {
             setCanUsePremium(false);
           });
       });
+
       return () => {
         if (sound) {
           sound.stopAsync();
@@ -99,9 +101,47 @@ export default function RecordScreen() {
 
   const startRecording = async () => {
     if (!canUsePremium) {
-      Alert.alert('録音制限', '無料期間が終了しています。有料プランをご検討ください。');
+      Alert.alert(
+        '利用制限',
+        '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。',
+        [
+          {
+            text: '有料登録する',
+            onPress: () => Linking.openURL('https://koekarte.com/checkout'),
+          },
+          { text: 'キャンセル', style: 'cancel' },
+        ]
+      );
       return;
     }
+
+    if (!canUsePremium) {
+      return (
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.header}>
+              <Image
+                source={require('../assets/koekoekarte.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
+            </View>
+            <View style={{ padding: 20 }}>
+              <Text style={{ fontSize: 16, color: '#a00' }}>
+                🎙️ この機能は有料プラン専用です（無料期間終了後はご利用いただけません）
+              </Text>
+              <TouchableOpacity onPress={() => Linking.openURL('https://koekarte.com/checkout')}>
+                <Text style={{ color: '#007bff', marginTop: 10 }}>
+                  🎟 有料プランに登録する
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      );
+    }
+
     try {
       const permission = await Audio.requestPermissionsAsync();
       if (!permission.granted) {
@@ -392,19 +432,34 @@ export default function RecordScreen() {
             marginBottom: 20,
           }}>
             {getFreeDaysLeft(profile.created_at) > 0 ? (
-              <Text style={{ fontSize: 14, color: '#444' }}>
-                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
-              </Text>
+              <>
+                <Text style={{ fontSize: 14, color: '#444' }}>
+                  ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
+                  終了後は録音・グラフ・音源などの機能に制限がかかります。
+                </Text>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                  style={{
+                    marginTop: 10,
+                    backgroundColor: '#e0f0ff',
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 5,
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
+                    🎟 有料プランの詳細を見る
+                  </Text>
+                </TouchableOpacity>
+              </>
             ) : (
               <>
                 <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
                   ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
                 </Text>
                 <TouchableOpacity
-                  onPress={() => {
-                    Linking.openURL('https://koekarte.com/checkout');
-                  }}
+                  onPress={() => Linking.openURL('https://koekarte.com/checkout')}
                   style={{
                     backgroundColor: '#ffc107',
                     paddingVertical: 8,
