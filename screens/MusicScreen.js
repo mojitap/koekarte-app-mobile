@@ -1,6 +1,6 @@
 // ✅ MusicScreen.js（修正済み・再生制御あり）
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -149,6 +149,16 @@ export default function MusicScreen() {
     }
   };
 
+  const [daysLeft, setDaysLeft] = useState(null);
+
+  useEffect(() => {
+    if (profile) {
+      const allowed = checkCanUsePremium(profile.created_at, profile.is_paid, profile.is_free_extended);
+      setCanUsePremium(allowed);
+      setDaysLeft(getFreeDaysLeft(profile.created_at));
+    }
+  }, [profile]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -166,47 +176,6 @@ export default function MusicScreen() {
           ・気分を上げる：明るく前向きなメロディで活力をサポート{"\n\n"}
           ※音源は個人の目的や好みに応じて自由に選んでご利用いただけます。
         </Text>
-
-        {/* 🎟 無料期間終了時だけ表示する有料登録お知らせ */}
-        {profile && !profile.is_paid && profile.created_at && (
-          <View style={{
-            backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
-            borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
-            borderWidth: 1,
-            borderRadius: 6,
-            padding: 12,
-            marginBottom: 20,
-          }}>
-            {getFreeDaysLeft(profile.created_at) > 0 ? (
-              <Text style={{ fontSize: 14, color: '#444' }}>
-                ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
-              </Text>
-            ) : (
-              <>
-                <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                  ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    Linking.openURL('https://koekarte.com/checkout');
-                  }}
-                  style={{
-                    backgroundColor: '#ffc107',
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 5,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                    🎟 今すぐ有料登録する
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        )}
 
         <View style={{ height: 16 }} />
 
@@ -235,6 +204,61 @@ export default function MusicScreen() {
 
         {/* 利用規約などのリンク */}
         <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+          {profile && !profile.is_paid && profile.created_at && (
+            <View style={{
+              backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
+              borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
+              borderWidth: 1,
+              borderRadius: 6,
+              padding: 12,
+              marginBottom: 20,
+            }}>
+              {getFreeDaysLeft(profile.created_at) > 0 ? (
+                <>
+                  <Text style={{ fontSize: 14, color: '#444' }}>
+                    ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
+                    終了後は録音・グラフ・音源などの機能に制限がかかります。
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                    style={{
+                      marginTop: 10,
+                      backgroundColor: '#e0f0ff',
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      borderRadius: 5,
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
+                      🎟 有料プランの詳細を見る
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
+                    ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                    style={{
+                      backgroundColor: '#ffc107',
+                      paddingVertical: 8,
+                      paddingHorizontal: 16,
+                      borderRadius: 5,
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    <Text style={{ fontWeight: 'bold', color: '#000' }}>
+                      🎟 今すぐ有料登録する
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
             <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
               <Text style={styles.linkText}>利用規約</Text>
