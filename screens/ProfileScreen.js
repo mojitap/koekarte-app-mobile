@@ -25,6 +25,13 @@ export default function ProfileScreen({ navigation }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [hadProfile, setHadProfile] = useState(false); // 🔑 ログアウト済みかどうか
   const { setShowAuthStack } = useContext(AuthContext);
+  
+  const formatToJST = (utcString) => {
+    if (!utcString) return '記録なし';
+    const date = new Date(utcString);
+    return date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+  };
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -110,7 +117,7 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={styles.value}>{profile.created_at?.slice(0, 10)}</Text>
 
                 <Text style={styles.label}>🕛 最終記録日:</Text>
-                <Text style={styles.value}>{profile.last_recorded || '記録なし'}</Text>
+                <Text style={styles.value}>{formatToJST(profile.last_recorded)}</Text>
 
                 <Text style={styles.label}>📊 基準スコア:</Text>
                 <Text style={styles.value}>{profile.baseline || '—'} 点</Text>
@@ -140,19 +147,34 @@ export default function ProfileScreen({ navigation }) {
                 marginBottom: 20,
               }}>
                 {getFreeDaysLeft(profile.created_at) > 0 ? (
-                  <Text style={{ fontSize: 14, color: '#444' }}>
-                    ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                    無料期間終了後は録音・分析・スコアグラフ・音源ライブラリの利用に制限がかかります。
-                  </Text>
+                  <>
+                    <Text style={{ fontSize: 14, color: '#444' }}>
+                      ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
+                      終了後は録音・グラフ・音源などの機能に制限がかかります。
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                      style={{
+                        marginTop: 10,
+                        backgroundColor: '#e0f0ff',
+                        paddingVertical: 8,
+                        paddingHorizontal: 16,
+                        borderRadius: 5,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
+                        🎟 有料プランの詳細を見る
+                      </Text>
+                    </TouchableOpacity>
+                  </>
                 ) : (
                   <>
                     <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
                       ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
                     </Text>
                     <TouchableOpacity
-                      onPress={() => {
-                        Linking.openURL('https://koekarte.com/checkout');
-                      }}
+                      onPress={() => Linking.openURL('https://koekarte.com/checkout')}
                       style={{
                         backgroundColor: '#ffc107',
                         paddingVertical: 8,
