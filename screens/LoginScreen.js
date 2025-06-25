@@ -31,19 +31,22 @@ export default function LoginScreen() {
       if (!res.ok) {
         return Alert.alert('ログイン失敗', data.error || '認証エラー');
       }
+
       await saveUser(data);
 
       const pr  = await fetch(`${API_BASE_URL}/api/profile`, { credentials:'include' });
       const pd  = await pr.json();
       const ok  = checkCanUsePremium(pd.created_at, pd.is_paid, pd.is_free_extended);
+
+      // ✅ ログインは成功扱い、MainTabsへ遷移
+      setShowAuthStack(false);
+
       if (!ok) {
-        await logout();
-        return Alert.alert('利用不可','無料期間が終了しています');
+        Alert.alert('無料期間終了', '録音・グラフ・音源の機能は制限されます。有料登録でご利用いただけます。');
+      } else {
+        Alert.alert('ログイン成功','ようこそ！');
       }
 
-      // ここだけでOK。RootNavigatorがMainTabsを表示します
-      setShowAuthStack(false);
-      Alert.alert('ログイン成功','ようこそ！');
     } catch (err) {
       console.error(err);
       Alert.alert('通信エラー','サーバーに接続できませんでした');
