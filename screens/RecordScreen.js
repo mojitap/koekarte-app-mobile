@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
+import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import * as FileSystem from 'expo-file-system';
@@ -48,12 +48,7 @@ export default function RecordScreen() {
         fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
           .then((res) => res.json())
           .then((data) => {
-            const ok = checkCanUsePremium(
-              data.created_at,
-              data.is_paid,
-              data.is_free_extended
-            );
-            setCanUsePremium(ok);
+            setCanUsePremium(data.can_use_premium);
             setProfile(data);
           })
           .catch((err) => {
@@ -113,33 +108,6 @@ export default function RecordScreen() {
         ]
       );
       return;
-    }
-
-    if (!canUsePremium) {
-      return (
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.header}>
-              <Image
-                source={require('../assets/koekoekarte.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.heading}>🎙️ 音声ストレスチェック</Text>
-            </View>
-            <View style={{ padding: 20 }}>
-              <Text style={{ fontSize: 16, color: '#a00' }}>
-                🎙️ この機能は有料プラン専用です（無料期間終了後はご利用いただけません）
-              </Text>
-              <TouchableOpacity onPress={() => Linking.openURL('https://koekarte.com/checkout')}>
-                <Text style={{ color: '#007bff', marginTop: 10 }}>
-                  🎟 有料プランに登録する
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      );
     }
 
     try {
@@ -422,20 +390,20 @@ export default function RecordScreen() {
           </Text>
         </View>
 
-        {profile && !profile.is_paid && profile.created_at && (
+        {profile && !profile.is_paid && (
           <View style={{
-            backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
-            borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
+            backgroundColor: profile.can_use_premium ? '#fefefe' : '#fff8f6',
+            borderColor: profile.can_use_premium ? '#ccc' : '#faa',
             borderWidth: 1,
             borderRadius: 6,
             padding: 12,
             marginBottom: 20,
           }}>
-            {getFreeDaysLeft(profile.created_at) > 0 ? (
+            {profile.can_use_premium ? (
               <>
                 <Text style={{ fontSize: 14, color: '#444' }}>
-                  ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                  終了後は録音・グラフ・音源などの機能に制限がかかります。
+                  ⏰ 無料期間中です（あと {getFreeDaysLeft(profile.created_at)} 日）。{"\n"}
+                  終了後は録音やグラフなどの機能に制限がかかります。
                 </Text>
                 <TouchableOpacity
                   onPress={() => Linking.openURL('https://koekarte.com/checkout')}
@@ -456,7 +424,7 @@ export default function RecordScreen() {
             ) : (
               <>
                 <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                  ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+                  ⚠️ 無料期間は終了しました。有料登録が必要です。
                 </Text>
                 <TouchableOpacity
                   onPress={() => Linking.openURL('https://koekarte.com/checkout')}
@@ -469,7 +437,7 @@ export default function RecordScreen() {
                   }}
                 >
                   <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                    🎟 今すぐ有料登録する
+                    🎟 今すぐ登録する
                   </Text>
                 </TouchableOpacity>
               </>
@@ -483,17 +451,17 @@ export default function RecordScreen() {
             <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
               <Text style={styles.linkText}>プライバシーポリシー</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
               <Text style={styles.linkText}>特定商取引法</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
               <Text style={styles.linkText}>お問い合わせ</Text>
