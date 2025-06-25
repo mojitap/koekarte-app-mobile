@@ -116,7 +116,7 @@ export default function MusicScreen() {
           const ok = checkCanUsePremium(data.created_at, data.is_paid, data.is_free_extended);
           console.log("🟢 checkCanUsePremium:", ok);
 
-          setCanUsePremium(ok);
+          setCanUsePremium(data.can_use_premium);
           setProfile(data);
         } catch (e) {
           console.error("❌ MusicScreen useFocusEffect エラー:", e);
@@ -153,8 +153,7 @@ export default function MusicScreen() {
 
   useEffect(() => {
     if (profile) {
-      const allowed = checkCanUsePremium(profile.created_at, profile.is_paid, profile.is_free_extended);
-      setCanUsePremium(allowed);
+      setCanUsePremium(profile.can_use_premium);
       setDaysLeft(getFreeDaysLeft(profile.created_at));
     }
   }, [profile]);
@@ -204,20 +203,20 @@ export default function MusicScreen() {
 
         {/* 利用規約などのリンク */}
         <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
-          {profile && !profile.is_paid && profile.created_at && (
+          {canUsePremium !== null && (
             <View style={{
-              backgroundColor: getFreeDaysLeft(profile.created_at) > 0 ? '#fefefe' : '#fff8f6',
-              borderColor: getFreeDaysLeft(profile.created_at) > 0 ? '#ccc' : '#faa',
+              backgroundColor: canUsePremium ? '#fefefe' : '#fff8f6',
+              borderColor: canUsePremium ? '#ccc' : '#faa',
               borderWidth: 1,
               borderRadius: 6,
               padding: 12,
               marginBottom: 20,
             }}>
-              {getFreeDaysLeft(profile.created_at) > 0 ? (
+              {canUsePremium && !profile?.is_paid && daysLeft !== null && (
                 <>
                   <Text style={{ fontSize: 14, color: '#444' }}>
-                    ⏰ 無料期間はあと <Text style={{ fontWeight: 'bold' }}>{getFreeDaysLeft(profile.created_at)}</Text> 日で終了します。{"\n"}
-                    終了後は録音・グラフ・音源などの機能に制限がかかります。
+                    ⏰ 無料期間中です（あと {daysLeft} 日）。{"\n"}
+                    終了後は録音やグラフなどの機能に制限がかかります。
                   </Text>
                   <TouchableOpacity
                     onPress={() => Linking.openURL('https://koekarte.com/checkout')}
@@ -235,10 +234,11 @@ export default function MusicScreen() {
                     </Text>
                   </TouchableOpacity>
                 </>
-              ) : (
+              )}
+              {!canUsePremium && (
                 <>
                   <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                    ⚠️ 無料期間は終了しました。録音やグラフ機能をご利用いただくには、有料プラン（月額300円）への登録が必要です。
+                    ⚠️ 無料期間は終了しました。有料登録が必要です。
                   </Text>
                   <TouchableOpacity
                     onPress={() => Linking.openURL('https://koekarte.com/checkout')}
@@ -251,7 +251,7 @@ export default function MusicScreen() {
                     }}
                   >
                     <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                      🎟 今すぐ有料登録する
+                      🎟 今すぐ登録する
                     </Text>
                   </TouchableOpacity>
                 </>
@@ -263,17 +263,17 @@ export default function MusicScreen() {
             <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
               <Text style={styles.linkText}>利用規約</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
               <Text style={styles.linkText}>プライバシーポリシー</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
               <Text style={styles.linkText}>特定商取引法</Text>
             </TouchableOpacity>
-            <Text style={styles.separator}> | </Text>
+            <Text style={styles.separator}>{" | "}</Text>
 
             <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
               <Text style={styles.linkText}>お問い合わせ</Text>
