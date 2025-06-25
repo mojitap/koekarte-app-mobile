@@ -1,5 +1,6 @@
 // utils/auth.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from './config';
 
 export const saveUser = async (user) => {
   try {
@@ -29,6 +30,13 @@ export const clearUser = async () => {
 
 export const logout = async () => {
   try {
+    // 🔁 サーバー側のログアウトエンドポイントを叩く
+    await fetch(`${API_BASE_URL}/api/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    
+    // 📦 ローカルのユーザーデータも削除
     await AsyncStorage.removeItem('user');
   } catch (e) {
     console.error("❌ ログアウトエラー:", e);
