@@ -26,6 +26,7 @@ const DiaryScreen = ({ navigation }) => {
   const [recordedDates, setRecordedDates] = useState({});
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false); 
 
   const diaryDir = FileSystem.documentDirectory + 'diary/';
 
@@ -90,6 +91,7 @@ const DiaryScreen = ({ navigation }) => {
 
   const stopRecording = async () => {
     try {
+      setIsSaving(true);
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       const newPath = getFilePath(selectedDate);
@@ -180,9 +182,15 @@ const DiaryScreen = ({ navigation }) => {
 
       <View style={styles.controls}>
         {recording ? (
-          <TouchableOpacity style={styles.button} onPress={stopRecording}>
+          <TouchableOpacity
+            style={[styles.button, isSaving && { backgroundColor: '#ccc' }]}
+            onPress={stopRecording}
+            disabled={isSaving}
+          >
             <Ionicons name="stop" size={24} color="white" />
-            <Text style={styles.buttonText}>停止</Text>
+            <Text style={styles.buttonText}>
+              {isSaving ? '保存中...' : '停止'}
+            </Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={styles.button} onPress={startRecording}>
