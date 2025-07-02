@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -10,7 +18,7 @@ import { getUser } from '../utils/auth';
 import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { API_BASE_URL } from '../utils/config';
 
-const DiaryScreen = () => {
+const DiaryScreen = ({ navigation }) => {
   const { userProfile } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [recording, setRecording] = useState(null);
@@ -61,17 +69,10 @@ const DiaryScreen = () => {
 
   const startRecording = async () => {
     if (!canUsePremium) {
-      Alert.alert(
-        '利用制限',
-        '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。',
-        [
-          {
-            text: '有料登録する',
-            onPress: () => handlePurchase(),
-          },
-          { text: 'キャンセル', style: 'cancel' },
-        ]
-      );
+      Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
+        { text: '有料登録する', onPress: () => handlePurchase() },
+        { text: 'キャンセル', style: 'cancel' },
+      ]);
       return;
     }
 
@@ -102,10 +103,14 @@ const DiaryScreen = () => {
 
   const playRecording = async () => {
     try {
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+      }
       const filePath = getFilePath(selectedDate);
-      const { sound } = await Audio.Sound.createAsync({ uri: filePath });
-      setSound(sound);
-      await sound.playAsync();
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri: filePath });
+      setSound(newSound);
+      await newSound.playAsync();
     } catch (err) {
       Alert.alert('再生エラー', err.message);
     }
@@ -125,9 +130,8 @@ const DiaryScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>音声日記</Text>
-
       <Text style={styles.description}>
         「今日ちょっと疲れたかも…」そんな気持ち、文字じゃなくて「声」で残してみませんか？{"\n\n"}
         コエカルテの音声日記は、毎日15秒の声を記録できる機能です。{"\n"}
@@ -191,7 +195,34 @@ const DiaryScreen = () => {
           <Text style={styles.buttonText}>再生</Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ alignSelf: 'center', marginVertical: 20 }}>
+        <Text style={{ fontSize: 18, color: '#6a1b9a', textDecorationLine: 'underline' }}>🏠 マイページに戻る</Text>
+      </TouchableOpacity>
+
+      <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+            <Text style={styles.linkText}>利用規約</Text>
+          </TouchableOpacity>
+          <Text style={styles.separator}>{' | '}</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+            <Text style={styles.linkText}>プライバシーポリシー</Text>
+          </TouchableOpacity>
+          <Text style={styles.separator}>{' | '}</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+            <Text style={styles.linkText}>特定商取引法に基づく表記</Text>
+          </TouchableOpacity>
+          <Text style={styles.separator}>{' | '}</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+            <Text style={styles.linkText}>お問い合わせ</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -201,12 +232,14 @@ const getToday = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
   description: { fontSize: 15, lineHeight: 22, color: '#333', marginBottom: 16 },
   controls: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 },
   button: { backgroundColor: '#3b82f6', padding: 12, borderRadius: 10, alignItems: 'center' },
   buttonText: { color: '#fff', marginTop: 5 },
+  linkText: { fontSize: 16, color: '#007bff', marginHorizontal: 2, textDecorationLine: 'underline' },
+  separator: { fontSize: 16, color: '#666' },
 });
 
 export default DiaryScreen;
