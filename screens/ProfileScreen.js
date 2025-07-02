@@ -13,6 +13,7 @@ import {
   Alert
 } from 'react-native';
 
+import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { useFocusEffect } from '@react-navigation/native';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser, logout } from '../utils/auth';
@@ -81,6 +82,19 @@ export default function ProfileScreen({ navigation }) {
     }, [])
   );
 
+  const handlePurchase = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        await purchaseWithApple();
+      } else {
+        await purchaseWithGoogle();
+      }
+    } catch (err) {
+      console.error('購入エラー:', err);
+      Alert.alert('エラー', '購入に失敗しました。');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -137,59 +151,74 @@ export default function ProfileScreen({ navigation }) {
                 </Text>
             </View>
 
-            {profile && !profile.is_paid && (
-              <View style={{
-                backgroundColor: profile.can_use_premium ? '#fefefe' : '#fff8f6',
-                borderColor: profile.can_use_premium ? '#ccc' : '#faa',
-                borderWidth: 1,
-                borderRadius: 6,
-                padding: 12,
-                marginBottom: 20,
-              }}>
-                {profile.can_use_premium ? (
-                  <>
-                    <Text style={{ fontSize: 14, color: '#444' }}>
-                      ⏰ 無料期間中です（あと {getFreeDaysLeft(profile.created_at)} 日）。{"\n"}
-                      終了後は録音やグラフなどの機能に制限がかかります。
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => Linking.openURL('https://koekarte.com/checkout')}
-                      style={{
-                        marginTop: 10,
-                        backgroundColor: '#e0f0ff',
-                        paddingVertical: 8,
-                        paddingHorizontal: 16,
-                        borderRadius: 5,
-                        alignSelf: 'flex-start',
-                      }}
-                    >
-                      <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
-                        🎟 有料プランの詳細を見る
+            {profile && (
+              profile.is_paid ? (
+                <View style={{
+                  backgroundColor: '#f0fff0',
+                  borderColor: '#0a0',
+                  borderWidth: 1,
+                  borderRadius: 6,
+                  padding: 12,
+                  marginBottom: 20,
+                }}>
+                  <Text style={{ fontSize: 16, color: '#080' }}>
+                    ✅ 有料会員です（自動継続中）
+                  </Text>
+                </View>
+              ) : (
+                <View style={{
+                  backgroundColor: profile.can_use_premium ? '#fefefe' : '#fff8f6',
+                  borderColor: profile.can_use_premium ? '#ccc' : '#faa',
+                  borderWidth: 1,
+                  borderRadius: 6,
+                  padding: 12,
+                  marginBottom: 20,
+                }}>
+                  {profile.can_use_premium ? (
+                    <>
+                      <Text style={{ fontSize: 14, color: '#444' }}>
+                        ⏰ 無料期間中です（あと {getFreeDaysLeft(profile.created_at)} 日）。{"\n"}
+                        終了後は録音やグラフなどの機能に制限がかかります。
                       </Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                      ⚠️ 無料期間は終了しました。有料登録が必要です。
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => Linking.openURL('https://koekarte.com/checkout')}
-                      style={{
-                        backgroundColor: '#ffc107',
-                        paddingVertical: 8,
-                        paddingHorizontal: 16,
-                        borderRadius: 5,
-                        alignSelf: 'flex-start',
-                      }}
-                    >
-                      <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                        🎟 今すぐ登録する
+                      <TouchableOpacity
+                        onPress={handlePurchase}
+                        style={{
+                          marginTop: 10,
+                          backgroundColor: '#e0f0ff',
+                          paddingVertical: 8,
+                          paddingHorizontal: 16,
+                          borderRadius: 5,
+                          alignSelf: 'flex-start',
+                        }}
+                      >
+                        <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
+                          🎟 有料プランの詳細を見る
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
+                        ⚠️ 無料期間は終了しました。有料登録が必要です。
                       </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
+                      <TouchableOpacity
+                        onPress={handlePurchase}
+                        style={{
+                          backgroundColor: '#ffc107',
+                          paddingVertical: 8,
+                          paddingHorizontal: 16,
+                          borderRadius: 5,
+                          alignSelf: 'flex-start',
+                        }}
+                      >
+                        <Text style={{ fontWeight: 'bold', color: '#000' }}>
+                          🎟 今すぐ登録する
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              )
             )}
 
             {/* 利用規約などのリンク */}
