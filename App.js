@@ -26,6 +26,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import RecordScreen from './screens/RecordScreen';
 import ChartScreen from './screens/ChartScreen';
 import MusicScreen from './screens/MusicScreen';
+import DiaryScreen from './screens/DiaryScreen';
 
 // その他ページ
 import TermsScreen from './screens/TermsScreen';
@@ -67,6 +68,7 @@ function MainTabs() {
     { name: 'Record', title: '録音', component: RecordScreen, icon: 'mic' },
     { name: 'Chart', title: 'グラフ', component: ChartScreen, icon: 'bar-chart' },
     { name: 'Music', title: '音源', component: MusicScreen, icon: 'musical-notes' },
+    { name: 'Diary', title: '日記', component: DiaryScreen, icon: 'book' },
   ];
 
   return (
