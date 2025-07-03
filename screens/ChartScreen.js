@@ -13,8 +13,9 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
+import { getFreeDaysLeft } from '../utils/premiumUtils';
 import ScoreChart from './ScoreChart';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
@@ -40,7 +41,7 @@ export default function ChartScreen({ route }) {
         })
           .then(res => res.json())
           .then(data => {
-            setCanUsePremium(data.can_use_premium);  // サーバ側で付加された値を使う
+            setCanUsePremium(data.can_use_premium);
             setProfile(data);
           })
           .catch((err) => {
@@ -50,6 +51,19 @@ export default function ChartScreen({ route }) {
       });
     }, [])
   );
+
+  const handlePurchase = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        await purchaseWithApple();
+      } else {
+        await purchaseWithGoogle();
+      }
+    } catch (err) {
+      console.error('購入エラー:', err);
+      Alert.alert('エラー', '購入に失敗しました。');
+    }
+  };
 
   if (!profile) {
     return (
@@ -108,110 +122,106 @@ export default function ChartScreen({ route }) {
         {canUsePremium ? (
           <>
             <ScoreChart range={range} profile={profile} />
-    
-            { !profile.is_paid && daysLeft > 0 && (
+
+            {profile && !profile.is_paid && (
               <View style={{
                 backgroundColor: profile.can_use_premium ? '#fefefe' : '#fff8f6',
                 borderColor: profile.can_use_premium ? '#ccc' : '#faa',
                 borderWidth: 1,
                 borderRadius: 6,
                 padding: 12,
-                marginTop: 20,
+                marginBottom: 20,
               }}>
-                <Text style={{ fontSize: 14, color: '#444' }}>
-                  ⏰ 無料期間中です（あと {getFreeDaysLeft(profile.created_at)} 日）。{"\n"}
-                  終了後は録音やグラフなどの機能に制限がかかります。
-                </Text>
-                <TouchableOpacity
-                  onPress={() => Linking.openURL('https://koekarte.com/checkout')}
-                  style={{
-                    marginTop: 10,
-                    backgroundColor: '#e0f0ff',
-                    paddingVertical: 8,
-                    paddingHorizontal: 16,
-                    borderRadius: 5,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
-                    🎟 有料プランの詳細を見る
-                  </Text>
-                </TouchableOpacity>
+                {profile.can_use_premium ? (
+                  <>
+                    <Text style={{ fontSize: 14, color: '#444' }}>
+                      ⏰ 無料期間中（あと {getFreeDaysLeft(profile.created_at)} 日）です。
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handlePurchase}
+                      style={{
+                        marginTop: 10,
+                        backgroundColor: '#e0f0ff',
+                        paddingVertical: 8,
+                        paddingHorizontal: 16,
+                        borderRadius: 5,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Text style={{ fontWeight: 'bold', color: '#007bff' }}>
+                        🎟 有料プランの詳細を見る
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
+                      ⚠️ 無料期間は終了しました。有料登録が必要です。
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handlePurchase}
+                      style={{
+                        backgroundColor: '#ffc107',
+                        paddingVertical: 8,
+                        paddingHorizontal: 16,
+                        borderRadius: 5,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      <Text style={{ fontWeight: 'bold', color: '#000' }}>
+                        🎟 今すぐ登録する
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             )}
+
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 6 }}>【スコアの目安】</Text>
+              {[
+                ['🟢 95', '非常にリラックス'],
+                ['😊 70-90', '安定しています'],
+                ['😟 50-69', 'やや不安定'],
+                ['🔴 〜49', 'ストレスが高いかも'],
+              ].map(([label, desc]) => (
+                <View key={label} style={{ flexDirection: 'row', marginBottom: 4 }}>
+                  <Text style={{ width: 80 }}>{label}</Text>
+                  <Text>{desc}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+                  <Text style={styles.linkText}>利用規約</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}>{" | "}</Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
+                  <Text style={styles.linkText}>プライバシーポリシー</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}>{" | "}</Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
+                  <Text style={styles.linkText}>特定商取引法</Text>
+                </TouchableOpacity>
+                <Text style={styles.separator}>{" | "}</Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+                  <Text style={styles.linkText}>お問い合わせ</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </>
         ) : (
-          <View style={{
-            backgroundColor: '#fff8f6',
-            borderColor: '#faa',
-            borderWidth: 1,
-            borderRadius: 6,
-            padding: 12,
-            marginTop: 20,
-          }}>
-            <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-              ⚠️ グラフ機能は有料プラン専用です。
+          <View style={{ paddingTop: 50, alignItems: 'center' }}>
+            <Text style={{ color: '#a00', fontSize: 16 }}>
+              ⚠️ グラフは有料プランでご利用いただけます。
             </Text>
-            <Text style={{ fontSize: 14, color: '#444' }}>
-              無料期間は終了しました。継続してスコアを確認するには、有料プランのご登録が必要です。
-            </Text>
-            <TouchableOpacity
-              onPress={() => Linking.openURL('https://koekarte.com/checkout')}
-              style={{
-                marginTop: 10,
-                backgroundColor: '#ffc107',
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 5,
-                alignSelf: 'flex-start',
-              }}
-            >
-              <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                🎟 今すぐ登録する
-              </Text>
-            </TouchableOpacity>
           </View>
         )}
-
-
-        <View style={{ marginTop: 16 }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 6 }}>【スコアの目安】</Text>
-          {[
-            ['🟢 95', '非常にリラックス'],
-            ['😊 70-90', '安定しています'],
-            ['😟 50-69', 'やや不安定'],
-            ['🔴 〜49', 'ストレスが高いかも'],
-          ].map(([label, desc]) => (
-            <View key={label} style={{ flexDirection: 'row', marginBottom: 4 }}>
-              <Text style={{ width: 80 }}>{label}</Text>
-              <Text>{desc}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>        
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
-              <Text style={styles.linkText}>利用規約</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}>{" | "}</Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
-              <Text style={styles.linkText}>プライバシーポリシー</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}>{" | "}</Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
-              <Text style={styles.linkText}>特定商取引法</Text>
-            </TouchableOpacity>
-            <Text style={styles.separator}>{" | "}</Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
-              <Text style={styles.linkText}>お問い合わせ</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
