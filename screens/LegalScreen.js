@@ -35,14 +35,14 @@ export default function LegalScreen() {
         </Text>
 
         <Text style={styles.subheading}>■ 運営事業者</Text>
-        <Text style={styles.paragraph}>コエカルテ 運営者</Text>
+        <Text style={styles.paragraph}>合同会社Ａｔｂａｓｅ</Text>
 
         <Text style={styles.subheading}>■ 運営責任者</Text>
         <Text style={styles.paragraph}>野寺 孝彦</Text>
 
         <Text style={styles.subheading}>■ 所在地</Text>
         <Text style={styles.paragraph}>〒104-0061
-東京都中央区銀座1丁目12番4号 N&E BLD.6F
+東京都中央区銀座１丁目１２番４号Ｎ＆ＥＢＬＤ．６Ｆ
 ※個人情報保護の観点から、正式な請求があった場合に限り開示いたします。</Text>
 
         <Text style={styles.subheading}>■ 電話番号</Text>
