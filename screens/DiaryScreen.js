@@ -157,22 +157,22 @@ const DiaryScreen = ({ navigation }) => {
           {canUsePremium ? (
             <>
               <Text style={{ fontSize: 14, color: '#444' }}>
-                ⏰ 無料期間中（あと {getFreeDaysLeft(profile.created_at)} 日）です。
+                無料期間中（あと {getFreeDaysLeft(profile.created_at)} 日）です。
               </Text>
               <TouchableOpacity onPress={handlePurchase} style={{ marginTop: 10 }}>
                 <Text style={{ color: '#007bff', fontWeight: 'bold' }}>
-                  🎟 有料プランの詳細を見る
+                  有料プランの詳細を見る
                 </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                ⚠️ 無料期間は終了しました。有料登録が必要です。
+                無料期間は終了しました。有料登録が必要です。
               </Text>
               <TouchableOpacity onPress={handlePurchase}>
                 <Text style={{ fontWeight: 'bold', color: '#000', backgroundColor: '#ffc107', padding: 8, borderRadius: 5 }}>
-                  🎟 今すぐ登録する
+                  今すぐ登録する
                 </Text>
               </TouchableOpacity>
             </>
@@ -205,7 +205,7 @@ const DiaryScreen = ({ navigation }) => {
       </View>
 
       <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ alignSelf: 'center', marginVertical: 20 }}>
-        <Text style={{ fontSize: 18, color: '#6a1b9a', textDecorationLine: 'underline' }}>🏠 マイページに戻る</Text>
+        <Text style={{ fontSize: 18, color: '#6a1b9a', textDecorationLine: 'underline' }}>マイページに戻る</Text>
       </TouchableOpacity>
 
       <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
