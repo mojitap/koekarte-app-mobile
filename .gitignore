@@ -36,14 +36,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# Android / iOS build
-android/
-ios/
-*.apk
-*.ipa
-
-# Expo cache
-.expo-shared/
-
-# Logs
-*.log
+# ビルド失敗の原因となる macOS ログや一時ファイル
+Library/
+.cargo/
+Downloads/
+*.mp3
+*.dmg
+*.MP4
