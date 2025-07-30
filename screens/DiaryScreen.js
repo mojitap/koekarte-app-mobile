@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { Audio } from 'expo-av';
+import * as Audio from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
