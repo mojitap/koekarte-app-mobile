@@ -12,7 +12,8 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import { Audio } from 'expo-av';
+import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
+import { Audio } from 'expo-audio';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
@@ -65,6 +66,19 @@ export default function RecordScreen() {
       };
     }, [sound])
   );
+
+  const handlePurchase = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        await purchaseWithApple();
+      } else {
+        await purchaseWithGoogle();
+      }
+    } catch (err) {
+      console.error('購入エラー:', err);
+      Alert.alert('エラー', '購入に失敗しました。');
+    }
+  };
 
   // 録音中ドットアニメ
   useEffect(() => {
@@ -402,11 +416,10 @@ export default function RecordScreen() {
             {profile.can_use_premium ? (
               <>
                 <Text style={{ fontSize: 14, color: '#444' }}>
-                  ⏰ 無料期間中です（あと {getFreeDaysLeft(profile.created_at)} 日）。{"\n"}
-                  終了後は録音やグラフなどの機能に制限がかかります。
+                  ⏰ 無料期間中（あと {getFreeDaysLeft(profile.created_at)} 日）です。
                 </Text>
                 <TouchableOpacity
-                  onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                  onPress={handlePurchase}
                   style={{
                     marginTop: 10,
                     backgroundColor: '#e0f0ff',
@@ -427,7 +440,7 @@ export default function RecordScreen() {
                   ⚠️ 無料期間は終了しました。有料登録が必要です。
                 </Text>
                 <TouchableOpacity
-                  onPress={() => Linking.openURL('https://koekarte.com/checkout')}
+                  onPress={handlePurchase}
                   style={{
                     backgroundColor: '#ffc107',
                     paddingVertical: 8,
