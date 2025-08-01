@@ -47,7 +47,7 @@ const Stack = createNativeStackNavigator();
 function TabWithStack({ screen }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name={screen.name} component={screen.component} />
+      <Stack.Screen name={`${screen.name}Main`} component={screen.component} />
       <Stack.Screen name="Terms" component={TermsScreen} />
       <Stack.Screen name="Privacy" component={PrivacyScreen} />
       <Stack.Screen name="Legal" component={LegalScreen} />
