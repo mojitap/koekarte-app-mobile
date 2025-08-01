@@ -113,6 +113,7 @@ const DiaryScreen = ({ navigation }) => {
       if (sound) {
         await sound.stopAsync();
         await sound.unloadAsync();
+        setSound(null);
       }
       const filePath = getFilePath(selectedDate);
       const { sound: newSound } = await Sound.createAsync({ uri: filePath });
