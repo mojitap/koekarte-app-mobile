@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
