@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
-import { Audio } from 'expo-audio';
+import { Recording, Sound, setAudioModeAsync, requestPermissionsAsync } from 'expo-audio';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
@@ -141,6 +141,7 @@ export default function RecordScreen() {
         playThroughEarpieceAndroid: false,
       });
       await new Promise((r) => setTimeout(r, 2000));
+      
       const recordingOptions = {
         android: {
           extension: '.m4a',
@@ -163,7 +164,11 @@ export default function RecordScreen() {
           volume: 1.0,
         },
       };
-      const { recording } = await Audio.Recording.createAsync(recordingOptions);
+      const newRecording = new Recording();
+      await recording.prepareToRecordAsync(recordingOptions);
+      await recording.startAsync();
+      recordingRef.current = recording;
+      setRecording(recording);
       recordingRef.current = recording;
       setRecording(recording);
       setStatus('録音中...');
