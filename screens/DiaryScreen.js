@@ -9,7 +9,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import * as Audio from 'expo-audio';
+import {
+  Recording,
+  Sound,
+  setAudioModeAsync,
+  requestPermissionsAsync
+} from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,10 +83,10 @@ const DiaryScreen = ({ navigation }) => {
     }
 
     try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+      await requestPermissionsAsync();
+      await setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording } = await Recording.createAsync(
+        Recording.Constants.AUDIO_RECORDING_OPTIONS_PRESET_HIGH_QUALITY
       );
       setRecording(recording);
     } catch (err) {
@@ -110,7 +115,7 @@ const DiaryScreen = ({ navigation }) => {
         await sound.unloadAsync();
       }
       const filePath = getFilePath(selectedDate);
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri: filePath });
+      const { sound: newSound } = await Sound.createAsync({ uri: filePath });
       setSound(newSound);
       await newSound.playAsync();
     } catch (err) {
