@@ -18,7 +18,10 @@ import {
 } from 'react-native';
 import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-audio';
+import {
+  Sound,
+  setAudioModeAsync
+} from 'expo-audio';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
@@ -85,7 +88,7 @@ export default function MusicScreen() {
         await soundRef.current.stopAsync();
         await soundRef.current.unloadAsync();
       }
-      const { sound } = await Audio.Sound.createAsync(track.file, { volume: 1.0 });
+      const { sound } = await Sound.createAsync(track.file, { volume: 1.0 });
       soundRef.current = sound;
       await sound.playAsync();
       setCurrentTrack(track.label);
@@ -99,7 +102,7 @@ export default function MusicScreen() {
     React.useCallback(() => {
       (async () => {
         try {
-          await Audio.setAudioModeAsync({
+          await setAudioModeAsync({
             allowsRecordingIOS: false,
             staysActiveInBackground: false,
             playsInSilentModeIOS: true,
