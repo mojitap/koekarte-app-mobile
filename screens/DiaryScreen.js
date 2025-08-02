@@ -1,4 +1,9 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
@@ -7,6 +12,7 @@ import {
   Alert,
   Platform,
   ScrollView,
+  AppState,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import {
@@ -22,6 +28,7 @@ import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { getUser } from '../utils/auth';
 import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { API_BASE_URL } from '../utils/config';
+import { useFocusEffect } from '@react-navigation/native';
 
 const DiaryScreen = ({ navigation }) => {
   const { userProfile } = useContext(AuthContext);
@@ -57,6 +64,24 @@ const DiaryScreen = ({ navigation }) => {
     });
   }, []);
 
+  useEffect(() => {
+  　const subscription = AppState.addEventListener('change', nextAppState => {
+    　if ((nextAppState === 'inactive' || nextAppState === 'background') && recording) {
+      　stopRecording();
+    　}
+  　});
+
+  　return () => subscription.remove();
+　}, [recording]);
+
+  useFocusEffect(
+  　useCallback(() => {
+    　return () => {
+      　if (recording) stopRecording();
+    　};
+  　}, [recording])
+　);
+
   const getFilePath = (date) => `${diaryDir}${date}.m4a`;
 
   const loadDiaryFiles = async () => {
@@ -73,7 +98,15 @@ const DiaryScreen = ({ navigation }) => {
     }
   };
 
+  let recordingTimeout = null;
+
   const startRecording = async () => {
+    // ✅ このガードが最初！
+    if (recording) {
+      Alert.alert('録音中です', '録音を停止してから再度開始してください。');
+      return;
+    }
+
     if (!canUsePremium) {
       Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
         { text: '有料登録する', onPress: () => handlePurchase() },
@@ -89,6 +122,13 @@ const DiaryScreen = ({ navigation }) => {
         Recording.Constants.AUDIO_RECORDING_OPTIONS_PRESET_HIGH_QUALITY
       );
       setRecording(recording);
+
+      // ⏱ 15秒後に自動停止
+      recordingTimeout = setTimeout(() => {
+        stopRecording();
+        Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
+      }, 15000);
+
     } catch (err) {
       Alert.alert('録音エラー', err.message);
     }
@@ -96,6 +136,7 @@ const DiaryScreen = ({ navigation }) => {
 
   const stopRecording = async () => {
     try {
+      clearTimeout(recordingTimeout);  // ⏱ 自動停止タイマーをキャンセル
       setIsSaving(true);
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
