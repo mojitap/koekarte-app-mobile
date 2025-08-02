@@ -185,12 +185,15 @@ export default function RecordScreen() {
   　await recording.stopAndUnloadAsync();
   　await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
 
-  　const originalUri = recording.getURI();
-  　await FileSystem.moveAsync({ from: originalUri, to: stressFilePath });
-  　setRecordingUri(stressFilePath);
-
-  　setRecording(null);
+  　const uri = recording.getURI();  // 必ずここで取得
+  　await FileSystem.makeDirectoryAsync(stressDir, { intermediates: true }).catch(()=>{});
+  　await FileSystem.moveAsync({ from: uri, to: stressFilePath });
+  　setRecording(null);  // recordingはもう不要
+  　setRecordingUri(stressFilePath);  // 新しい保存先を記録
   　setStatus('再生またはアップロードが可能です');
+
+  　console.log('[stopRecording] uri:', uri, '=>', stressFilePath);
+  　console.log('[stopRecording] recordingUri:', stressFilePath);
 
   　try {
     　const info = await FileSystem.getInfoAsync(stressFilePath);
@@ -391,36 +394,18 @@ export default function RecordScreen() {
           )}
 
           {uploadStatus !== '' && (
-  　　　　　　<Text style={{ marginTop: 10, color: '#555' }}>{uploadStatus}</Text>
-　　　　　　)}
+            <View style={{ alignItems: 'center', marginVertical: 20 }}>
+              <Text style={{ fontSize: 22, color: '#333', fontWeight: 'bold', textAlign: 'center' }}>
+                {uploadStatus}
+              </Text>
+            </View>
+          )}
 
           {/* スコア表示 */}
           {score !== null && (
             <Text style={styles.score}>
               ストレススコア：{score} 点
             </Text>
-          )}
-
-          {/* フィードバックUI */}
-          {score !== null && !submitted && (
-            <View style={{ marginTop: 20 }}>
-              <Text style={{ marginBottom: 10, textAlign: 'center' }}>
-                このスコアは妥当でしたか？
-              </Text>
-
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                <Text style={{ fontSize: 14 }}>悪い</Text>
-                <Text style={{ fontSize: 14 }}>良い</Text>
-              </View>
-
-              <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
-                {[1, 2, 3, 4, 5].map(n => (
-                  <TouchableOpacity key={n} onPress={() => submitFeedback(n)}>
-                    <Text style={{ fontSize: 24 }}>{'★'.repeat(n)}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
           )}
 
           {/* 録音中インジケータ */}
