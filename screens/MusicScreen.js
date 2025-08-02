@@ -18,10 +18,7 @@ import {
 } from 'react-native';
 import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  Sound,
-  setAudioModeAsync
-} from 'expo-audio';
+import { Audio } from 'expo-av';
 import { getUser } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';
 import { checkCanUsePremium, getFreeDaysLeft } from '../utils/premiumUtils';
@@ -78,31 +75,32 @@ export default function MusicScreen() {
   const navigation = useNavigation();
 
   const playSound = async (track) => {
-    if (canUsePremium !== true && track.isPremium) {
-      Alert.alert("🔒 有料音源", "この音源は有料プラン専用です。プランをご確認ください。");
-      return;
-    }
+  　if (canUsePremium !== true && track.isPremium) {
+    　Alert.alert("🔒 有料音源", "この音源は有料プラン専用です。プランをご確認ください。");
+    　return;
+  　}
 
-    try {
-      if (soundRef.current) {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
-      }
-      const { sound } = await Sound.createAsync(track.file, { volume: 1.0 });
-      soundRef.current = sound;
-      await sound.playAsync();
-      setCurrentTrack(track.label);
-    } catch (e) {
-      console.error("❌ 再生失敗:", e);
-      Alert.alert("再生エラー", "音源を再生できませんでした\n" + e.message);
-    }
-  };
+  　try {
+    　if (soundRef.current) {
+      　await soundRef.current.stopAsync();
+      　await soundRef.current.unloadAsync();
+    　}
+
+    　const { sound } = await Audio.Sound.createAsync(track.file, { volume: 1.0 }); // ✅ 修正
+    　soundRef.current = sound;
+    　await sound.playAsync();
+    　setCurrentTrack(track.label);
+  　} catch (e) {
+    　console.error("❌ 再生失敗:", e);
+    　Alert.alert("再生エラー", "音源を再生できませんでした\n" + e.message);
+  　}
+　};
 
   useFocusEffect(
     React.useCallback(() => {
       (async () => {
         try {
-          await setAudioModeAsync({
+          await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
             staysActiveInBackground: false,
             playsInSilentModeIOS: true,
