@@ -222,39 +222,80 @@ export default function RecordScreen() {
   };
 
   const uploadRecording = async () => {
-    if (!recordingUri || !canUsePremium) {
-      Alert.alert("アップロード制限", "録音が存在しないか、利用制限中です。");
-      return;
-    }
+  　if (!recordingUri || !canUsePremium) {
+    　Alert.alert("アップロード制限", "録音が存在しないか、利用制限中です。");
+    　return;
+  　}
 
-    setStatus('アップロード中...');
-    const uri = recordingUri.startsWith('file://')
-      ? recordingUri
-      : `file://${recordingUri}`;
-    const fd = new FormData();
-    fd.append('audio_data', { uri, name: 'recording.m4a', type: 'audio/m4a' });
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: fd,
-      });
-      const ct = res.headers.get('content-type') || '';
-      if (!ct.includes('application/json')) {
-        const text = await res.text();
-        throw new Error('非JSONレスポンス: ' + text);
-      }
-      const { quick_score, job_id } = await res.json();
-      setScore(quick_score);
-      setDetailJobId(job_id);
-      Alert.alert('ストレススコア', `${quick_score} 点`);
-      navigation.navigate('Chart', { refresh: Date.now() });
-    } catch (e) {
-      console.error('❌ アップロード失敗:', e);
-      Alert.alert('エラー', 'アップロードに失敗しました');
-    }
-    setStatus('');
-  };
+  　setStatus('アップロード中...');
+  　const uri = recordingUri.startsWith('file://')
+    　? recordingUri
+    　: `file://${recordingUri}`;
+  　const fd = new FormData();
+  　fd.append('audio_data', { uri, name: 'recording.m4a', type: 'audio/m4a' });
+
+  　try {
+    　// 🔸まず初回アップロード（既存チェック）
+    　const res = await fetch(`${API_BASE_URL}/api/upload`, {
+      　method: 'POST',
+      　credentials: 'include',
+      　body: fd,
+    　});
+    　const ct = res.headers.get('content-type') || '';
+    　if (!ct.includes('application/json')) {
+      　const text = await res.text();
+      　throw new Error('非JSONレスポンス: ' + text);
+    　}
+
+    　let result = await res.json();
+
+    　// 🔸すでに当日分が存在する場合、確認ダイアログを表示
+    　if (result.already) {
+      　const ok = await new Promise(resolve =>
+        　Alert.alert(
+          　"上書き確認",
+          　result.message || "本日の録音はすでに存在します。上書きしますか？",
+          　[
+            　{ text: "キャンセル", style: "cancel", onPress: () => resolve(false) },
+            　{ text: "上書きする", onPress: () => resolve(true) },
+          　],
+          　{ cancelable: false }
+        　)
+      　);
+      　if (!ok) {
+        　setStatus('');
+        　return;
+      　}
+
+      　// 🔸上書きアップロード
+      　const resOverwrite = await fetch(`${API_BASE_URL}/api/upload?overwrite=true`, {
+        　method: 'POST',
+        　credentials: 'include',
+        　body: fd,
+      　});
+
+      　if (!resOverwrite.ok) {
+        　const text = await resOverwrite.text();
+        　throw new Error("上書きアップロードに失敗しました: " + text);
+      　}
+
+      　result = await resOverwrite.json();
+    　}
+
+    　// 🔸スコア取得＋遷移
+    　const { quick_score, job_id } = result;
+    　setScore(quick_score);
+    　setDetailJobId(job_id);
+    　Alert.alert('ストレススコア', `${quick_score} 点`);
+    　navigation.navigate('Chart', { refresh: Date.now() });
+
+  　} catch (e) {
+    　console.error('❌ アップロード失敗:', e);
+    　Alert.alert('エラー', 'アップロードに失敗しました');
+  　}
+
+  　setStatus('');
+　};
 
   // フィードバック送信関数
   const submitFeedback = async (userScore) => {
