@@ -195,6 +195,7 @@ const DiaryScreen = ({ navigation }) => {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       const newPath = getFilePath(selectedDate);
+      console.log('保存直後uri:', uri);
 
       // ★ 上書き時は事前に既存ファイルを削除
       const exists = await FileSystem.getInfoAsync(newPath);
@@ -202,6 +203,9 @@ const DiaryScreen = ({ navigation }) => {
         await FileSystem.deleteAsync(newPath, { idempotent: true });
       }
 
+      console.log('保存処理: uri =', uri, ', newPath =', newPath);
+      const srcInfo = await FileSystem.getInfoAsync(uri);
+      console.log('移動元ファイル存在:', srcInfo.exists, 'サイズ:', srcInfo.size);
       setUploadStatus('💾 保存中...');
       await FileSystem.moveAsync({ from: uri, to: newPath });
       setUploadStatus('✅ 保存完了');
