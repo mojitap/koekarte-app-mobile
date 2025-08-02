@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { purchaseWithApple, purchaseWithGoogle } from '../utils/purchaseUtils';
-import { Recording, Sound, setAudioModeAsync, requestPermissionsAsync } from 'expo-audio';
+import { Audio } from 'expo-av';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { getUser } from '../utils/auth';
@@ -34,6 +34,7 @@ export default function RecordScreen() {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [profile, setProfile] = useState(null);
   const recordingRef = useRef(null);
+  const { Recording } = Audio;
 
   // ログイン状態と利用可否チェック
   useFocusEffect(
@@ -165,12 +166,10 @@ export default function RecordScreen() {
         },
       };
       const newRecording = new Recording();
-      await recording.prepareToRecordAsync(recordingOptions);
-      await recording.startAsync();
-      recordingRef.current = recording;
-      setRecording(recording);
-      recordingRef.current = recording;
-      setRecording(recording);
+      await newRecording.prepareToRecordAsync(recordingOptions);
+      await newRecording.startAsync();
+      recordingRef.current = newRecording;
+      setRecording(newRecording);
       setStatus('録音中...');
     } catch (e) {
       console.error('❌ 録音エラー:', e);
