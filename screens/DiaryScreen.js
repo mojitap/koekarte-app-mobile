@@ -36,6 +36,7 @@ const DiaryScreen = ({ navigation }) => {
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [profile, setProfile] = useState(null);
   const [isSaving, setIsSaving] = useState(false); 
+  const [uploadStatus, setUploadStatus] = useState('');
 
   const diaryDir = FileSystem.documentDirectory + 'diary/';
 
@@ -162,19 +163,24 @@ const DiaryScreen = ({ navigation }) => {
 　};
 
   const stopRecording = async () => {
-    try {
-      clearTimeout(recordingTimeout.current);
-      setIsSaving(true);
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      const newPath = getFilePath(selectedDate);
-      await FileSystem.moveAsync({ from: uri, to: newPath });
-      setRecording(null);
-      loadDiaryFiles();
-    } catch (err) {
-      Alert.alert('保存エラー', err.message);
-    }
-  };
+  　try {
+    　clearTimeout(recordingTimeout.current);
+    　setIsSaving(true);
+    　await recording.stopAndUnloadAsync();
+    　const uri = recording.getURI();
+    　const newPath = getFilePath(selectedDate);
+    
+    　setUploadStatus('💾 保存中...');
+    　await FileSystem.moveAsync({ from: uri, to: newPath });
+    　setUploadStatus('✅ 保存完了');
+    
+    　setRecording(null);
+    　loadDiaryFiles();
+  　} catch (err) {
+    　Alert.alert('保存エラー', err.message);
+    　setUploadStatus('❌ 保存に失敗しました');
+  　}
+　};
 
   const playRecording = async () => {
     try {
@@ -277,6 +283,10 @@ const DiaryScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>再生</Text>
         </TouchableOpacity>
       </View>
+
+      {uploadStatus !== '' && (
+        <Text style={{ marginTop: 10, color: '#555', fontSize: 14 }}>{uploadStatus}</Text>
+      )}
 
       <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ alignSelf: 'center', marginVertical: 20 }}>
         <Text style={{ fontSize: 18, color: '#6a1b9a', textDecorationLine: 'underline' }}>マイページに戻る</Text>
