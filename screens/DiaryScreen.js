@@ -39,12 +39,32 @@ const DiaryScreen = ({ navigation }) => {
   const [uploadStatus, setUploadStatus] = useState('');
 
   const diaryDir = FileSystem.documentDirectory + 'diary/';
+  const [markedDates, setMarkedDates] = useState({});
+
+  const loadMarkedDates = async () => {
+    const files = await FileSystem.readDirectoryAsync(diaryDir);
+    const marks = {};
+    files.forEach(f => {
+      const dateStr = f.replace('.m4a', '');
+      marks[dateStr] = { marked: true, dotColor: 'green', selectedColor: '#aef' };
+    });
+    setMarkedDates(marks);
+  };
+
+  const diaryFilePath = diaryDir + 'recording_diary.m4a';
+  const filePathForDate = `${diaryDir}${selectedDate}.m4a`;
 
   useEffect(() => {
     FileSystem.makeDirectoryAsync(diaryDir, { intermediates: true }).catch(() => {});
     loadDiaryFiles();
     return () => sound && sound.unloadAsync();
   }, []);
+
+  const saveDiaryRecording = async (uri, dateStr) => {
+    const destPath = `${diaryDir}${dateStr}.m4a`;
+    await FileSystem.moveAsync({ from: uri, to: destPath });
+    loadMarkedDates(); // 保存後にカレンダー更新
+  };
 
   useEffect(() => {
     getUser().then(data => {
@@ -83,57 +103,63 @@ const DiaryScreen = ({ navigation }) => {
   const getFilePath = (date) => `${diaryDir}${date}.m4a`;
 
   const loadDiaryFiles = async () => {
-    try {
-      const files = await FileSystem.readDirectoryAsync(diaryDir);
-      const dots = {};
-      files.forEach(file => {
-        const date = file.replace('.m4a', '');
-        dots[date] = { marked: true, dotColor: 'blue' };
-      });
-      setRecordedDates(dots);
-    } catch (e) {
-      console.log('読み込みエラー', e);
-    }
-  };
+   try {
+     const files = await FileSystem.readDirectoryAsync(diaryDir);
+     console.log('---- diary/ フォルダの中身 ----');
+     const dots = {};
+     for (const file of files) {
+       const info = await FileSystem.getInfoAsync(diaryDir + file);
+       console.log(`ファイル: ${file}, サイズ: ${info.size}`);
+       // dots処理もここで
+       if (info.size > 0) {
+         const date = file.replace('.m4a', '');
+         dots[date] = { marked: true, dotColor: 'blue' };
+       }
+     }
+     setRecordedDates(dots);
+   } catch (e) {
+     console.log('読み込みエラー', e);
+   }
+ };
 
   const startRecording = async () => {
-  　if (recording) {
-    　Alert.alert('録音中です', '録音を停止してから再度開始してください。');
-    　return;
-  　}
+    if (recording) {
+      Alert.alert('録音中です', '録音を停止してから再度開始してください。');
+      return;
+    }
 
-  　if (!canUsePremium) {
-    　Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
-      　{ text: '有料登録する', onPress: () => handlePurchase() },
-      　{ text: 'キャンセル', style: 'cancel' },
-    　]);
-    　return;
-  　}
+    if (!canUsePremium) {
+      Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
+        { text: '有料登録する', onPress: () => handlePurchase() },
+        { text: 'キャンセル', style: 'cancel' },
+      ]);
+      return;
+    }
 
-  // 📌 ここで「上書き確認」追加
-  　const filePath = getFilePath(selectedDate);
-  　const fileInfo = await FileSystem.getInfoAsync(filePath);
-  　if (fileInfo.exists) {
-    　Alert.alert(
-      　'上書き確認',
-      　'この日の音声はすでに保存されています。上書きしてもよいですか？',
-      　[
-        　{
-          　text: 'キャンセル',
-          　style: 'cancel',
-        　},
-        　{
-          　text: '上書きする',
-          　onPress: () => startActualRecording(), // 下で定義する関数
-        　},
-      　]
-    　);
-    　return; // 確認後に録音するのでここでは return
-  　}
+    // --- 当日（selectedDate）の録音ファイル存在チェック
+    const filePath = getFilePath(selectedDate);
+    const fileInfo = await FileSystem.getInfoAsync(filePath);
 
-  　// 上書きでないならすぐ録音開始
-  　await startActualRecording();
-　};
+    // ----ここが重要！----
+    // "今日の日記録音ファイルが存在する場合だけ" 上書き確認を出す
+    if (fileInfo.exists && fileInfo.size > 0) {
+      const ok = await new Promise(resolve =>
+        Alert.alert(
+          "上書き確認",
+          "この日の日記録音はすでに存在します。上書きしますか？",
+          [
+            { text: "キャンセル", style: "cancel", onPress: () => resolve(false) },
+            { text: "上書きする", onPress: () => resolve(true) },
+          ],
+          { cancelable: false }
+        )
+      );
+      if (!ok) return;
+    }
+
+    // 上書き確認が不要、もしくはOKされたら録音開始
+    await startActualRecording();
+  };
 
 　const startActualRecording = async () => {
   　try {
@@ -163,24 +189,31 @@ const DiaryScreen = ({ navigation }) => {
 　};
 
   const stopRecording = async () => {
-  　try {
-    　clearTimeout(recordingTimeout.current);
-    　setIsSaving(true);
-    　await recording.stopAndUnloadAsync();
-    　const uri = recording.getURI();
-    　const newPath = getFilePath(selectedDate);
-    
-    　setUploadStatus('💾 保存中...');
-    　await FileSystem.moveAsync({ from: uri, to: newPath });
-    　setUploadStatus('✅ 保存完了');
-    
-    　setRecording(null);
-    　loadDiaryFiles();
-  　} catch (err) {
-    　Alert.alert('保存エラー', err.message);
-    　setUploadStatus('❌ 保存に失敗しました');
-  　}
-　};
+    try {
+      clearTimeout(recordingTimeout.current);
+      setIsSaving(true);
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      const newPath = getFilePath(selectedDate);
+
+      // ★ 上書き時は事前に既存ファイルを削除
+      const exists = await FileSystem.getInfoAsync(newPath);
+      if (exists.exists) {
+        await FileSystem.deleteAsync(newPath, { idempotent: true });
+      }
+
+      setUploadStatus('💾 保存中...');
+      await FileSystem.moveAsync({ from: uri, to: newPath });
+      setUploadStatus('✅ 保存完了');
+      setRecording(null);
+      loadDiaryFiles();
+    } catch (err) {
+      Alert.alert('保存エラー', err.message);
+      setUploadStatus('❌ 保存に失敗しました');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const playRecording = async () => {
     try {
@@ -221,8 +254,9 @@ const DiaryScreen = ({ navigation }) => {
       </Text>
 
       <Calendar
-        markedDates={{ ...recordedDates, [selectedDate]: { selected: true, selectedColor: 'orange' } }}
-        onDayPress={(day) => setSelectedDate(day.dateString)}
+        markedDates={markedDates}
+        onDayPress={day => setSelectedDate(day.dateString)}
+        // 前月/次月も自動
       />
 
       {profile && !profile.is_paid && (
@@ -320,6 +354,7 @@ const DiaryScreen = ({ navigation }) => {
 
 const getToday = () => {
   const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   return now.toISOString().split('T')[0];
 };
 
