@@ -109,24 +109,50 @@ const DiaryScreen = ({ navigation }) => {
     　return;
   　}
 
+  // 📌 ここで「上書き確認」追加
+  　const filePath = getFilePath(selectedDate);
+  　const fileInfo = await FileSystem.getInfoAsync(filePath);
+  　if (fileInfo.exists) {
+    　Alert.alert(
+      　'上書き確認',
+      　'この日の音声はすでに保存されています。上書きしてもよいですか？',
+      　[
+        　{
+          　text: 'キャンセル',
+          　style: 'cancel',
+        　},
+        　{
+          　text: '上書きする',
+          　onPress: () => startActualRecording(), // 下で定義する関数
+        　},
+      　]
+    　);
+    　return; // 確認後に録音するのでここでは return
+  　}
+
+  　// 上書きでないならすぐ録音開始
+  　await startActualRecording();
+　};
+
+　const startActualRecording = async () => {
   　try {
-    　const permission = await Audio.requestPermissionsAsync(); // ← 修正
+    　const permission = await Audio.requestPermissionsAsync();
     　if (!permission.granted) {
       　Alert.alert('マイクのアクセスが拒否されました');
       　return;
     　}
 
-    　await Audio.setAudioModeAsync({  // ← 修正
+    　await Audio.setAudioModeAsync({
       　allowsRecordingIOS: true,
       　playsInSilentModeIOS: true,
     　});
 
-    　const newRecording = new Audio.Recording(); // ← 修正
+    　const newRecording = new Audio.Recording();
     　await newRecording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
     　await newRecording.startAsync();
     　setRecording(newRecording);
 
-    　recordingTimeout = setTimeout(() => {
+    　recordingTimeout.current = setTimeout(() => {
       　stopRecording();
       　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
     　}, 15000);
