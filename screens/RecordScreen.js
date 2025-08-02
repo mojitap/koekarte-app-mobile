@@ -35,6 +35,9 @@ export default function RecordScreen() {
   const [profile, setProfile] = useState(null);
   const recordingRef = useRef(null);
   const { Recording } = Audio;
+  const [uploadStatus, setUploadStatus] = useState('');
+  const stressDir = FileSystem.documentDirectory + 'stress/';
+　const stressFilePath = stressDir + 'recording.m4a';
 
   // ログイン状態と利用可否チェック
   useFocusEffect(
@@ -178,23 +181,27 @@ export default function RecordScreen() {
   };
 
   const stopRecording = async () => {
-    setStatus('録音停止');
-    await recording.stopAndUnloadAsync();
-    await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-    const uri = recording.getURI();
-    setRecording(null);
-    setRecordingUri(uri);
-    setStatus('再生またはアップロードが可能です');
-    try {
-      const info = await FileSystem.getInfoAsync(uri);
-      console.log('📦 録音ファイルURI:', uri);
-      console.log('📏 録音ファイルサイズ:', info.size);
-      if (info.size < 5000)
-        Alert.alert('注意', '録音ファイルが小さすぎます。');
-    } catch (e) {
-      console.error('❌ ファイル情報取得エラー:', e);
-    }
-  };
+  　setStatus('録音停止');
+  　await recording.stopAndUnloadAsync();
+  　await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+
+  　const originalUri = recording.getURI();
+  　await FileSystem.moveAsync({ from: originalUri, to: stressFilePath });
+  　setRecordingUri(stressFilePath);
+
+  　setRecording(null);
+  　setStatus('再生またはアップロードが可能です');
+
+  　try {
+    　const info = await FileSystem.getInfoAsync(stressFilePath);
+    　console.log('📦 録音ファイルURI:', stressFilePath);
+    　console.log('📏 録音ファイルサイズ:', info.size);
+    　if (info.size < 5000)
+      　Alert.alert('注意', '録音ファイルが小さすぎます。');
+  　} catch (e) {
+    　console.error('❌ ファイル情報取得エラー:', e);
+  　}
+　};
 
   const playRecording = async () => {
     if (!recordingUri) return;
@@ -233,6 +240,18 @@ export default function RecordScreen() {
     　: `file://${recordingUri}`;
   　const fd = new FormData();
   　fd.append('audio_data', { uri, name: 'recording.m4a', type: 'audio/m4a' });
+
+  　setUploadStatus('⏳ 解析中です...');
+
+  　try {
+    　// 🔸まず初回アップロード（既存チェック）
+    　const res = await fetch(`${API_BASE_URL}/api/upload`, {
+      　method: 'POST',
+      　credentials: 'include',
+      　body: fd,
+    　});
+
+    　setUploadStatus('🧠 詳細解析中...');
 
   　try {
     　// 🔸まず初回アップロード（既存チェック）
@@ -380,6 +399,10 @@ export default function RecordScreen() {
           {recording && (
             <Button title="🛑 録音停止" onPress={stopRecording} />
           )}
+
+          {uploadStatus !== '' && (
+  　　　　　　<Text style={{ marginTop: 10, color: '#555' }}>{uploadStatus}</Text>
+　　　　　　)}
 
           {/* スコア表示 */}
           {score !== null && (
