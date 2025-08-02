@@ -243,77 +243,67 @@ export default function RecordScreen() {
 
   　setUploadStatus('⏳ 解析中です...');
 
-  　try {
-    　// 🔸まず初回アップロード（既存チェック）
-    　const res = await fetch(`${API_BASE_URL}/api/upload`, {
-      　method: 'POST',
-      　credentials: 'include',
-      　body: fd,
-    　});
+　　try {
+  　　// 🔸まず初回アップロード（既存チェック）
+  　　const res = await fetch(`${API_BASE_URL}/api/upload`, {
+    　　method: 'POST',
+    　　credentials: 'include',
+    　　body: fd,
+  　　});
 
-    　setUploadStatus('🧠 詳細解析中...');
+  　　setUploadStatus('🧠 詳細解析中...');
 
-  　try {
-    　// 🔸まず初回アップロード（既存チェック）
-    　const res = await fetch(`${API_BASE_URL}/api/upload`, {
-      　method: 'POST',
-      　credentials: 'include',
-      　body: fd,
-    　});
-    　const ct = res.headers.get('content-type') || '';
-    　if (!ct.includes('application/json')) {
-      　const text = await res.text();
-      　throw new Error('非JSONレスポンス: ' + text);
-    　}
+  　　const ct = res.headers.get('content-type') || '';
+  　　if (!ct.includes('application/json')) {
+    　　const text = await res.text();
+    　　throw new Error('非JSONレスポンス: ' + text);
+  　　}
 
-    　let result = await res.json();
+  　　let result = await res.json();
 
-    　// 🔸すでに当日分が存在する場合、確認ダイアログを表示
-    　if (result.already) {
-      　const ok = await new Promise(resolve =>
-        　Alert.alert(
-          　"上書き確認",
-          　result.message || "本日の録音はすでに存在します。上書きしますか？",
-          　[
-            　{ text: "キャンセル", style: "cancel", onPress: () => resolve(false) },
-            　{ text: "上書きする", onPress: () => resolve(true) },
-          　],
-          　{ cancelable: false }
-        　)
-      　);
-      　if (!ok) {
-        　setStatus('');
-        　return;
-      　}
+  　　if (result.already) {
+    　　const ok = await new Promise(resolve =>
+      　　Alert.alert(
+        　　"上書き確認",
+        　　result.message || "本日の録音はすでに存在します。上書きしますか？",
+        　　[
+          　　{ text: "キャンセル", style: "cancel", onPress: () => resolve(false) },
+          　　{ text: "上書きする", onPress: () => resolve(true) },
+        　　],
+        　　{ cancelable: false }
+      　　)
+    　　);
+    　　if (!ok) {
+      　　setStatus('');
+      　　return;
+    　　}
 
-      　// 🔸上書きアップロード
-      　const resOverwrite = await fetch(`${API_BASE_URL}/api/upload?overwrite=true`, {
-        　method: 'POST',
-        　credentials: 'include',
-        　body: fd,
-      　});
+    　　const resOverwrite = await fetch(`${API_BASE_URL}/api/upload?overwrite=true`, {
+      　　method: 'POST',
+      　　credentials: 'include',
+      　　body: fd,
+    　　});
 
-      　if (!resOverwrite.ok) {
-        　const text = await resOverwrite.text();
-        　throw new Error("上書きアップロードに失敗しました: " + text);
-      　}
+    　　if (!resOverwrite.ok) {
+      　　const text = await resOverwrite.text();
+      　　throw new Error("上書きアップロードに失敗しました: " + text);
+    　　}
 
-      　result = await resOverwrite.json();
-    　}
+    　　result = await resOverwrite.json();
+  　　}
 
-    　// 🔸スコア取得＋遷移
-    　const { quick_score, job_id } = result;
-    　setScore(quick_score);
-    　setDetailJobId(job_id);
-    　Alert.alert('ストレススコア', `${quick_score} 点`);
-    　navigation.navigate('Chart', { refresh: Date.now() });
+  　　const { quick_score, job_id } = result;
+  　　setScore(quick_score);
+  　　setDetailJobId(job_id);
+  　　Alert.alert('ストレススコア', `${quick_score} 点`);
+  　　navigation.navigate('Chart', { refresh: Date.now() });
 
-  　} catch (e) {
-    　console.error('❌ アップロード失敗:', e);
-    　Alert.alert('エラー', 'アップロードに失敗しました');
-  　}
+　　} catch (e) {
+  　　console.error('❌ アップロード失敗:', e);
+  　　Alert.alert('エラー', 'アップロードに失敗しました');
+　　}
 
-  　setStatus('');
+　　setStatus('');
 　};
 
   // フィードバック送信関数
@@ -413,23 +403,23 @@ export default function RecordScreen() {
 
           {/* フィードバックUI */}
           {score !== null && !submitted && (
-            <View style={{
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              marginTop: 10,
-            }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={{ marginBottom: 10, textAlign: 'center' }}>
-                このスコアは妥当でしたか？{'\n'}★を選んでください
+                このスコアは妥当でしたか？
               </Text>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10 }}>
+                <Text style={{ fontSize: 14 }}>悪い</Text>
+                <Text style={{ fontSize: 14 }}>良い</Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
                 {[1, 2, 3, 4, 5].map(n => (
-                  <TouchableOpacity
-                    key={n}
-                    onPress={() => submitFeedback(n)}
-                    style={{ marginVertical: 6 }}
-                  >
+                  <TouchableOpacity key={n} onPress={() => submitFeedback(n)}>
                     <Text style={{ fontSize: 24 }}>{'★'.repeat(n)}</Text>
                   </TouchableOpacity>
-              ))}
+                ))}
+              </View>
             </View>
           )}
 
