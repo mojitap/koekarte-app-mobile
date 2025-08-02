@@ -40,7 +40,7 @@ export default function EditProfile({ navigation }) {
         setForm({
           email: data.email || '',
           username: data.username || '',
-          birthdate: data.birthdate || '',
+          birthdate: formatBirthdate(data.birthdate) || '',  // ← ここで整形
           gender: data.gender || '',
           occupation: data.occupation || '',
           prefecture: data.prefecture || '',
