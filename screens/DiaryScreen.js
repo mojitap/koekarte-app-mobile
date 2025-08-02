@@ -15,12 +15,7 @@ import {
   AppState,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import {
-  Recording,
-  Sound,
-  setAudioModeAsync,
-  requestPermissionsAsync
-} from 'expo-audio';
+import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { AuthContext } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,6 +26,7 @@ import { API_BASE_URL } from '../utils/config';
 import { useFocusEffect } from '@react-navigation/native';
 
 const DiaryScreen = ({ navigation }) => {
+  const recordingTimeout = useRef(null);
   const { userProfile } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [recording, setRecording] = useState(null);
@@ -98,45 +94,49 @@ const DiaryScreen = ({ navigation }) => {
     }
   };
 
-  let recordingTimeout = null;
-
   const startRecording = async () => {
-    // ✅ このガードが最初！
-    if (recording) {
-      Alert.alert('録音中です', '録音を停止してから再度開始してください。');
-      return;
-    }
+  　if (recording) {
+    　Alert.alert('録音中です', '録音を停止してから再度開始してください。');
+    　return;
+  　}
 
-    if (!canUsePremium) {
-      Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
-        { text: '有料登録する', onPress: () => handlePurchase() },
-        { text: 'キャンセル', style: 'cancel' },
-      ]);
-      return;
-    }
+  　if (!canUsePremium) {
+    　Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
+      　{ text: '有料登録する', onPress: () => handlePurchase() },
+      　{ text: 'キャンセル', style: 'cancel' },
+    　]);
+    　return;
+  　}
 
-    try {
-      await requestPermissionsAsync();
-      await setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Recording.createAsync(
-        Recording.Constants.AUDIO_RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-      );
-      setRecording(recording);
+  　try {
+    　const permission = await Audio.requestPermissionsAsync(); // ← 修正
+    　if (!permission.granted) {
+      　Alert.alert('マイクのアクセスが拒否されました');
+      　return;
+    　}
 
-      // ⏱ 15秒後に自動停止
-      recordingTimeout = setTimeout(() => {
-        stopRecording();
-        Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
-      }, 15000);
+    　await Audio.setAudioModeAsync({  // ← 修正
+      　allowsRecordingIOS: true,
+      　playsInSilentModeIOS: true,
+    　});
 
-    } catch (err) {
-      Alert.alert('録音エラー', err.message);
-    }
-  };
+    　const newRecording = new Audio.Recording(); // ← 修正
+    　await newRecording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+    　await newRecording.startAsync();
+    　setRecording(newRecording);
+
+    　recordingTimeout = setTimeout(() => {
+      　stopRecording();
+      　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
+    　}, 15000);
+  　} catch (err) {
+    　Alert.alert('録音エラー', err.message);
+  　}
+　};
 
   const stopRecording = async () => {
     try {
-      clearTimeout(recordingTimeout);  // ⏱ 自動停止タイマーをキャンセル
+      clearTimeout(recordingTimeout.current);
       setIsSaving(true);
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
@@ -157,7 +157,7 @@ const DiaryScreen = ({ navigation }) => {
         setSound(null);
       }
       const filePath = getFilePath(selectedDate);
-      const { sound: newSound } = await Sound.createAsync({ uri: filePath });
+      const { sound: newSound } = await Audio.Sound.createAsync({ uri: filePath });
       setSound(newSound);
       await newSound.playAsync();
     } catch (err) {
