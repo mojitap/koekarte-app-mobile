@@ -38,8 +38,13 @@ const DiaryScreen = ({ navigation }) => {
   const [isSaving, setIsSaving] = useState(false); 
   const [uploadStatus, setUploadStatus] = useState('');
 
+  const [countdown, setCountdown] = useState(15); // 15秒からカウント
+  const countdownInterval = useRef(null);
+
   const diaryDir = FileSystem.documentDirectory + 'diary/';
   const [markedDates, setMarkedDates] = useState({});
+
+  const stoppingRef = useRef(false);
 
   const loadMarkedDates = async () => {
     const files = await FileSystem.readDirectoryAsync(diaryDir);
@@ -51,8 +56,11 @@ const DiaryScreen = ({ navigation }) => {
     setMarkedDates(marks);
   };
 
-  const diaryFilePath = diaryDir + 'recording_diary.m4a';
-  const filePathForDate = `${diaryDir}${selectedDate}.m4a`;
+  const getFilePath = (date) => {
+    let path = `${diaryDir}${date}.m4a`;
+    if (!path.startsWith('file://')) path = 'file://' + path;
+    return path;
+  };
 
   useEffect(() => {
     FileSystem.makeDirectoryAsync(diaryDir, { intermediates: true }).catch(() => {});
@@ -99,8 +107,6 @@ const DiaryScreen = ({ navigation }) => {
     　};
   　}, [recording])
 　);
-
-  const getFilePath = (date) => `${diaryDir}${date}.m4a`;
 
   const loadDiaryFiles = async () => {
    try {
@@ -174,21 +180,41 @@ const DiaryScreen = ({ navigation }) => {
       　playsInSilentModeIOS: true,
     　});
 
+    　setCountdown(15); // カウントダウン初期化
+
     　const newRecording = new Audio.Recording();
     　await newRecording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
     　await newRecording.startAsync();
     　setRecording(newRecording);
 
+    　// --- カウントダウン用インターバル ---
+    　countdownInterval.current = setInterval(() => {
+      　setCountdown(prev => {
+        　if (prev <= 1) {
+          　clearInterval(countdownInterval.current);
+          　stopRecording(); // 0秒で録音自動停止
+          　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
+          　return 0;
+        　}
+        　return prev - 1;
+      　});
+    　}, 1000);
+
     　recordingTimeout.current = setTimeout(() => {
+      　clearInterval(countdownInterval.current);
       　stopRecording();
       　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
     　}, 15000);
+
   　} catch (err) {
     　Alert.alert('録音エラー', err.message);
   　}
 　};
 
   const stopRecording = async () => {
+    if (!recording || stoppingRef.current) return; // ← ここ！
+    stoppingRef.current = true; // ← ここ！
+    clearInterval(countdownInterval.current);
     try {
       clearTimeout(recordingTimeout.current);
       setIsSaving(true);
@@ -197,25 +223,32 @@ const DiaryScreen = ({ navigation }) => {
       const newPath = getFilePath(selectedDate);
       console.log('保存直後uri:', uri);
 
-      // ★ 上書き時は事前に既存ファイルを削除
-      const exists = await FileSystem.getInfoAsync(newPath);
+      // "file://" 補正
+      let safeUri = uri;
+      let safePath = newPath;
+      if (!safeUri.startsWith('file://')) safeUri = 'file://' + safeUri;
+      if (!safePath.startsWith('file://')) safePath = 'file://' + safePath;
+      console.log('moveAsync from:', safeUri, 'to:', safePath);
+
+      // 上書き時は事前削除
+      const exists = await FileSystem.getInfoAsync(safePath);
       if (exists.exists) {
-        await FileSystem.deleteAsync(newPath, { idempotent: true });
+        await FileSystem.deleteAsync(safePath, { idempotent: true });
       }
 
-      console.log('保存処理: uri =', uri, ', newPath =', newPath);
-      const srcInfo = await FileSystem.getInfoAsync(uri);
-      console.log('移動元ファイル存在:', srcInfo.exists, 'サイズ:', srcInfo.size);
       setUploadStatus('💾 保存中...');
-      await FileSystem.moveAsync({ from: uri, to: newPath });
+      await FileSystem.moveAsync({ from: safeUri, to: safePath });
       setUploadStatus('✅ 保存完了');
       setRecording(null);
       loadDiaryFiles();
     } catch (err) {
-      Alert.alert('保存エラー', err.message);
+      setRecording(null);
+      console.log('❌保存エラー詳細:', err);
+      Alert.alert('保存エラー', err.message || String(err));
       setUploadStatus('❌ 保存に失敗しました');
     } finally {
       setIsSaving(false);
+      stoppingRef.current = false;
     }
   };
 
@@ -296,6 +329,13 @@ const DiaryScreen = ({ navigation }) => {
             </>
           )}
         </View>
+      )}
+
+      {/* カウントダウン表示（ここ！） */}
+      {recording && (
+        <Text style={{ fontSize: 32, color: '#ff5722', textAlign: 'center', marginTop: 16 }}>
+          ⏳ 残り {countdown} 秒
+        </Text>
       )}
 
       <View style={styles.controls}>
