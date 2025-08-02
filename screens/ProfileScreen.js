@@ -20,17 +20,32 @@ import { getUser, logout } from '../utils/auth';
 import { API_BASE_URL } from '../utils/config';  // ← パスが screens フォルダ内なら ../ が必要
 import { Linking, TouchableOpacity } from 'react-native';
 
+function formatBirthdate(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = ('0' + (date.getMonth() + 1)).slice(-2);
+  const d = ('0' + date.getDate()).slice(-2);
+  return `${y}-${m}-${d}`;
+}
+
 export default function ProfileScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [hadProfile, setHadProfile] = useState(false); // 🔑 ログアウト済みかどうか
   const { setShowAuthStack } = useContext(AuthContext);
-  
-  const formatToJST = (utcString) => {
-    if (!utcString) return '記録なし';
-    const date = new Date(utcString);
-    return date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+  const defaultDate = profile?.birthdate
+    ? formatBirthdate(profile.birthdate) // "1982-07-19"
+    : '';
+
+  const formatToJST = (isoString) => {
+    if (!isoString) return '未設定';
+    const date = new Date(isoString);
+    const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000); // +9時間
+    return jstDate.toISOString().slice(0, 10); // YYYY-MM-DD 形式
   };
 
 
@@ -122,13 +137,13 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={styles.value}>{profile.gender || '未設定'}</Text>
 
                 <Text style={styles.label}>🎂 生年月日：</Text>
-                <Text style={styles.value}>{profile.birthdate || '未設定'}</Text>
+                <Text style={styles.value}>{formatBirthdate(profile.birthdate)}</Text>
 
                 <Text style={styles.label}>💼 職業：</Text>
                 <Text style={styles.value}>{profile.occupation || '未設定'}</Text>
 
                 <Text style={styles.label}>📅 登録日:</Text>
-                <Text style={styles.value}>{profile.created_at?.slice(0, 10)}</Text>
+                <Text style={styles.value}>{formatToJST(profile.created_at)}</Text>
 
                 <Text style={styles.label}>🕛 最終記録日:</Text>
                 <Text style={styles.value}>{formatToJST(profile.last_recorded)}</Text>
