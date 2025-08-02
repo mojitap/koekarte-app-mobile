@@ -39,6 +39,22 @@ export default function RecordScreen() {
   const stressDir = FileSystem.documentDirectory + 'stress/';
 　const stressFilePath = stressDir + 'recording.m4a';
 
+useFocusEffect(
+  React.useCallback(() => {
+    // この中でリセット！
+    setUploadStatus('');
+    setDetailJobId(null);
+    setScore(null);
+    setStatus('');
+    setRecordingUri(null);
+    setSubmitted(false);
+    // 必要なステートをここで初期値にする
+
+    // ↓何も返さなくてOK
+    return () => {};
+  }, [])
+);
+
   // ログイン状態と利用可否チェック
   useFocusEffect(
     React.useCallback(() => {
