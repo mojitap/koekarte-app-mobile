@@ -1,10 +1,5 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-  useRef,
-} from 'react';
+import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState, useContext, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,6 +9,9 @@ import {
   Platform,
   ScrollView,
   AppState,
+  Image,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Audio } from 'expo-av';
@@ -26,136 +24,170 @@ import { getFreeDaysLeft } from '../utils/premiumUtils';
 import { API_BASE_URL } from '../utils/config';
 import { useFocusEffect } from '@react-navigation/native';
 
+// ── ヘルパー関数はコンポーネント外 ──
+const getToday = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().split('T')[0];
+};
+
 const DiaryScreen = ({ navigation }) => {
-  const recordingTimeout = useRef(null);
-  const { userProfile } = useContext(AuthContext);
-  const [selectedDate, setSelectedDate] = useState(getToday());
-  const [recording, setRecording] = useState(null);
-  const [sound, setSound] = useState(null);
+  // 1) state / ref / 定数 宣言
+  const diaryDir            = FileSystem.documentDirectory + 'diary/';
   const [recordedDates, setRecordedDates] = useState({});
+  const [markedDates,   setMarkedDates]   = useState({});
+  const [selectedDate,  setSelectedDate]  = useState(getToday());
+  const [recording,     setRecording]     = useState(null);
+  const [sound,         setSound]         = useState(null);
   const [canUsePremium, setCanUsePremium] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [isSaving, setIsSaving] = useState(false); 
-  const [uploadStatus, setUploadStatus] = useState('');
+  const [profile,       setProfile]       = useState(null);
+  const [isSaving,      setIsSaving]      = useState(false);
+  const [uploadStatus,  setUploadStatus]  = useState('');
+  const [countdown,     setCountdown]     = useState(15);
+  const { t, i18n } = useTranslation();
+  const isJa = i18n.language?.startsWith('ja');
 
-  const [countdown, setCountdown] = useState(15); // 15秒からカウント
+  const recordingTimeout  = useRef(null);
   const countdownInterval = useRef(null);
+  const stoppingRef       = useRef(false);
+  const { userProfile }   = useContext(AuthContext);
 
-  const diaryDir = FileSystem.documentDirectory + 'diary/';
-  const [markedDates, setMarkedDates] = useState({});
-
-  const stoppingRef = useRef(false);
-
-  const loadMarkedDates = async () => {
-    const files = await FileSystem.readDirectoryAsync(diaryDir);
-    const marks = {};
-    files.forEach(f => {
-      const dateStr = f.replace('.m4a', '');
-      marks[dateStr] = { marked: true, dotColor: 'green', selectedColor: '#aef' };
-    });
-    setMarkedDates(marks);
-  };
-
-  const getFilePath = (date) => {
+  // 2) 関数定義
+  const getFilePath = date => {
     let path = `${diaryDir}${date}.m4a`;
-    if (!path.startsWith('file://')) path = 'file://' + path;
-    return path;
+    return path.startsWith('file://') ? path : 'file://' + path;
   };
-
-  useEffect(() => {
-    FileSystem.makeDirectoryAsync(diaryDir, { intermediates: true }).catch(() => {});
-    loadDiaryFiles();
-    return () => sound && sound.unloadAsync();
-  }, []);
-
-  const saveDiaryRecording = async (uri, dateStr) => {
-    const destPath = `${diaryDir}${dateStr}.m4a`;
-    await FileSystem.moveAsync({ from: uri, to: destPath });
-    loadMarkedDates(); // 保存後にカレンダー更新
-  };
-
-  useEffect(() => {
-    getUser().then(data => {
-      if (!data) return;
-      fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
-        .then(res => res.json())
-        .then(data => {
-          setCanUsePremium(data.can_use_premium);
-          setProfile(data);
-        })
-        .catch(err => {
-          console.error('❌ プロフィール取得失敗:', err);
-          setCanUsePremium(false);
-        });
-    });
-  }, []);
-
-  useEffect(() => {
-  　const subscription = AppState.addEventListener('change', nextAppState => {
-    　if ((nextAppState === 'inactive' || nextAppState === 'background') && recording) {
-      　stopRecording();
-    　}
-  　});
-
-  　return () => subscription.remove();
-　}, [recording]);
-
-  useFocusEffect(
-  　useCallback(() => {
-    　return () => {
-      　if (recording) stopRecording();
-    　};
-  　}, [recording])
-　);
 
   const loadDiaryFiles = async () => {
-   try {
-     const files = await FileSystem.readDirectoryAsync(diaryDir);
-     console.log('---- diary/ フォルダの中身 ----');
-     const dots = {};
-     for (const file of files) {
-       const info = await FileSystem.getInfoAsync(diaryDir + file);
-       console.log(`ファイル: ${file}, サイズ: ${info.size}`);
-       // dots処理もここで
-       if (info.size > 0) {
-         const date = file.replace('.m4a', '');
-         dots[date] = { marked: true, dotColor: 'blue' };
-       }
-     }
-     setRecordedDates(dots);
-   } catch (e) {
-     console.log('読み込みエラー', e);
-   }
- };
+    try {
+      const files = await FileSystem.readDirectoryAsync(diaryDir);
+      const dots = {};
+      for (const file of files) {
+        const info = await FileSystem.getInfoAsync(diaryDir + file);
+        if (info.size > 0) {
+          const day = file.replace('.m4a', '');
+          dots[day] = { marked: true, dotColor: 'blue' };
+        }
+      }
+      setRecordedDates(dots);
+    } catch (e) {
+      console.log('loadDiaryFiles error:', e);
+    }
+  };
+
+  const loadMarkedDates = async () => {
+    try {
+      const files = await FileSystem.readDirectoryAsync(diaryDir);
+      const marks = {};
+      files.forEach(f => {
+        const day = f.replace('.m4a', '');
+        marks[day] = { marked: true, dotColor: 'green', selectedColor: '#aef' };
+      });
+      setMarkedDates(marks);
+    } catch (e) {
+      console.log('loadMarkedDates error:', e);
+    }
+  };
+
+  const saveDiaryRecording = async (uri, dateStr) => {
+    const dest = `${diaryDir}${dateStr}.m4a`;
+    await FileSystem.moveAsync({ from: uri, to: dest });
+    loadMarkedDates();
+  };
+
+  const uploadToServer = async (fileUri, overwrite = true) => {
+    try {
+      const form = new FormData();
+      form.append('audio_data', {
+        uri: fileUri,
+        name: 'diary.m4a',
+        // iOSは audio/mp4, Androidは端末により audio/3gpp 等になることあり。汎用でOK。
+        type: Platform.OS === 'ios' ? 'audio/mp4' : 'audio/mpeg',
+      });
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/upload?overwrite=${overwrite ? 'true' : 'false'}`,
+        {
+          method: 'POST',
+          body: form,
+          credentials: 'include', // ← Flask-Login セッションCookie同送
+          // Content-Type は FormData が自動付与するので付けない！
+        }
+      );
+
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || 'upload failed');
+      return json.playback_url || json.audio_url || json.url || null;
+    } catch (e) {
+      console.log('uploadToServer error:', e);
+      return null;
+    }
+  };
+
+  const startActualRecording = async () => {
+    try {
+      const perm = await Audio.requestPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(t('diary.micDenied'));
+        return;
+      }
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      setCountdown(15);
+      const rec = new Audio.Recording();
+      await rec.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+      await rec.startAsync();
+      setRecording(rec);
+
+      countdownInterval.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval.current);
+            stopRecording();
+            Alert.alert(t('diary.autoStopTitle'), t('diary.autoStopMessage'));
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (e) {
+      Alert.alert(t('diary.saveError'), e.message);
+    }
+  };
 
   const startRecording = async () => {
     if (recording) {
-      Alert.alert('録音中です', '録音を停止してから再度開始してください。');
+      Alert.alert(
+        t('diary.recordingInProgressTitle'),
+        t('diary.recordingInProgressMessage')
+      );
       return;
     }
-
     if (!canUsePremium) {
-      Alert.alert('利用制限', '無料期間は終了しました。有料プラン（月額300円）に登録すると録音が可能になります。', [
-        { text: '有料登録する', onPress: () => handlePurchase() },
-        { text: 'キャンセル', style: 'cancel' },
-      ]);
+      Alert.alert(
+        t('diary.usageLimitTitle'),
+        t('diary.usageLimitMessage'),
+        [
+          { text: t('diary.subscribe'), onPress: () => handlePurchase() },
+          { text: t('diary.cancel'), style: 'cancel' },
+        ]
+      );
       return;
     }
 
-    // --- 当日（selectedDate）の録音ファイル存在チェック
-    const filePath = getFilePath(selectedDate);
-    const fileInfo = await FileSystem.getInfoAsync(filePath);
+    // ── 日記ファイルの存在チェック ──
+    const path = getFilePath(selectedDate);
+    const info = await FileSystem.getInfoAsync(path);
 
-    // ----ここが重要！----
-    // "今日の日記録音ファイルが存在する場合だけ" 上書き確認を出す
-    if (fileInfo.exists && fileInfo.size > 0) {
-      const ok = await new Promise(resolve =>
+    // 初回（exists===false）のときは何もしない
+    if (info.exists && info.size > 0) {
+      // 同日２回目なら上書き確認ダイアログを出す
+      const ok = await new Promise(res =>
         Alert.alert(
-          "上書き確認",
-          "この日の日記録音はすでに存在します。上書きしますか？",
+          t('diary.overwriteTitle'),
+          t('diary.overwriteMessage'),
           [
-            { text: "キャンセル", style: "cancel", onPress: () => resolve(false) },
-            { text: "上書きする", onPress: () => resolve(true) },
+            { text: t('diary.cancel'), style: 'cancel', onPress: () => res(false) },
+            { text: t('diary.overwrite'), onPress: () => res(true) },
           ],
           { cancelable: false }
         )
@@ -163,254 +195,269 @@ const DiaryScreen = ({ navigation }) => {
       if (!ok) return;
     }
 
-    // 上書き確認が不要、もしくはOKされたら録音開始
+    // 上書きOK または 初回なら、実際の録音開始へ
     await startActualRecording();
   };
 
-　const startActualRecording = async () => {
-  　try {
-    　const permission = await Audio.requestPermissionsAsync();
-    　if (!permission.granted) {
-      　Alert.alert('マイクのアクセスが拒否されました');
-      　return;
-    　}
-
-    　await Audio.setAudioModeAsync({
-      　allowsRecordingIOS: true,
-      　playsInSilentModeIOS: true,
-    　});
-
-    　setCountdown(15); // カウントダウン初期化
-
-    　const newRecording = new Audio.Recording();
-    　await newRecording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
-    　await newRecording.startAsync();
-    　setRecording(newRecording);
-
-    　// --- カウントダウン用インターバル ---
-    　countdownInterval.current = setInterval(() => {
-      　setCountdown(prev => {
-        　if (prev <= 1) {
-          　clearInterval(countdownInterval.current);
-          　stopRecording(); // 0秒で録音自動停止
-          　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
-          　return 0;
-        　}
-        　return prev - 1;
-      　});
-    　}, 1000);
-
-    　recordingTimeout.current = setTimeout(() => {
-      　clearInterval(countdownInterval.current);
-      　stopRecording();
-      　Alert.alert('⏰録音終了', '録音は15秒で自動終了しました。');
-    　}, 15000);
-
-  　} catch (err) {
-    　Alert.alert('録音エラー', err.message);
-  　}
-　};
-
   const stopRecording = async () => {
-    if (!recording || stoppingRef.current) return; // ← ここ！
-    stoppingRef.current = true; // ← ここ！
+    if (!recording || stoppingRef.current) return;
+    stoppingRef.current = true;
     clearInterval(countdownInterval.current);
+
     try {
-      clearTimeout(recordingTimeout.current);
       setIsSaving(true);
+
       await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      const newPath = getFilePath(selectedDate);
-      console.log('保存直後uri:', uri);
+      const uri  = recording.getURI();
+      const dest = getFilePath(selectedDate);
 
-      // "file://" 補正
-      let safeUri = uri;
-      let safePath = newPath;
-      if (!safeUri.startsWith('file://')) safeUri = 'file://' + safeUri;
-      if (!safePath.startsWith('file://')) safePath = 'file://' + safePath;
-      console.log('moveAsync from:', safeUri, 'to:', safePath);
-
-      // 上書き時は事前削除
-      const exists = await FileSystem.getInfoAsync(safePath);
-      if (exists.exists) {
-        await FileSystem.deleteAsync(safePath, { idempotent: true });
+      // 既存ファイルがあれば削除してから移動
+      const ex = await FileSystem.getInfoAsync(dest);
+      if (ex.exists) {
+        await FileSystem.deleteAsync(dest, { idempotent: true });
       }
 
-      setUploadStatus('💾 保存中...');
-      await FileSystem.moveAsync({ from: safeUri, to: safePath });
-      setUploadStatus('✅ 保存完了');
+      // ① 端末ローカルに保存
+      setUploadStatus(t('diary.saving'));
+      await FileSystem.moveAsync({ from: uri, to: dest });
+      setUploadStatus(t('diary.saved'));
       setRecording(null);
       loadDiaryFiles();
-    } catch (err) {
+
+      // ② サーバーへアップロード（同日2回目は overwrite=true でOK）
+      setUploadStatus(t('diary.uploading') || 'Uploading...');
+      const serverUrl = await uploadToServer(dest, true);
+      if (serverUrl) {
+        setUploadStatus(t('diary.uploaded') || 'Uploaded');
+      } else {
+        setUploadStatus(t('diary.uploadFailed') || 'Upload failed');
+      }
+    } catch (e) {
+      Alert.alert(t('diary.saveError'), e.message);
       setRecording(null);
-      console.log('❌保存エラー詳細:', err);
-      Alert.alert('保存エラー', err.message || String(err));
-      setUploadStatus('❌ 保存に失敗しました');
     } finally {
       setIsSaving(false);
       stoppingRef.current = false;
     }
   };
 
-  const playRecording = async () => {
+  const playRecording = async (dateParam) => {
     try {
+      const dateToUse = dateParam || selectedDate;
+      const uri = getFilePath(dateToUse);
+      const info = await FileSystem.getInfoAsync(uri);
+
+      let playUri = null;
+
+      if (info.exists && info.size > 0) {
+        // ローカルがあればそれを再生
+        playUri = uri;
+      } else {
+        // ローカルが無ければサーバーから（by-date API を使う）
+        const res = await fetch(`${API_BASE_URL}/api/diary/by-date?date=${dateToUse}`, { credentials:'include' });
+        const json = await res.json();
+        if (json?.item?.playback_url) playUri = json.item.playback_url;
+      }
+
+      if (!playUri) {
+        Alert.alert(t('diary.playError'), t('diary.noFileForThisDay'));
+        return;
+      }
+
+      // 再生モードへ
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+
       if (sound) {
         await sound.stopAsync();
         await sound.unloadAsync();
         setSound(null);
       }
-      const filePath = getFilePath(selectedDate);
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri: filePath });
-      setSound(newSound);
-      await newSound.playAsync();
-    } catch (err) {
-      Alert.alert('再生エラー', err.message);
+      const { sound: snd } = await Audio.Sound.createAsync({ uri: playUri });
+      setSound(snd);
+      await snd.playAsync();
+    } catch (e) {
+      Alert.alert(t('diary.playError'), e.message);
     }
   };
 
   const handlePurchase = async () => {
     try {
-      if (Platform.OS === 'ios') {
-        await purchaseWithApple();
-      } else {
-        await purchaseWithGoogle();
-      }
-    } catch (err) {
-      console.error('購入エラー:', err);
-      Alert.alert('エラー', '購入に失敗しました。');
+      Platform.OS === 'ios' ? await purchaseWithApple() : await purchaseWithGoogle();
+    } catch (e) {
+      Alert.alert(t('diary.purchaseFailed'), e.message)
     }
   };
 
+  // 3) useEffect / useFocusEffect
+  useEffect(() => {
+    FileSystem.makeDirectoryAsync(diaryDir, { intermediates: true }).catch(() => {});
+    loadDiaryFiles();
+    // クリーンアップでは「再生用 sound」だけアンロード
+    return () => {
+      if (sound) {
+        sound.unloadAsync().catch(() => {});
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    getUser().then(u => {
+      if (!u) return;
+      fetch(`${API_BASE_URL}/api/profile`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(d => { setCanUsePremium(d.can_use_premium); setProfile(d); })
+        .catch(() => setCanUsePremium(false));
+    });
+  }, []);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', next => {
+      if ((next === 'background' || next === 'inactive') && recording) stopRecording();
+    });
+    return () => sub.remove();
+  }, [recording]);
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.stopAsync().catch(() => {});
+        sound.unloadAsync().catch(() => {});
+      }
+    };
+  }, [sound]);
+
+  // 4) JSX
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>音声日記</Text>
-      <Text style={styles.description}>
-        「今日ちょっと疲れたかも…」そんな気持ち、文字じゃなくて「声」で残してみませんか？{"\n\n"}
-        コエカルテの音声日記は、毎日15秒の声を記録できる機能です。{"\n"}
-        録音はカレンダー形式で保存され、あとから聞き返すこともできます。
-      </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Image source={require('../assets/koekoekarte.png')} style={styles.logo} />
+        <Text style={styles.heading}>{t('diary.title')}</Text>
+      </View>
 
-      <Calendar
-        markedDates={markedDates}
-        onDayPress={day => setSelectedDate(day.dateString)}
-        // 前月/次月も自動
-      />
+      <ScrollView contentContainerStyle={styles.container}>
 
-      {profile && !profile.is_paid && (
-        <View style={{
-          backgroundColor: canUsePremium ? '#fefefe' : '#fff8f6',
-          borderColor: canUsePremium ? '#ccc' : '#faa',
-          borderWidth: 1,
-          borderRadius: 6,
-          padding: 12,
-          marginVertical: 20,
-        }}>
-          {canUsePremium ? (
-            <>
-              <Text style={{ fontSize: 14, color: '#444' }}>
-                無料期間中（あと {getFreeDaysLeft(profile.created_at)} 日）です。
-              </Text>
-              <TouchableOpacity onPress={handlePurchase} style={{ marginTop: 10 }}>
-                <Text style={{ color: '#007bff', fontWeight: 'bold' }}>
-                  有料プランの詳細を見る
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={{ fontSize: 14, color: '#a00', marginBottom: 10 }}>
-                無料期間は終了しました。有料登録が必要です。
-              </Text>
+        {/* ▼ ここから追加（または diary.description の代わりに） */}
+        <Text style={styles.title}>{t('diary.voiceTitle')}</Text>
+        <Text style={styles.description}>{t('diary.voiceIntro')}</Text>
+        {/* ▲ ここまで追加 */}
+
+        <Calendar
+          monthFormat={t('diary.calendarMonthFormat')}
+          markedDates={markedDates}
+          onDayPress={day => { 
+            setSelectedDate(day.dateString);
+            // タップ＝即再生したい場合は↓を有効化
+            // playRecording(day.dateString);
+          }}
+        />
+
+        {profile && !profile.is_paid && (
+          <View style={{
+            backgroundColor: canUsePremium ? '#fefefe' : '#fff8f6',
+            borderColor: canUsePremium ? '#ccc' : '#faa',
+            borderWidth: 1, borderRadius: 6, padding: 12, marginVertical: 20,
+          }}>
+            {canUsePremium ? (
+              <>
+                {t('diary.premiumInfo', { days: getFreeDaysLeft(profile.created_at) })}
+                <TouchableOpacity onPress={handlePurchase}>
+                  <Text style={styles.link}>{t('diary.viewPremium')}</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
               <TouchableOpacity onPress={handlePurchase}>
-                <Text style={{ fontWeight: 'bold', color: '#000', backgroundColor: '#ffc107', padding: 8, borderRadius: 5 }}>
-                  今すぐ登録する
-                </Text>
+                <Text style={styles.link}>{t('diary.subscribeNow')}</Text>
               </TouchableOpacity>
-            </>
-          )}
-        </View>
-      )}
-
-      {/* カウントダウン表示（ここ！） */}
-      {recording && (
-        <Text style={{ fontSize: 32, color: '#ff5722', textAlign: 'center', marginTop: 16 }}>
-          ⏳ 残り {countdown} 秒
-        </Text>
-      )}
-
-      <View style={styles.controls}>
-        {recording ? (
-          <TouchableOpacity
-            style={[styles.button, isSaving && { backgroundColor: '#ccc' }]}
-            onPress={stopRecording}
-            disabled={isSaving}
-          >
-            <Ionicons name="stop" size={24} color="white" />
-            <Text style={styles.buttonText}>
-              {isSaving ? '保存中...' : '停止'}
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={startRecording}>
-            <Ionicons name="mic" size={24} color="white" />
-            <Text style={styles.buttonText}>録音</Text>
-          </TouchableOpacity>
+            )}
+          </View>
         )}
-        <TouchableOpacity style={styles.button} onPress={playRecording}>
-          <Ionicons name="play" size={24} color="white" />
-          <Text style={styles.buttonText}>再生</Text>
-        </TouchableOpacity>
-      </View>
 
-      {uploadStatus !== '' && (
-        <Text style={{ marginTop: 10, color: '#555', fontSize: 14 }}>{uploadStatus}</Text>
-      )}
+        {recording && <Text style={styles.countdown}>{t('diary.remaining', { seconds: countdown })}</Text>}
 
-      <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ alignSelf: 'center', marginVertical: 20 }}>
-        <Text style={{ fontSize: 18, color: '#6a1b9a', textDecorationLine: 'underline' }}>マイページに戻る</Text>
-      </TouchableOpacity>
-
-      <View style={{ marginTop: 40, paddingBottom: 30, alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
-            <Text style={styles.linkText}>利用規約</Text>
-          </TouchableOpacity>
-          <Text style={styles.separator}>{' | '}</Text>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Privacy')}>
-            <Text style={styles.linkText}>プライバシーポリシー</Text>
-          </TouchableOpacity>
-          <Text style={styles.separator}>{' | '}</Text>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Legal')}>
-            <Text style={styles.linkText}>特定商取引法に基づく表記</Text>
-          </TouchableOpacity>
-          <Text style={styles.separator}>{' | '}</Text>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
-            <Text style={styles.linkText}>お問い合わせ</Text>
+        <View style={styles.controls}>
+          {recording ? (
+            <TouchableOpacity onPress={stopRecording} style={styles.button}>
+              <Ionicons name="stop" size={24} color="white" />
+              <Text style={styles.btnText}>{isSaving ? t('diary.saving') : t('diary.stop')}</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={startRecording} style={styles.button}>
+              <Ionicons name="mic" size={24} color="white" />
+              <Text style={styles.btnText}>{t('diary.record')}</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={playRecording} style={styles.button}>
+            <Ionicons name="play" size={24} color="white" />
+            <Text style={styles.btnText}>{t('diary.play')}</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+
+        {uploadStatus !== '' && <Text style={styles.upload}>{uploadStatus}</Text>}
+
+        <View style={styles.footer}>
+          {[
+            { key: 'terms',   screen: 'Terms'   },
+            { key: 'privacy', screen: 'Privacy' },
+            ...(isJa ? [{ key: 'legal', screen: 'Legal' }] : []),
+            { key: 'contact', screen: 'Contact' },
+          ].map((item, i, arr) => (
+            <React.Fragment key={item.key}>
+              <TouchableOpacity onPress={() => navigation.navigate(item.screen)}>
+                <Text style={styles.linkText}>{t(`diary.${item.key}`)}</Text>
+              </TouchableOpacity>
+              {i < arr.length - 1 && <Text style={styles.sep}> | </Text>}
+            </React.Fragment>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-const getToday = () => {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  return now.toISOString().split('T')[0];
-};
-
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-  description: { fontSize: 15, lineHeight: 22, color: '#333', marginBottom: 16 },
-  controls: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 },
-  button: { backgroundColor: '#3b82f6', padding: 12, borderRadius: 10, alignItems: 'center' },
-  buttonText: { color: '#fff', marginTop: 5 },
-  linkText: { fontSize: 16, color: '#007bff', marginHorizontal: 2, textDecorationLine: 'underline' },
-  separator: { fontSize: 16, color: '#666' },
+  safeArea: {
+    flex: 1, backgroundColor: '#fff',
+    paddingTop: Platform.OS==='android' ? StatusBar.currentHeight : 0,
+  },
+  header: { alignItems:'center', marginBottom:8 },
+  logo:   { width:80, height:80, marginBottom:8 },
+  heading:{ fontSize:26,fontWeight:'bold' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  container:{ padding:20, paddingBottom:40 },
+  description:{ fontSize:15, lineHeight:22, color:'#333', marginBottom:16 },
+  countdown:{ fontSize:32, color:'#ff5722', textAlign:'center', marginTop:16 },
+  controls:{ flexDirection:'row', justifyContent:'space-around', marginTop:20 },
+  button:{ backgroundColor:'#3b82f6', padding:12, borderRadius:10, alignItems:'center' },
+  btnText:{ color:'#fff', marginTop:5 },
+  upload:{ marginTop:10, color:'#555', fontSize:14 },
+  footer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',        // ← 行を折り返す
+    justifyContent: 'center',
+    paddingBottom: 30,
+    marginTop: 40,
+    },
+  linkText: {
+    fontSize: 16,
+    color: '#007bff',
+    textDecorationLine: 'underline',
+    marginHorizontal: 4,
+    flexShrink: 1,            // ← 必要に応じて短くなる
+    textAlign: 'center',      // ← 折り返し時に中央寄せ
+    },
+    sep: {
+    fontSize: 16,
+    color: '#666',
+    marginHorizontal: 4,
+    },
+  link:{ color:'#007bff', fontWeight:'bold', marginTop:10 },
 });
 
 export default DiaryScreen;
